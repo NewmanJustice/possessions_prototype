@@ -1,0 +1,84 @@
+{% extends "govuk/template.njk" %}
+
+{% from "govuk/components/header/macro.njk" import govukHeader %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/footer/macro.njk" import govukFooter %}
+
+{% block pageTitle %}
+  {% if errors and errors.length > 0 %}Error: {% endif %}{{ pageTitle | default("HMCTS Possessions") }} - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block head %}
+  <link href="/govuk/govuk-frontend.min.css" rel="stylesheet">
+  <link href="/public/css/custom.css" rel="stylesheet">
+  {% if errors and errors.length > 0 %}
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      var errorSummary = document.querySelector('.govuk-error-summary');
+      if (errorSummary) {
+        errorSummary.focus();
+      }
+    });
+  </script>
+  {% endif %}
+{% endblock %}
+
+{% block header %}
+  {{ govukHeader({
+    homepageUrl: "/possessions",
+    serviceName: serviceName,
+    serviceUrl: "/possessions",
+    navigation: [
+      {
+        href: "/sign-out",
+        text: "Sign out",
+        active: false
+      } if session.user
+    ]
+  }) }}
+{% endblock %}
+
+{% block beforeContent %}
+  {# Prominent prototype banner #}
+  <div class="govuk-phase-banner">
+    <p class="govuk-phase-banner__content">
+      <strong class="govuk-tag govuk-tag--red">PROTOTYPE</strong>
+      <span class="govuk-phase-banner__text">
+        This is a prototype. Do not enter real personal information. All data is fake.
+      </span>
+    </p>
+  </div>
+
+  {% if showBackLink %}
+    {{ govukBackLink({
+      text: "Back",
+      href: backLinkHref | default("javascript:history.back()")
+    }) }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {# Content will be injected by child templates #}
+{% endblock %}
+
+{% block footer %}
+  {{ govukFooter({
+    meta: {
+      items: [
+        {
+          href: "/health",
+          text: "Health check"
+        }
+      ],
+      html: 'Built using the <a class="govuk-footer__link" href="https://design-system.service.gov.uk/">GOV.UK Design System</a>'
+    }
+  }) }}
+{% endblock %}
+
+{% block bodyEnd %}
+  <script src="/govuk/all.bundle.js"></script>
+  <script>
+    window.GOVUKFrontend.initAll();
+  </script>
+{% endblock %}

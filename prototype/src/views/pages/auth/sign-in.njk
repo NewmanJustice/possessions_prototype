@@ -1,0 +1,62 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errors and errors.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Sign in to HMCTS</h1>
+
+    <p class="govuk-body">Use your HMCTS account to sign in.</p>
+
+    <form method="post" action="/auth/sign-in" novalidate>
+
+      {{ govukInput({
+        label: {
+          text: "Email address",
+          classes: "govuk-label--m"
+        },
+        id: "email",
+        name: "email",
+        type: "email",
+        autocomplete: "email",
+        spellcheck: false,
+        value: values.email,
+        errorMessage: { text: errors | selectattr('field', 'equalto', 'email') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'email') | list | length > 0
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Password",
+          classes: "govuk-label--m"
+        },
+        id: "password",
+        name: "password",
+        type: "password",
+        autocomplete: "current-password",
+        errorMessage: { text: errors | selectattr('field', 'equalto', 'password') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'password') | list | length > 0
+      }) }}
+
+      {{ govukButton({
+        text: "Sign in"
+      }) }}
+
+    </form>
+
+    <p class="govuk-body govuk-!-margin-top-5">
+      <strong>Note:</strong> This is a prototype. Enter any email address and password to continue.
+    </p>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errors and errors.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Defendant details</h1>
+
+    <p class="govuk-body">
+      Provide details for the defendant (tenant).
+    </p>
+
+    <form method="post" action="/claims/defendant" novalidate>
+
+      {{ govukInput({
+        label: {
+          text: "Full name"
+        },
+        id: "fullName",
+        name: "fullName",
+        autocomplete: "name",
+        value: values.fullName,
+        errorMessage: { text: errors | selectattr('field', 'equalto', 'fullName') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'fullName') | list | length > 0
+      }) }}
+
+      <h2 class="govuk-heading-m">Address</h2>
+
+      {{ govukInput({
+        label: {
+          text: "Address line 1"
+        },
+        id: "addressLine1",
+        name: "addressLine1",
+        autocomplete: "address-line1",
+        value: values.addressLine1,
+        errorMessage: { text: errors | selectattr('field', 'equalto', 'addressLine1') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'addressLine1') | list | length > 0
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Address line 2 (optional)"
+        },
+        id: "addressLine2",
+        name: "addressLine2",
+        autocomplete: "address-line2",
+        value: values.addressLine2
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Town or city"
+        },
+        id: "town",
+        name: "town",
+        autocomplete: "address-level2",
+        classes: "govuk-!-width-two-thirds",
+        value: values.town,
+        errorMessage: { text: errors | selectattr('field', 'equalto', 'town') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'town') | list | length > 0
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "County (optional)"
+        },
+        id: "county",
+        name: "county",
+        classes: "govuk-!-width-two-thirds",
+        value: values.county
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Postcode"
+        },
+        id: "postcode",
+        name: "postcode",
+        autocomplete: "postal-code",
+        classes: "govuk-input--width-10",
+        value: values.postcode,
+        errorMessage: { text: errors | selectattr('field', 'equalto', 'postcode') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'postcode') | list | length > 0
+      }) }}
+
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

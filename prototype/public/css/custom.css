@@ -1,0 +1,30 @@
+/* Custom styles for HMCTS Possessions Prototype */
+
+/* Ensure prototype banner is highly visible */
+.govuk-tag--red {
+  background-color: #d4351c;
+  color: #ffffff;
+}
+
+/* Ensure the phase banner content is aligned to the left */
+.govuk-phase-banner__content {
+  text-align: left;
+}
+
+/* Add spacing between the tag and text */
+.govuk-phase-banner__text {
+  padding-left: 15px;
+}
+
+/* Additional spacing for clarity */
+.govuk-main-wrapper {
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+/* Print styles to hide prototype banner when printing */
+@media print {
+  .govuk-phase-banner {
+    display: none;
+  }
+}

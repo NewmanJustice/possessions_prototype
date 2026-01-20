@@ -1,0 +1,250 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-l">Check your answers</h1>
+
+    <h2 class="govuk-heading-m">Claim details</h2>
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "Claim type"
+          },
+          value: {
+            text: "Standard possession claim (England)"
+          },
+          actions: {
+            items: [
+              {
+                href: "/claims/claim-type",
+                text: "Change",
+                visuallyHiddenText: "claim type"
+              }
+            ]
+          }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-m">Property address</h2>
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "Address"
+          },
+          value: {
+            html: claim.property.addressLine1 + "<br>" +
+                  (claim.property.addressLine2 + "<br>" if claim.property.addressLine2) +
+                  claim.property.town + "<br>" +
+                  (claim.property.county + "<br>" if claim.property.county) +
+                  claim.property.postcode
+          },
+          actions: {
+            items: [
+              {
+                href: "/claims/property-address",
+                text: "Change",
+                visuallyHiddenText: "property address"
+              }
+            ]
+          }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-m">Claimant details</h2>
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "Organisation"
+          },
+          value: {
+            text: claim.claimant.organisationName
+          },
+          actions: {
+            items: [
+              {
+                href: "/claims/claimant",
+                text: "Change",
+                visuallyHiddenText: "claimant details"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Reference"
+          },
+          value: {
+            text: claim.claimant.reference
+          }
+        },
+        {
+          key: {
+            text: "Contact"
+          },
+          value: {
+            text: claim.claimant.contactName
+          }
+        },
+        {
+          key: {
+            text: "Email"
+          },
+          value: {
+            text: claim.claimant.email
+          }
+        },
+        {
+          key: {
+            text: "Telephone"
+          },
+          value: {
+            text: claim.claimant.telephone if claim.claimant.telephone else "Not provided"
+          }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-m">Defendant details</h2>
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "Full name"
+          },
+          value: {
+            text: claim.defendant.fullName
+          },
+          actions: {
+            items: [
+              {
+                href: "/claims/defendant",
+                text: "Change",
+                visuallyHiddenText: "defendant details"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Address"
+          },
+          value: {
+            html: claim.defendant.addressLine1 + "<br>" +
+                  (claim.defendant.addressLine2 + "<br>" if claim.defendant.addressLine2) +
+                  claim.defendant.town + "<br>" +
+                  (claim.defendant.county + "<br>" if claim.defendant.county) +
+                  claim.defendant.postcode
+          }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-m">Grounds for possession</h2>
+
+    {% set groundsHtml %}
+    <ul class="govuk-list govuk-list--bullet">
+      {% for ground in claim.grounds %}
+        <li>{{ ground | replace('-', ' ') | capitalize }}</li>
+      {% endfor %}
+    </ul>
+    {% endset %}
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "Grounds"
+          },
+          value: {
+            html: groundsHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "/claims/grounds",
+                text: "Change",
+                visuallyHiddenText: "grounds for possession"
+              }
+            ]
+          }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-m">Key dates</h2>
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "Tenancy start date"
+          },
+          value: {
+            text: claim.keyDates['tenancyStart-Day'] + " / " + claim.keyDates['tenancyStart-Month'] + " / " + claim.keyDates['tenancyStart-Year']
+          },
+          actions: {
+            items: [
+              {
+                href: "/claims/key-dates",
+                text: "Change",
+                visuallyHiddenText: "key dates"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Notice served date"
+          },
+          value: {
+            text: claim.keyDates['noticeServed-Day'] + " / " + claim.keyDates['noticeServed-Month'] + " / " + claim.keyDates['noticeServed-Year']
+          }
+        },
+        {
+          key: {
+            text: "Notice expiry date"
+          },
+          value: {
+            text: claim.keyDates['noticeExpiry-Day'] + " / " + claim.keyDates['noticeExpiry-Month'] + " / " + claim.keyDates['noticeExpiry-Year']
+          }
+        }
+      ]
+    }) }}
+
+    <h2 class="govuk-heading-m">Declaration</h2>
+
+    <p class="govuk-body">
+      By submitting this claim, you confirm that the information you have provided is correct to the best of your knowledge.
+    </p>
+
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-warning-text__assistive">Warning</span>
+        This is a prototype. No real claim will be submitted.
+      </strong>
+    </div>
+
+    <form method="post" action="/claims/submit">
+      {{ govukButton({
+        text: "Submit claim"
+      }) }}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

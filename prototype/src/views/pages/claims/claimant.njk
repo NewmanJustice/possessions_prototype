@@ -1,0 +1,110 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errors and errors.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Claimant details</h1>
+
+    <p class="govuk-body">
+      Provide details for the claimant (landlord or their representative organisation).
+    </p>
+
+    {% set organisationNameError = null %}
+    {% set referenceError = null %}
+    {% set contactNameError = null %}
+    {% set emailError = null %}
+    {% for error in errors %}
+      {% if error.field == 'organisationName' %}
+        {% set organisationNameError = error %}
+      {% elif error.field == 'reference' %}
+        {% set referenceError = error %}
+      {% elif error.field == 'contactName' %}
+        {% set contactNameError = error %}
+      {% elif error.field == 'email' %}
+        {% set emailError = error %}
+      {% endif %}
+    {% endfor %}
+
+    <form method="post" action="/claims/claimant" novalidate>
+
+      {{ govukInput({
+        label: {
+          text: "Organisation name"
+        },
+        id: "organisationName",
+        name: "organisationName",
+        value: values.organisationName,
+        errorMessage: { text: organisationNameError.message } if organisationNameError
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Your reference"
+        },
+        hint: {
+          text: "For example, a case or client reference number"
+        },
+        id: "reference",
+        name: "reference",
+        classes: "govuk-input--width-20",
+        value: values.reference,
+        errorMessage: { text: referenceError.message } if referenceError
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Contact name"
+        },
+        id: "contactName",
+        name: "contactName",
+        autocomplete: "name",
+        value: values.contactName,
+        errorMessage: { text: contactNameError.message } if contactNameError
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Email address"
+        },
+        id: "email",
+        name: "email",
+        type: "email",
+        autocomplete: "email",
+        spellcheck: false,
+        value: values.email,
+        errorMessage: { text: emailError.message } if emailError
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Telephone number (optional)"
+        },
+        id: "telephone",
+        name: "telephone",
+        type: "tel",
+        autocomplete: "tel",
+        classes: "govuk-input--width-20",
+        value: values.telephone
+      }) }}
+
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

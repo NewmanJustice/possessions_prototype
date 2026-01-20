@@ -1,0 +1,41 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-l">Upload documents</h1>
+
+    {% if not featureEnabled %}
+      {{ govukInsetText({
+        text: "Document upload will be added in a later iteration. For now, you can continue without uploading documents."
+      }) }}
+
+      <p class="govuk-body">
+        In the full service, you would be able to upload supporting documents such as:
+      </p>
+
+      <ul class="govuk-list govuk-list--bullet">
+        <li>tenancy agreement</li>
+        <li>notice served to the tenant</li>
+        <li>evidence of rent arrears (if applicable)</li>
+        <li>other supporting evidence</li>
+      </ul>
+    {% else %}
+      <p class="govuk-body">
+        Upload supporting documents for your possession claim.
+      </p>
+    {% endif %}
+
+    <form method="post" action="/claims/documents">
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

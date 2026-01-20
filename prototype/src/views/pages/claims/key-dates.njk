@@ -1,0 +1,147 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errors and errors.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Key dates</h1>
+
+    {% set tenancyStartError = null %}
+    {% for error in errors %}
+      {% if error.field == 'tenancyStart' %}
+        {% set tenancyStartError = error %}
+      {% endif %}
+    {% endfor %}
+
+    <form method="post" action="/claims/key-dates" novalidate>
+
+      {{ govukDateInput({
+        id: "tenancyStart",
+        namePrefix: "tenancyStart",
+        fieldset: {
+          legend: {
+            text: "When did the tenancy start?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        hint: {
+          text: "For example, 27 3 2021"
+        },
+        items: [
+          {
+            name: "Day",
+            classes: "govuk-input--width-2",
+            value: values['tenancyStart-Day']
+          },
+          {
+            name: "Month",
+            classes: "govuk-input--width-2",
+            value: values['tenancyStart-Month']
+          },
+          {
+            name: "Year",
+            classes: "govuk-input--width-4",
+            value: values['tenancyStart-Year']
+          }
+        ],
+        errorMessage: { text: tenancyStartError.message } if tenancyStartError
+      }) }}
+
+      {% set noticeServedError = null %}
+      {% for error in errors %}
+        {% if error.field == 'noticeServed' %}
+          {% set noticeServedError = error %}
+        {% endif %}
+      {% endfor %}
+
+      {{ govukDateInput({
+        id: "noticeServed",
+        namePrefix: "noticeServed",
+        fieldset: {
+          legend: {
+            text: "When was the notice served?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        hint: {
+          text: "For example, 15 11 2024"
+        },
+        items: [
+          {
+            name: "Day",
+            classes: "govuk-input--width-2",
+            value: values['noticeServed-Day']
+          },
+          {
+            name: "Month",
+            classes: "govuk-input--width-2",
+            value: values['noticeServed-Month']
+          },
+          {
+            name: "Year",
+            classes: "govuk-input--width-4",
+            value: values['noticeServed-Year']
+          }
+        ],
+        errorMessage: { text: noticeServedError.message } if noticeServedError
+      }) }}
+
+      {% set noticeExpiryError = null %}
+      {% for error in errors %}
+        {% if error.field == 'noticeExpiry' %}
+          {% set noticeExpiryError = error %}
+        {% endif %}
+      {% endfor %}
+
+      {{ govukDateInput({
+        id: "noticeExpiry",
+        namePrefix: "noticeExpiry",
+        fieldset: {
+          legend: {
+            text: "When does the notice expire?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        hint: {
+          text: "For example, 15 1 2025"
+        },
+        items: [
+          {
+            name: "Day",
+            classes: "govuk-input--width-2",
+            value: values['noticeExpiry-Day']
+          },
+          {
+            name: "Month",
+            classes: "govuk-input--width-2",
+            value: values['noticeExpiry-Month']
+          },
+          {
+            name: "Year",
+            classes: "govuk-input--width-4",
+            value: values['noticeExpiry-Year']
+          }
+        ],
+        errorMessage: { text: noticeExpiryError.message } if noticeExpiryError
+      }) }}
+
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

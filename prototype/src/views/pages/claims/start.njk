@@ -1,0 +1,44 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-l">Make a possession claim</h1>
+
+    <p class="govuk-body">
+      Use this service to apply for a court order to gain possession of a property.
+    </p>
+
+    <h2 class="govuk-heading-m">What you'll need</h2>
+
+    <p class="govuk-body">You'll need to provide:</p>
+
+    <ul class="govuk-list govuk-list--bullet">
+      <li>the type of claim (standard possession claim for England)</li>
+      <li>the address of the property</li>
+      <li>claimant details (landlord or their representative organisation)</li>
+      <li>defendant details (tenant)</li>
+      <li>the grounds for seeking possession</li>
+      <li>key dates (tenancy start, notice served, notice expiry)</li>
+    </ul>
+
+    <div class="govuk-warning-text">
+      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+      <strong class="govuk-warning-text__text">
+        <span class="govuk-warning-text__assistive">Warning</span>
+        This is a prototype. Do not enter real personal information.
+      </strong>
+    </div>
+
+    <form method="post" action="/claims/start">
+      {{ govukButton({
+        text: "Start claim"
+      }) }}
+    </form>
+
+  </div>
+</div>
+{% endblock %}

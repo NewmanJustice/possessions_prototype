@@ -1,0 +1,60 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% set showBackLink = true %}
+{% set backLinkHref = "/auth/sign-in" %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errors and errors.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Enter your security code</h1>
+
+    <p class="govuk-body">We've sent a 6-digit security code to:</p>
+    <p class="govuk-body"><strong>{{ email }}</strong></p>
+
+    <form method="post" action="/auth/one-time-code" novalidate>
+
+      {{ govukInput({
+        label: {
+          text: "Security code",
+          classes: "govuk-label--m"
+        },
+        hint: {
+          text: "This is the 6-digit code we sent to your email address"
+        },
+        id: "code",
+        name: "code",
+        type: "text",
+        inputmode: "numeric",
+        pattern: "[0-9]*",
+        autocomplete: "one-time-code",
+        spellcheck: false,
+        classes: "govuk-input--width-10",
+        value: values.code,
+        errorMessage: { text: errors[0].message } if errors and errors.length > 0 and errors[0].field === 'code'
+      }) }}
+
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+
+    </form>
+
+    <p class="govuk-body govuk-!-margin-top-5">
+      <strong>Note:</strong> This is a prototype. Enter any 6-digit code to continue.
+    </p>
+
+  </div>
+</div>
+{% endblock %}
