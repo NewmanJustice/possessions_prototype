@@ -15,6 +15,17 @@
       }) }}
     {% endif %}
 
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Claim type</h1>
+
+    <p class="govuk-body">Case number: 1234-5678-9101-1213</p>
+
+    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+    <p class="govuk-body">
+      If you're not sure whether your claim is against trespassers, <a href="#" class="govuk-link">read the guidance on removing squatters (opens in new tab)</a>.
+    </p>
+
     {% set claimTypeError = null %}
     {% for error in errors %}
       {% if error.field == 'claimType' %}
@@ -28,29 +39,39 @@
         name: "claimType",
         fieldset: {
           legend: {
-            text: "What type of claim do you want to make?",
-            isPageHeading: true,
-            classes: "govuk-fieldset__legend--l"
+            text: "Is this a claim against trespassers?",
+            classes: "govuk-fieldset__legend--m"
           }
         },
         items: [
           {
-            value: "standard-possession-england",
-            text: "Standard possession claim (England)",
-            hint: {
-              text: "For residential properties in England where you're seeking possession"
-            },
-            checked: values.claimType === "standard-possession-england"
+            value: "yes",
+            text: "Yes",
+            checked: values.claimType === "yes"
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: values.claimType === "no"
           }
         ],
         errorMessage: { text: claimTypeError.message } if claimTypeError
       }) }}
 
-      {{ govukButton({
-        text: "Continue"
-      }) }}
+      <div class="govuk-button-group">
+        <a href="/claims/claimant-type" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          Previous
+        </a>
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
 
     </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
 
   </div>
 </div>

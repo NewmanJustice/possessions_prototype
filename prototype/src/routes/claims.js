@@ -158,9 +158,7 @@ router.get('/claim-type', (req, res) => {
   }));
 
   res.render('pages/claims/claim-type', {
-    pageTitle: 'What type of claim do you want to make?',
-    showBackLink: true,
-    backLinkHref: '/claims/start',
+    pageTitle: 'Claim type',
     errors: transformedErrors,
     values: { claimType: claim?.claimType } || {},
   });
@@ -171,15 +169,56 @@ router.get('/claim-type', (req, res) => {
 // POST /claims/claim-type
 router.post('/claim-type', (req, res) => {
   const { claimType } = req.body;
-  const errors = claimService.validateStep('claimType', { claimType });
+  const errors = [];
+
+  // Validate claim type selection
+  if (!claimType) {
+    errors.push({
+      field: 'claimType',
+      message: 'Select yes if this is a claim against trespassers',
+      href: '#claimType',
+    });
+  }
 
   if (errors.length > 0) {
     req.session.errors = errors;
     return res.redirect('/claims/claim-type');
   }
 
+  // Store claim type in claim
   claimService.updateClaim(req.session, 'claimType', claimType);
-  res.redirect('/claims/property-address');
+
+  // Route based on claim type
+  if (claimType === 'no') {
+    // Happy path: not against trespassers
+    res.redirect('/claims/name-of-claimant');
+  } else {
+    // Bad path: claim against trespassers
+    res.redirect('/claims/claim-type-ineligible');
+  }
+});
+
+// GET /claims/claim-type-ineligible
+router.get('/claim-type-ineligible', (req, res) => {
+  res.render('pages/claims/claim-type-ineligible', {
+    pageTitle: "You're not eligible for this online service",
+    showBackLink: false,
+  });
+});
+
+// POST /claims/claim-type-ineligible
+router.post('/claim-type-ineligible', (req, res) => {
+  // Return to start of claim journey
+  res.redirect('/claims/start');
+});
+
+// GET /claims/name-of-claimant (placeholder for 9.png)
+router.get('/name-of-claimant', (req, res) => {
+  res.render('pages/claims/name-of-claimant', {
+    pageTitle: 'Name of claimant',
+    showBackLink: true,
+    backLinkHref: '/claims/claim-type',
+  });
 });
 
 // GET /claims/property-address
