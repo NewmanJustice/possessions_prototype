@@ -57,6 +57,20 @@ app.use(
   })
 );
 
+// Language switcher middleware
+app.use((req, res, next) => {
+  // Check for language parameter in query string
+  const lang = req.query.lang;
+  if (lang === 'en' || lang === 'cy') {
+    req.session.language = lang;
+  }
+  // Default to English if not set
+  if (!req.session.language) {
+    req.session.language = 'en';
+  }
+  next();
+});
+
 // Make session available to all templates
 app.use((req, res, next) => {
   res.locals.session = req.session;

@@ -40,12 +40,20 @@
 {% endblock %}
 
 {% block beforeContent %}
-  {# Prominent prototype banner #}
+  {# Prominent prototype banner with language switcher #}
   <div class="govuk-phase-banner">
     <p class="govuk-phase-banner__content">
       <strong class="govuk-tag govuk-tag--red">PROTOTYPE</strong>
       <span class="govuk-phase-banner__text">
         This is a prototype. Do not enter real personal information. All data is fake.
+      </span>
+      <span class="govuk-phase-banner__text" style="float: right;">
+        {% set currentLanguage = session.language | default('en') %}
+        {% if currentLanguage == 'en' %}
+          <span style="color: #505a5f;">English</span> | <a href="?lang=cy" class="govuk-link">Cymraeg</a>
+        {% else %}
+          <a href="?lang=en" class="govuk-link">English</a> | <span style="color: #505a5f;">Cymraeg</span>
+        {% endif %}
       </span>
     </p>
   </div>
