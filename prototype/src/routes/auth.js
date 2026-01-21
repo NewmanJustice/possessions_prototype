@@ -131,7 +131,7 @@ router.post('/one-time-code', (req, res) => {
   };
 
   delete req.session.pendingAuth;
-  res.redirect('/possessions');
+  res.redirect('/case-list');
 });
 
 // GET /auth/forgot-password - Forgot password page

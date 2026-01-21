@@ -26,10 +26,20 @@
 
 {% block header %}
   {{ govukHeader({
-    homepageUrl: "/possessions",
+    homepageUrl: "/case-list",
     serviceName: serviceName,
-    serviceUrl: "/possessions",
+    serviceUrl: "/case-list",
     navigation: [
+      {
+        href: "/case-list",
+        text: "Case list",
+        active: true if pageTitle == "Case list"
+      } if session.user,
+      {
+        href: "/claims/start",
+        text: "Create case",
+        active: false
+      } if session.user,
       {
         href: "/sign-out",
         text: "Sign out",

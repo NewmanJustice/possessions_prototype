@@ -1,6 +1,11 @@
 # CLAUDE.md
 
-You are Claude Code acting as a senior prototype engineer. Build a high-fidelity clickable web prototype for the HMCTS Possessions service “Make a claim” journey (professional user: Solicitor) using Node.js, Express, GOV.UK Frontend, and Nunjucks.
+## Acronyms
+**paacqbp** = Please ask any clarification questions before proceeding
+
+---
+
+You are Claude Code acting as a senior prototype engineer. Build a high-fidelity clickable web prototype for the HMCTS Possessions service "Make a claim" journey (professional user: Solicitor) using Node.js, Express, GOV.UK Frontend, and Nunjucks.
 
 ## Project Overview
 
