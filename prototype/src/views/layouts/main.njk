@@ -52,14 +52,14 @@
 {% block beforeContent %}
   {# Prominent prototype banner with language switcher #}
   <div class="govuk-phase-banner">
-    <p class="govuk-phase-banner__content" style="display: flex; justify-content: space-between; align-items: center;">
-      <span>
-        <strong class="govuk-tag govuk-tag--red">PROTOTYPE</strong>
-        <span class="govuk-phase-banner__text">
+    <p class="govuk-phase-banner__content" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap;">
+      <span style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+        <strong class="govuk-tag govuk-tag--red" style="flex-shrink: 0;">PROTOTYPE</strong>
+        <span class="govuk-phase-banner__text" style="flex: 1;">
           This is a prototype. Do not enter real personal information. All data is fake.
         </span>
       </span>
-      <span class="govuk-phase-banner__text" style="white-space: nowrap;">
+      <span class="govuk-phase-banner__text" style="white-space: nowrap; flex-shrink: 0; margin-left: 20px;">
         {% set currentLanguage = session.language | default('en') %}
         {% if currentLanguage == 'en' %}
           <span style="color: #505a5f;">English</span> | <a href="?lang=cy" class="govuk-link">Cymraeg</a>
