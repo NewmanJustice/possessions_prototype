@@ -142,8 +142,8 @@ router.get('/claimant-ineligible', (req, res) => {
 
 // POST /claims/claimant-ineligible
 router.post('/claimant-ineligible', (req, res) => {
-  // For prototype purposes, allow them to continue anyway
-  res.redirect('/claims/claim-type');
+  // Return to start of claim journey
+  res.redirect('/claims/start');
 });
 
 // GET /claims/claim-type
