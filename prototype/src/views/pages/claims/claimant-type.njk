@@ -1,17 +1,91 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <h1 class="govuk-heading-l">Claimant Type</h1>
+    {% if errors and errors.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Claimant type</h1>
+
+    <p class="govuk-body">Case number: 1234-5678-9101-1213</p>
+
+    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
 
     <p class="govuk-body">
-      This page will be implemented next based on the Figma designs.
+      A claimant is the person or organisation who is making the possession claim.
     </p>
 
+    {% set claimantTypeError = null %}
+    {% for error in errors %}
+      {% if error.field == 'claimantType' %}
+        {% set claimantTypeError = error %}
+      {% endif %}
+    {% endfor %}
+
+    <form method="post" action="/claims/claimant-type" novalidate>
+
+      {{ govukRadios({
+        name: "claimantType",
+        fieldset: {
+          legend: {
+            text: "Who is the claimant in this case?",
+            classes: "govuk-fieldset__legend--m"
+          },
+          describedBy: "claimant-type-hint"
+        },
+        hint: {
+          text: "If you're a legal representative, you should select the type of claimant you're representing",
+          id: "claimant-type-hint"
+        },
+        items: [
+          {
+            value: "private-landlord",
+            text: "Private landlord",
+            checked: values.claimantType === "private-landlord"
+          },
+          {
+            value: "registered-provider",
+            text: "Registered provider of social housing",
+            checked: values.claimantType === "registered-provider"
+          },
+          {
+            value: "mortgage-lender",
+            text: "Mortgage lender",
+            checked: values.claimantType === "mortgage-lender"
+          },
+          {
+            value: "other",
+            text: "Other",
+            checked: values.claimantType === "other"
+          }
+        ],
+        errorMessage: { text: claimantTypeError.message } if claimantTypeError
+      }) }}
+
+      <div class="govuk-button-group">
+        <a href="/claims/border-postcode" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          Previous
+        </a>
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
+
     <p class="govuk-body">
-      <a href="/claims/border-postcode" class="govuk-link">Back to border postcode</a>
+      <a href="/case-list" class="govuk-link">Cancel</a>
     </p>
 
   </div>

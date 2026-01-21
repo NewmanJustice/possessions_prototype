@@ -82,12 +82,61 @@ router.post('/border-postcode', (req, res) => {
   res.redirect('/claims/claimant-type');
 });
 
-// GET /claims/claimant-type (placeholder for next screen)
+// GET /claims/claimant-type
 router.get('/claimant-type', (req, res) => {
+  const claim = claimService.getClaim(req.session);
+  const errors = req.session.errors || [];
+
+  // Transform errors to have 'text' property for error summary
+  const transformedErrors = errors.map(error => ({
+    ...error,
+    text: error.message
+  }));
+
   res.render('pages/claims/claimant-type', {
-    pageTitle: 'Claimant Type',
-    showBackLink: true,
-    backLinkHref: '/claims/border-postcode',
+    pageTitle: 'Claimant type',
+    errors: transformedErrors,
+    values: { claimantType: claim?.claimantType } || {},
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/claimant-type
+router.post('/claimant-type', (req, res) => {
+  const { claimantType } = req.body;
+  const errors = [];
+
+  // Validate claimant type selection
+  if (!claimantType) {
+    errors.push({
+      field: 'claimantType',
+      message: 'Select who the claimant is in this case',
+      href: '#claimantType',
+    });
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    return res.redirect('/claims/claimant-type');
+  }
+
+  // Store claimant type in claim
+  claimService.updateClaim(req.session, 'claimantType', claimantType);
+
+  // Route based on claimant type
+  if (claimantType === 'registered-provider') {
+    res.redirect('/claims/claim-type');
+  } else {
+    res.redirect('/claims/claimant-ineligible');
+  }
+});
+
+// GET /claims/claimant-ineligible
+router.get('/claimant-ineligible', (req, res) => {
+  res.render('pages/claims/claimant-ineligible', {
+    pageTitle: 'Claimant not eligible for this online service',
+    showBackLink: false,
   });
 });
 
