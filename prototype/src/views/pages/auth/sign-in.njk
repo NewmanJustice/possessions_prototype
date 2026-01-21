@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
+  <div class="govuk-grid-column-full">
 
     {% if errors and errors.length > 0 %}
       {{ govukErrorSummary({
@@ -15,16 +15,33 @@
       }) }}
     {% endif %}
 
-    <h1 class="govuk-heading-l">Sign in to HMCTS</h1>
+    <h1 class="govuk-heading-l">Sign in or create an account</h1>
 
-    <p class="govuk-body">Use your HMCTS account to sign in.</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+
+  {# Left column - Sign in form #}
+  <div class="govuk-grid-column-one-half">
+
+    <h2 class="govuk-heading-m">Sign in</h2>
+
+    {% set emailError = null %}
+    {% set passwordError = null %}
+    {% for error in errors %}
+      {% if error.field == 'email' %}
+        {% set emailError = error %}
+      {% elif error.field == 'password' %}
+        {% set passwordError = error %}
+      {% endif %}
+    {% endfor %}
 
     <form method="post" action="/auth/sign-in" novalidate>
 
       {{ govukInput({
         label: {
-          text: "Email address",
-          classes: "govuk-label--m"
+          text: "Email address"
         },
         id: "email",
         name: "email",
@@ -32,31 +49,46 @@
         autocomplete: "email",
         spellcheck: false,
         value: values.email,
-        errorMessage: { text: errors | selectattr('field', 'equalto', 'email') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'email') | list | length > 0
+        errorMessage: { text: emailError.message } if emailError
       }) }}
 
       {{ govukInput({
         label: {
-          text: "Password",
-          classes: "govuk-label--m"
+          text: "Password"
         },
         id: "password",
         name: "password",
         type: "password",
         autocomplete: "current-password",
-        errorMessage: { text: errors | selectattr('field', 'equalto', 'password') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'password') | list | length > 0
+        errorMessage: { text: passwordError.message } if passwordError
       }) }}
+
+      <p class="govuk-body">
+        <a href="#" class="govuk-link">Forgotten password?</a>
+      </p>
 
       {{ govukButton({
         text: "Sign in"
       }) }}
 
+      <p class="govuk-body">
+        <a href="#" class="govuk-link">Cancel</a>
+      </p>
+
     </form>
 
-    <p class="govuk-body govuk-!-margin-top-5">
-      <strong>Note:</strong> This is a prototype. Enter any email address and password to continue.
+  </div>
+
+  {# Right column - Create account #}
+  <div class="govuk-grid-column-one-half" style="border-left: 1px solid #b1b4b6; padding-left: 30px;">
+
+    <h2 class="govuk-heading-m">Create an account</h2>
+
+    <p class="govuk-body">
+      You need to <a href="#" class="govuk-link">create an account</a> to use this service.
     </p>
 
   </div>
+
 </div>
 {% endblock %}

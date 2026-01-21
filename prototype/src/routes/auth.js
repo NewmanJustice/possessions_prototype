@@ -13,9 +13,17 @@ router.get('/sign-in', (req, res) => {
     return res.redirect('/possessions');
   }
 
+  const errors = req.session.errors || [];
+
+  // Transform errors to have 'text' property for error summary
+  const transformedErrors = errors.map(error => ({
+    ...error,
+    text: error.message
+  }));
+
   res.render('pages/auth/sign-in', {
-    pageTitle: 'Sign in to HMCTS',
-    errors: req.session.errors || [],
+    pageTitle: 'Sign in or create an account',
+    errors: transformedErrors,
     values: req.session.values || {},
   });
 
@@ -28,20 +36,16 @@ router.post('/sign-in', (req, res) => {
   const { email, password } = req.body;
   const errors = [];
 
+  // Validate email is not blank (any value accepted for prototype)
   if (!email || email.trim() === '') {
     errors.push({
       field: 'email',
       message: 'Enter your email address',
       href: '#email',
     });
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.push({
-      field: 'email',
-      message: 'Enter an email address in the correct format, like name@example.com',
-      href: '#email',
-    });
   }
 
+  // Validate password is not blank (any value accepted for prototype)
   if (!password || password.trim() === '') {
     errors.push({
       field: 'password',
