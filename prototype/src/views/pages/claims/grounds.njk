@@ -15,6 +15,13 @@
       }) }}
     {% endif %}
 
+    {% set groundsError = null %}
+    {% for error in errors %}
+      {% if error.field == 'grounds' %}
+        {% set groundsError = error %}
+      {% endif %}
+    {% endfor %}
+
     <form method="post" action="/claims/grounds" novalidate>
 
       {{ govukCheckboxes({
@@ -71,7 +78,7 @@
             checked: "end-of-fixed-term" in values.grounds
           }
         ],
-        errorMessage: { text: errors | selectattr('field', 'equalto', 'grounds') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'grounds') | list | length > 0
+        errorMessage: { text: groundsError.message } if groundsError
       }) }}
 
       {{ govukButton({

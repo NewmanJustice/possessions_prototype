@@ -21,6 +21,22 @@
       Provide details for the defendant (tenant).
     </p>
 
+    {% set fullNameError = null %}
+    {% set addressLine1Error = null %}
+    {% set townError = null %}
+    {% set postcodeError = null %}
+    {% for error in errors %}
+      {% if error.field == 'fullName' %}
+        {% set fullNameError = error %}
+      {% elif error.field == 'addressLine1' %}
+        {% set addressLine1Error = error %}
+      {% elif error.field == 'town' %}
+        {% set townError = error %}
+      {% elif error.field == 'postcode' %}
+        {% set postcodeError = error %}
+      {% endif %}
+    {% endfor %}
+
     <form method="post" action="/claims/defendant" novalidate>
 
       {{ govukInput({
@@ -31,7 +47,7 @@
         name: "fullName",
         autocomplete: "name",
         value: values.fullName,
-        errorMessage: { text: errors | selectattr('field', 'equalto', 'fullName') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'fullName') | list | length > 0
+        errorMessage: { text: fullNameError.message } if fullNameError
       }) }}
 
       <h2 class="govuk-heading-m">Address</h2>
@@ -44,7 +60,7 @@
         name: "addressLine1",
         autocomplete: "address-line1",
         value: values.addressLine1,
-        errorMessage: { text: errors | selectattr('field', 'equalto', 'addressLine1') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'addressLine1') | list | length > 0
+        errorMessage: { text: addressLine1Error.message } if addressLine1Error
       }) }}
 
       {{ govukInput({
@@ -66,7 +82,7 @@
         autocomplete: "address-level2",
         classes: "govuk-!-width-two-thirds",
         value: values.town,
-        errorMessage: { text: errors | selectattr('field', 'equalto', 'town') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'town') | list | length > 0
+        errorMessage: { text: townError.message } if townError
       }) }}
 
       {{ govukInput({
@@ -88,7 +104,7 @@
         autocomplete: "postal-code",
         classes: "govuk-input--width-10",
         value: values.postcode,
-        errorMessage: { text: errors | selectattr('field', 'equalto', 'postcode') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'postcode') | list | length > 0
+        errorMessage: { text: postcodeError.message } if postcodeError
       }) }}
 
       {{ govukButton({

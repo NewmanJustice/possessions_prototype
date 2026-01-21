@@ -15,6 +15,13 @@
       }) }}
     {% endif %}
 
+    {% set claimTypeError = null %}
+    {% for error in errors %}
+      {% if error.field == 'claimType' %}
+        {% set claimTypeError = error %}
+      {% endif %}
+    {% endfor %}
+
     <form method="post" action="/claims/claim-type" novalidate>
 
       {{ govukRadios({
@@ -36,7 +43,7 @@
             checked: values.claimType === "standard-possession-england"
           }
         ],
-        errorMessage: { text: errors | selectattr('field', 'equalto', 'claimType') | map(attribute='message') | first } if errors and errors | selectattr('field', 'equalto', 'claimType') | list | length > 0
+        errorMessage: { text: claimTypeError.message } if claimTypeError
       }) }}
 
       {{ govukButton({
