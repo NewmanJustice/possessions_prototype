@@ -128,6 +128,7 @@ router.post('/one-time-code', (req, res) => {
     role: role,
     userType: req.session.userType,
     signedInAt: new Date().toISOString(),
+    registeredClaimantName: 'Treetops Housing', // Default for prototype
   };
 
   delete req.session.pendingAuth;

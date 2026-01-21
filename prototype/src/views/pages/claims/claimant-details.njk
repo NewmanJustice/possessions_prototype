@@ -1,0 +1,45 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Claimant details</h1>
+
+    <p class="govuk-body">Case number: <strong>1234-5678-9101-1213</strong></p>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <p class="govuk-body">
+      This page will be implemented in the next iteration.
+    </p>
+
+    {% if claim and claim.claimantName %}
+      <div class="govuk-panel govuk-panel--confirmation">
+        <h2 class="govuk-panel__title">
+          Claimant name captured
+        </h2>
+        <div class="govuk-panel__body">
+          {{ claim.claimantName }}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Previous",
+        classes: "govuk-button--secondary",
+        href: "/claims/name-of-claimant"
+      }) }}
+    </div>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

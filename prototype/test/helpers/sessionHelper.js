@@ -77,8 +77,24 @@ async function navigateToClaimsStep(agent, destination) {
   }
 }
 
+/**
+ * Navigates to the claimant name page
+ * @param {object} agent - Supertest agent (will be authenticated if not already)
+ * @returns {Promise<object>} The authenticated agent at the claimant name step
+ */
+async function navigateToClaimantName(agent) {
+  await createAuthenticatedSession(agent);
+  await agent.post('/claims/start').send({});
+  await agent.post('/claims/eligibility').send({});
+  await agent.post('/claims/border-postcode').send({ propertyLocation: 'england' });
+  await agent.post('/claims/claimant-type').send({ claimantType: 'registered-provider' });
+  await agent.post('/claims/claim-type').send({ claimType: 'no' });
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
-  navigateToClaimsStep
+  navigateToClaimsStep,
+  navigateToClaimantName
 };
