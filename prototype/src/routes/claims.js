@@ -135,9 +135,15 @@ router.post('/claimant-type', (req, res) => {
 // GET /claims/claimant-ineligible
 router.get('/claimant-ineligible', (req, res) => {
   res.render('pages/claims/claimant-ineligible', {
-    pageTitle: 'Claimant not eligible for this online service',
+    pageTitle: "You're not eligible for this online service",
     showBackLink: false,
   });
+});
+
+// POST /claims/claimant-ineligible
+router.post('/claimant-ineligible', (req, res) => {
+  // For prototype purposes, allow them to continue anyway
+  res.redirect('/claims/claim-type');
 });
 
 // GET /claims/claim-type
