@@ -15,20 +15,28 @@ const claimsRoutes = require('./routes/claims');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security headers with relaxed CSP for GOV.UK assets
+// Security headers with relaxed settings for prototype
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        fontSrc: ["'self'", 'data:'],
-        imgSrc: ["'self'", 'data:'],
-      },
-    },
+    contentSecurityPolicy: false, // Disable CSP for prototype to avoid asset loading issues
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
   })
 );
+
+// Trust proxy - required for Azure App Service
+app.set('trust proxy', 1);
+
+// Force HTTPS in production (Azure App Service)
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(301, `https://${req.hostname}${req.url}`);
+    }
+    next();
+  });
+}
 
 // Body parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -57,17 +65,41 @@ app.use((req, res, next) => {
 // Serve static assets from GOV.UK Frontend
 app.use(
   '/govuk',
-  express.static(path.join(__dirname, '../node_modules/govuk-frontend/dist/govuk'))
+  express.static(path.join(__dirname, '../node_modules/govuk-frontend/dist/govuk'), {
+    maxAge: '1d',
+    setHeaders: (res, filepath) => {
+      // Ensure correct MIME types
+      if (filepath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      } else if (filepath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      }
+    }
+  })
 );
 
 // Serve GOV.UK Frontend assets at /assets/ (for hardcoded paths in CSS)
 app.use(
   '/assets',
-  express.static(path.join(__dirname, '../node_modules/govuk-frontend/dist/govuk/assets'))
+  express.static(path.join(__dirname, '../node_modules/govuk-frontend/dist/govuk/assets'), {
+    maxAge: '1d',
+    setHeaders: (res, filepath) => {
+      // Ensure correct MIME types for all asset types
+      if (filepath.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      } else if (filepath.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      } else if (filepath.endsWith('.svg')) {
+        res.setHeader('Content-Type', 'image/svg+xml');
+      }
+    }
+  })
 );
 
 // Serve custom static assets
-app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use('/public', express.static(path.join(__dirname, '../public'), {
+  maxAge: '1d'
+}));
 
 // Configure Nunjucks
 const nunjucksEnv = nunjucks.configure(
