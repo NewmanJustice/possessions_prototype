@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 ## Acronyms
-**paacqbp** = Please ask any clarification questions before proceeding
+**paq** = Please ask any clarification questions before proceeding
 
 ---
 

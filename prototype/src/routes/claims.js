@@ -22,6 +22,19 @@ router.get('/start', (req, res) => {
 
 // POST /claims/start
 router.post('/start', (req, res) => {
+  res.redirect('/claims/eligibility');
+});
+
+// GET /claims/eligibility
+router.get('/eligibility', (req, res) => {
+  res.render('pages/claims/eligibility', {
+    pageTitle: 'Property not eligible for this online service',
+    showBackLink: false,
+  });
+});
+
+// POST /claims/eligibility
+router.post('/eligibility', (req, res) => {
   res.redirect('/claims/claim-type');
 });
 
