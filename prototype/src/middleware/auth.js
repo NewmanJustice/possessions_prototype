@@ -13,6 +13,16 @@ function requireAccessCode(req, res, next) {
 }
 
 /**
+ * Check if user has selected a user type
+ */
+function requireUserType(req, res, next) {
+  if (!req.session.userType) {
+    return res.redirect('/select-user-type');
+  }
+  next();
+}
+
+/**
  * Check if user is authenticated (signed in)
  */
 function requireAuth(req, res, next) {
@@ -46,6 +56,7 @@ function requireRole(role) {
 
 module.exports = {
   requireAccessCode,
+  requireUserType,
   requireAuth,
   requireRole,
 };

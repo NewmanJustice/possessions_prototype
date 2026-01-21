@@ -1,6 +1,7 @@
 {% extends "layouts/main.njk" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
 
 {% block content %}
 <div class="govuk-grid-row">
@@ -8,43 +9,65 @@
 
     <h1 class="govuk-heading-xl">Possessions</h1>
 
-    <p class="govuk-body-l">
-      Apply for a property possession order online.
-    </p>
+    {% if userType == 'professional' %}
+      {# Content for professional users (Solicitors) #}
+      <p class="govuk-body-l">
+        Apply for a property possession order online.
+      </p>
 
-    <p class="govuk-body">
-      Use this service to make a claim for possession of a property.
-    </p>
+      <p class="govuk-body">
+        Use this service to make a claim for possession of a property.
+      </p>
 
-    <h2 class="govuk-heading-m">Before you start</h2>
+      <h2 class="govuk-heading-m">Before you start</h2>
 
-    <p class="govuk-body">You'll need:</p>
+      <p class="govuk-body">You'll need:</p>
 
-    <ul class="govuk-list govuk-list--bullet">
-      <li>details of the property</li>
-      <li>details of the claimant (landlord or their representative)</li>
-      <li>details of the defendant (tenant)</li>
-      <li>the grounds for possession</li>
-      <li>key dates, including when the tenancy started and when notice was served</li>
-    </ul>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>details of the property</li>
+        <li>details of the claimant (landlord or their representative)</li>
+        <li>details of the defendant (tenant)</li>
+        <li>the grounds for possession</li>
+        <li>key dates, including when the tenancy started and when notice was served</li>
+      </ul>
 
-    <form method="get" action="/claims/start">
-      {{ govukButton({
-        text: "Start now",
-        isStartButton: true
+      <form method="get" action="/claims/start">
+        {{ govukButton({
+          text: "Start now",
+          isStartButton: true
+        }) }}
+      </form>
+
+      <h2 class="govuk-heading-m govuk-!-margin-top-7">Help and support</h2>
+
+      <p class="govuk-body">
+        If you need help using this service, contact the HMCTS helpline.
+      </p>
+
+      <p class="govuk-body">
+        <strong>Telephone:</strong> 0300 123 7050<br>
+        <strong>Hours:</strong> Monday to Friday, 8:30am to 5pm
+      </p>
+
+    {% else %}
+      {# Content for other user types (coming soon) #}
+      {{ govukNotificationBanner({
+        type: "information",
+        html: "<h3 class=\"govuk-notification-banner__heading\">This journey is not available yet</h3><p class=\"govuk-body\">The journey for this user type is currently in development and will be available in a future iteration of this prototype.</p>"
       }) }}
-    </form>
 
-    <h2 class="govuk-heading-m govuk-!-margin-top-7">Help and support</h2>
+      <p class="govuk-body">
+        Available journeys:
+      </p>
 
-    <p class="govuk-body">
-      If you need help using this service, contact the HMCTS helpline.
-    </p>
+      <ul class="govuk-list govuk-list--bullet">
+        <li>Professional user (Solicitor) - Make a possession claim</li>
+      </ul>
 
-    <p class="govuk-body">
-      <strong>Telephone:</strong> 0300 123 7050<br>
-      <strong>Hours:</strong> Monday to Friday, 8:30am to 5pm
-    </p>
+      <p class="govuk-body">
+        <a href="/select-user-type" class="govuk-link">Change user type</a> to access the available journey.
+      </p>
+    {% endif %}
 
   </div>
 

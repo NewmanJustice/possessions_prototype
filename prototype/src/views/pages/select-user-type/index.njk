@@ -1,0 +1,87 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errors and errors.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      }) }}
+    {% endif %}
+
+    {% set userTypeError = null %}
+    {% for error in errors %}
+      {% if error.field == 'userType' %}
+        {% set userTypeError = error %}
+      {% endif %}
+    {% endfor %}
+
+    <form method="post" action="/select-user-type" novalidate>
+
+      {{ govukRadios({
+        name: "userType",
+        fieldset: {
+          legend: {
+            text: "Select which type of user you are",
+            isPageHeading: true,
+            classes: "govuk-fieldset__legend--l"
+          }
+        },
+        hint: {
+          text: "This will determine which prototype journey you can access"
+        },
+        items: [
+          {
+            value: "professional",
+            text: "Professional user (Solicitor)",
+            hint: {
+              text: "Available - Make a possession claim on behalf of a client"
+            },
+            checked: selectedUserType === "professional"
+          },
+          {
+            value: "citizen",
+            text: "Citizen / Litigant in person",
+            hint: {
+              text: "Coming soon - Make or respond to a claim yourself"
+            },
+            disabled: true,
+            checked: selectedUserType === "citizen"
+          },
+          {
+            value: "court-staff",
+            text: "Court staff",
+            hint: {
+              text: "Coming soon - Process and manage claims"
+            },
+            disabled: true,
+            checked: selectedUserType === "court-staff"
+          },
+          {
+            value: "judge",
+            text: "Judge",
+            hint: {
+              text: "Coming soon - Review and decide on claims"
+            },
+            disabled: true,
+            checked: selectedUserType === "judge"
+          }
+        ],
+        errorMessage: { text: userTypeError.message } if userTypeError
+      }) }}
+
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

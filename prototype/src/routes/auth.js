@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { requireAccessCode } = require('../middleware/auth');
+const { requireAccessCode, requireUserType } = require('../middleware/auth');
 
-// All auth routes require access code to be entered first
+// All auth routes require access code and user type to be selected first
 router.use(requireAccessCode);
+router.use(requireUserType);
 
 // GET /auth/sign-in - Sign in page
 router.get('/sign-in', (req, res) => {
@@ -107,10 +108,21 @@ router.post('/one-time-code', (req, res) => {
   }
 
   // Accept any 6-digit code (prototype)
-  // Set user session with SOLICITOR role
+  // Map user type to role
+  const userTypeToRole = {
+    'professional': 'SOLICITOR',
+    'citizen': 'CITIZEN',
+    'court-staff': 'COURT_STAFF',
+    'judge': 'JUDGE'
+  };
+
+  const role = userTypeToRole[req.session.userType] || 'SOLICITOR';
+
+  // Set user session with role based on selected user type
   req.session.user = {
     email: req.session.pendingAuth.email,
-    role: 'SOLICITOR',
+    role: role,
+    userType: req.session.userType,
     signedInAt: new Date().toISOString(),
   };
 

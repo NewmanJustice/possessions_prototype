@@ -3,9 +3,9 @@ const router = express.Router();
 
 // GET /access - Access code gate page
 router.get('/', (req, res) => {
-  // If already granted access, redirect to sign-in
+  // If already granted access, redirect to user type selection
   if (req.session.accessGranted) {
-    return res.redirect('/auth/sign-in');
+    return res.redirect('/select-user-type');
   }
 
   res.render('pages/access/index', {
@@ -47,7 +47,7 @@ router.post('/', (req, res) => {
 
   // Grant access
   req.session.accessGranted = true;
-  res.redirect('/auth/sign-in');
+  res.redirect('/select-user-type');
 });
 
 module.exports = router;

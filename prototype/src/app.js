@@ -8,6 +8,7 @@ const path = require('path');
 
 // Import routes
 const accessRoutes = require('./routes/access');
+const selectUserTypeRoutes = require('./routes/selectUserType');
 const authRoutes = require('./routes/auth');
 const possessionsRoutes = require('./routes/possessions');
 const claimsRoutes = require('./routes/claims');
@@ -137,6 +138,7 @@ app.get('/', (req, res) => {
 
 // Register routes
 app.use('/access', accessRoutes);
+app.use('/select-user-type', selectUserTypeRoutes);
 app.use('/auth', authRoutes);
 app.use('/possessions', possessionsRoutes);
 app.use('/claims', claimsRoutes);
