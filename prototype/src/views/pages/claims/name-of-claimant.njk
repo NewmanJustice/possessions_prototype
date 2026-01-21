@@ -1,17 +1,91 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <h1 class="govuk-heading-l">Name of claimant</h1>
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Claimant name</h1>
+
+    <p class="govuk-body">Case number: <strong>1234-5678-9101-1213</strong></p>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <p class="govuk-body govuk-!-font-weight-bold">Your claimant name registered with My HMCTS is:</p>
+    <p class="govuk-body">{{ registeredClaimantName }}</p>
+
+    <form method="post" action="/claims/name-of-claimant" novalidate>
+
+      {% set customNameHtml %}
+        <p class="govuk-body govuk-!-font-weight-bold">What is the correct claimant name?</p>
+        <p class="govuk-body">Changing your claimant name here only updates it for this claim. It does not change your registered claimant name on My HMCTS</p>
+        {{ govukInput({
+          id: "customClaimantName",
+          name: "customClaimantName",
+          classes: "govuk-!-width-full",
+          value: values.customClaimantName,
+          errorMessage: {
+            text: fieldErrors.customClaimantName
+          } if fieldErrors.customClaimantName
+        }) }}
+      {% endset %}
+
+      {{ govukRadios({
+        name: "useRegisteredName",
+        fieldset: {
+          legend: {
+            text: "Is this the correct claimant name?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: values.useRegisteredName == "yes"
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: values.useRegisteredName == "no",
+            conditional: {
+              html: customNameHtml
+            }
+          }
+        ],
+        errorMessage: {
+          text: fieldErrors.useRegisteredName
+        } if fieldErrors.useRegisteredName
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/claim-type"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
 
     <p class="govuk-body">
-      This page will be implemented based on 9.png when uploaded.
-    </p>
-
-    <p class="govuk-body">
-      <a href="/claims/claim-type" class="govuk-link">Back to claim type</a>
+      <a href="/case-list" class="govuk-link">Cancel</a>
     </p>
 
   </div>

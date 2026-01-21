@@ -212,12 +212,98 @@ router.post('/claim-type-ineligible', (req, res) => {
   res.redirect('/claims/start');
 });
 
-// GET /claims/name-of-claimant (placeholder for 9.png)
+// GET /claims/name-of-claimant
 router.get('/name-of-claimant', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
   res.render('pages/claims/name-of-claimant', {
-    pageTitle: 'Name of claimant',
+    pageTitle: 'Claimant name',
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      useRegisteredName: claim.useRegisteredName || '',
+      customClaimantName: claim.customClaimantName || ''
+    },
+    registeredClaimantName: req.session.user?.registeredClaimantName || 'Treetops Housing',
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/name-of-claimant
+router.post('/name-of-claimant', (req, res) => {
+  const { useRegisteredName, customClaimantName } = req.body;
+  const errors = [];
+
+  // Validate useRegisteredName selection
+  if (!useRegisteredName) {
+    errors.push({
+      field: 'useRegisteredName',
+      message: 'Select yes if this is the correct claimant name',
+      href: '#useRegisteredName',
+    });
+  }
+
+  // If "no" selected, validate custom name
+  if (useRegisteredName === 'no') {
+    if (!customClaimantName || customClaimantName.trim() === '') {
+      errors.push({
+        field: 'customClaimantName',
+        message: 'Enter the correct claimant name',
+        href: '#customClaimantName',
+      });
+    }
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    // Store submitted values temporarily so they can be displayed back to the user
+    const claim = claimService.getClaim(req.session) || {};
+    claim.useRegisteredName = useRegisteredName;
+    claim.customClaimantName = customClaimantName;
+    req.session.claimDraft = claim;
+    return res.redirect('/claims/name-of-claimant');
+  }
+
+  // Store the claimant name based on selection
+  let claimantName;
+  if (useRegisteredName === 'yes') {
+    claimantName = req.session.user?.registeredClaimantName || 'Treetops Housing';
+  } else {
+    claimantName = customClaimantName.trim();
+  }
+
+  claimService.updateClaim(req.session, 'claimantName', claimantName);
+  claimService.updateClaim(req.session, 'useRegisteredName', useRegisteredName);
+  if (useRegisteredName === 'no') {
+    claimService.updateClaim(req.session, 'customClaimantName', customClaimantName.trim());
+  }
+
+  res.redirect('/claims/claimant-details');
+});
+
+// GET /claims/claimant-details (placeholder for next screen)
+router.get('/claimant-details', (req, res) => {
+  const claim = claimService.getClaim(req.session);
+
+  res.render('pages/claims/claimant-details', {
+    pageTitle: 'Claimant details',
     showBackLink: true,
-    backLinkHref: '/claims/claim-type',
+    backLinkHref: '/claims/name-of-claimant',
+    claim,
   });
 });
 
