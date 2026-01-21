@@ -16,7 +16,11 @@
       <div class="govuk-grid-column-one-third" id="filter-sidebar">
 
         <div class="govuk-!-margin-bottom-3">
-          <a href="#" class="govuk-link" id="toggle-filter">Hide filter</a>
+          {{ govukButton({
+            text: "Hide filter",
+            classes: "govuk-button--secondary",
+            id: "toggle-filter"
+          }) }}
         </div>
 
         <div id="filter-panel">
@@ -178,20 +182,20 @@
 <script>
   // Toggle filter visibility
   document.addEventListener('DOMContentLoaded', function() {
-    var toggleLink = document.getElementById('toggle-filter');
+    var toggleButton = document.getElementById('toggle-filter');
     var filterPanel = document.getElementById('filter-panel');
     var isHidden = false;
 
-    toggleLink.addEventListener('click', function(e) {
+    toggleButton.addEventListener('click', function(e) {
       e.preventDefault();
       isHidden = !isHidden;
 
       if (isHidden) {
         filterPanel.style.display = 'none';
-        toggleLink.textContent = 'Show filter';
+        toggleButton.textContent = 'Show filter';
       } else {
         filterPanel.style.display = 'block';
-        toggleLink.textContent = 'Hide filter';
+        toggleButton.textContent = 'Hide filter';
       }
     });
 
@@ -199,7 +203,7 @@
     function checkMobile() {
       if (window.innerWidth < 768) {
         filterPanel.style.display = 'none';
-        toggleLink.textContent = 'Show filter';
+        toggleButton.textContent = 'Show filter';
         isHidden = true;
       }
     }
