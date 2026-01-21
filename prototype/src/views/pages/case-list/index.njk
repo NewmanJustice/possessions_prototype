@@ -1,13 +1,211 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
 
     <h1 class="govuk-heading-xl">Case list</h1>
 
-    {# Empty content area - will be populated in future iterations #}
+    <div class="govuk-grid-row">
+
+      {# Filter sidebar #}
+      <div class="govuk-grid-column-one-third" id="filter-sidebar">
+
+        <div class="govuk-!-margin-bottom-3">
+          <a href="#" class="govuk-link" id="toggle-filter">Hide filter</a>
+        </div>
+
+        <div id="filter-panel">
+          <h2 class="govuk-heading-m">Filters</h2>
+
+          <form>
+
+            {{ govukSelect({
+              id: "jurisdiction",
+              name: "jurisdiction",
+              label: {
+                text: "Jurisdiction"
+              },
+              items: [
+                {
+                  value: "",
+                  text: "--Select a value--",
+                  selected: true
+                },
+                {
+                  value: "lorem",
+                  text: "Lorem"
+                },
+                {
+                  value: "ipsum",
+                  text: "Ipsum"
+                },
+                {
+                  value: "dolor",
+                  text: "Dolor"
+                }
+              ]
+            }) }}
+
+            {{ govukSelect({
+              id: "case-type",
+              name: "caseType",
+              label: {
+                text: "Case Type"
+              },
+              items: [
+                {
+                  value: "",
+                  text: "--Select a value--",
+                  selected: true
+                },
+                {
+                  value: "sit",
+                  text: "Sit"
+                },
+                {
+                  value: "amet",
+                  text: "Amet"
+                },
+                {
+                  value: "consectetur",
+                  text: "Consectetur"
+                }
+              ]
+            }) }}
+
+            {{ govukInput({
+              id: "case-number",
+              name: "caseNumber",
+              label: {
+                text: "Case number"
+              }
+            }) }}
+
+            {{ govukInput({
+              id: "date-issued",
+              name: "dateIssued",
+              label: {
+                text: "Date issued"
+              }
+            }) }}
+
+            {{ govukInput({
+              id: "claimant-names",
+              name: "claimantNames",
+              label: {
+                text: "Claimant names"
+              }
+            }) }}
+
+            {{ govukInput({
+              id: "defendant-names",
+              name: "defendantNames",
+              label: {
+                text: "Defendant names"
+              }
+            }) }}
+
+            {{ govukInput({
+              id: "postcode",
+              name: "postcode",
+              label: {
+                text: "Postcode"
+              },
+              classes: "govuk-input--width-10"
+            }) }}
+
+            {{ govukSelect({
+              id: "state",
+              name: "state",
+              label: {
+                text: "State"
+              },
+              items: [
+                {
+                  value: "",
+                  text: "--Select a value--",
+                  selected: true
+                },
+                {
+                  value: "adipiscing",
+                  text: "Adipiscing"
+                },
+                {
+                  value: "elit",
+                  text: "Elit"
+                },
+                {
+                  value: "sed",
+                  text: "Sed"
+                }
+              ]
+            }) }}
+
+            <div class="govuk-button-group govuk-!-margin-top-4">
+              {{ govukButton({
+                text: "Apply"
+              }) }}
+              {{ govukButton({
+                text: "Reset",
+                classes: "govuk-button--secondary"
+              }) }}
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+
+      {# Main content area #}
+      <div class="govuk-grid-column-two-thirds" id="main-content">
+
+        <h2 class="govuk-heading-m">Your cases</h2>
+
+        {# Empty content area - will be populated in future iterations #}
+
+      </div>
+
+    </div>
 
   </div>
 </div>
+
+<script>
+  // Toggle filter visibility
+  document.addEventListener('DOMContentLoaded', function() {
+    var toggleLink = document.getElementById('toggle-filter');
+    var filterPanel = document.getElementById('filter-panel');
+    var isHidden = false;
+
+    toggleLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      isHidden = !isHidden;
+
+      if (isHidden) {
+        filterPanel.style.display = 'none';
+        toggleLink.textContent = 'Show filter';
+      } else {
+        filterPanel.style.display = 'block';
+        toggleLink.textContent = 'Hide filter';
+      }
+    });
+
+    // Hide on mobile by default
+    function checkMobile() {
+      if (window.innerWidth < 768) {
+        filterPanel.style.display = 'none';
+        toggleLink.textContent = 'Show filter';
+        isHidden = true;
+      }
+    }
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+  });
+</script>
 {% endblock %}
