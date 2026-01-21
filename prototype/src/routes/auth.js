@@ -134,4 +134,52 @@ router.post('/one-time-code', (req, res) => {
   res.redirect('/possessions');
 });
 
+// GET /auth/forgot-password - Forgot password page
+router.get('/forgot-password', (req, res) => {
+  const errors = req.session.errors || [];
+  const successEmail = req.session.successEmail || null;
+
+  // Transform errors to have 'text' property for error summary
+  const transformedErrors = errors.map(error => ({
+    ...error,
+    text: error.message
+  }));
+
+  res.render('pages/auth/forgot-password', {
+    pageTitle: 'Forgotten password',
+    errors: transformedErrors,
+    values: req.session.values || {},
+    successEmail: successEmail,
+  });
+
+  delete req.session.errors;
+  delete req.session.values;
+  delete req.session.successEmail;
+});
+
+// POST /auth/forgot-password - Process forgot password
+router.post('/forgot-password', (req, res) => {
+  const { email } = req.body;
+  const errors = [];
+
+  // Validate email is not blank (any value accepted for prototype)
+  if (!email || email.trim() === '') {
+    errors.push({
+      field: 'email',
+      message: 'Enter your email address',
+      href: '#email',
+    });
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    req.session.values = { email };
+    return res.redirect('/auth/forgot-password');
+  }
+
+  // For prototype: accept any email and show success message
+  req.session.successEmail = email;
+  res.redirect('/auth/forgot-password');
+});
+
 module.exports = router;
