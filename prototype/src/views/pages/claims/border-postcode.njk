@@ -1,0 +1,86 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errors and errors.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errors
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Border postcode</h1>
+
+    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+    <p class="govuk-body">
+      Your postcode includes properties in England and Wales. We need to know which country your property is in, as the law is different in each country.
+    </p>
+
+    <p class="govuk-body">
+      If you're not sure which country your property is in, try searching for your address on the land and property register.
+    </p>
+
+    {{ govukWarningText({
+      text: "Your case could be delayed or rejected if you select the wrong country.",
+      iconFallbackText: "Warning"
+    }) }}
+
+    {% set propertyLocationError = null %}
+    {% for error in errors %}
+      {% if error.field == 'propertyLocation' %}
+        {% set propertyLocationError = error %}
+      {% endif %}
+    {% endfor %}
+
+    <form method="post" action="/claims/border-postcode" novalidate>
+
+      {{ govukRadios({
+        name: "propertyLocation",
+        fieldset: {
+          legend: {
+            text: "Is the property located in England or Wales?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "england",
+            text: "England",
+            checked: values.propertyLocation === "england"
+          },
+          {
+            value: "wales",
+            text: "Wales",
+            checked: values.propertyLocation === "wales"
+          }
+        ],
+        errorMessage: { text: propertyLocationError.message } if propertyLocationError
+      }) }}
+
+      <div class="govuk-button-group">
+        <a href="/claims/eligibility" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          Previous
+        </a>
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

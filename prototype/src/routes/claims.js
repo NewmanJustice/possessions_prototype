@@ -35,7 +35,60 @@ router.get('/eligibility', (req, res) => {
 
 // POST /claims/eligibility
 router.post('/eligibility', (req, res) => {
-  res.redirect('/claims/claim-type');
+  res.redirect('/claims/border-postcode');
+});
+
+// GET /claims/border-postcode
+router.get('/border-postcode', (req, res) => {
+  const claim = claimService.getClaim(req.session);
+  const errors = req.session.errors || [];
+
+  // Transform errors to have 'text' property for error summary
+  const transformedErrors = errors.map(error => ({
+    ...error,
+    text: error.message
+  }));
+
+  res.render('pages/claims/border-postcode', {
+    pageTitle: 'Border postcode',
+    errors: transformedErrors,
+    values: { propertyLocation: claim?.propertyLocation } || {},
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/border-postcode
+router.post('/border-postcode', (req, res) => {
+  const { propertyLocation } = req.body;
+  const errors = [];
+
+  // Validate property location selection
+  if (!propertyLocation) {
+    errors.push({
+      field: 'propertyLocation',
+      message: 'Select whether the property is in England or Wales',
+      href: '#propertyLocation',
+    });
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    return res.redirect('/claims/border-postcode');
+  }
+
+  // Store property location in claim
+  claimService.updateClaim(req.session, 'propertyLocation', propertyLocation);
+  res.redirect('/claims/claimant-type');
+});
+
+// GET /claims/claimant-type (placeholder for next screen)
+router.get('/claimant-type', (req, res) => {
+  res.render('pages/claims/claimant-type', {
+    pageTitle: 'Claimant Type',
+    showBackLink: true,
+    backLinkHref: '/claims/border-postcode',
+  });
 });
 
 // GET /claims/claim-type
