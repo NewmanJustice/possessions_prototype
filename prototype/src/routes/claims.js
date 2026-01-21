@@ -28,12 +28,19 @@ router.post('/start', (req, res) => {
 // GET /claims/claim-type
 router.get('/claim-type', (req, res) => {
   const claim = claimService.getClaim(req.session);
+  const errors = req.session.errors || [];
+
+  // Transform errors to have 'text' property for error summary
+  const transformedErrors = errors.map(error => ({
+    ...error,
+    text: error.message
+  }));
 
   res.render('pages/claims/claim-type', {
     pageTitle: 'What type of claim do you want to make?',
     showBackLink: true,
     backLinkHref: '/claims/start',
-    errors: req.session.errors || [],
+    errors: transformedErrors,
     values: { claimType: claim?.claimType } || {},
   });
 
@@ -57,12 +64,19 @@ router.post('/claim-type', (req, res) => {
 // GET /claims/property-address
 router.get('/property-address', (req, res) => {
   const claim = claimService.getClaim(req.session);
+  const errors = req.session.errors || [];
+
+  // Transform errors to have 'text' property for error summary
+  const transformedErrors = errors.map(error => ({
+    ...error,
+    text: error.message
+  }));
 
   res.render('pages/claims/property-address', {
     pageTitle: 'What is the property address?',
     showBackLink: true,
     backLinkHref: '/claims/claim-type',
-    errors: req.session.errors || [],
+    errors: transformedErrors,
     values: claim?.property || {},
   });
 
@@ -124,12 +138,19 @@ router.post('/claimant', (req, res) => {
 // GET /claims/defendant
 router.get('/defendant', (req, res) => {
   const claim = claimService.getClaim(req.session);
+  const errors = req.session.errors || [];
+
+  // Transform errors to have 'text' property for error summary
+  const transformedErrors = errors.map(error => ({
+    ...error,
+    text: error.message
+  }));
 
   res.render('pages/claims/defendant', {
     pageTitle: 'Defendant details',
     showBackLink: true,
     backLinkHref: '/claims/claimant',
-    errors: req.session.errors || [],
+    errors: transformedErrors,
     values: claim?.defendant || {},
   });
 
@@ -154,12 +175,19 @@ router.post('/defendant', (req, res) => {
 // GET /claims/grounds
 router.get('/grounds', (req, res) => {
   const claim = claimService.getClaim(req.session);
+  const errors = req.session.errors || [];
+
+  // Transform errors to have 'text' property for error summary
+  const transformedErrors = errors.map(error => ({
+    ...error,
+    text: error.message
+  }));
 
   res.render('pages/claims/grounds', {
     pageTitle: 'Grounds for possession',
     showBackLink: true,
     backLinkHref: '/claims/defendant',
-    errors: req.session.errors || [],
+    errors: transformedErrors,
     values: { grounds: claim?.grounds || [] },
   });
 
