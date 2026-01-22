@@ -1,18 +1,300 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
     <span class="govuk-caption-l">Make a claim</span>
     <h1 class="govuk-heading-l">Defendant details</h1>
 
-    <p class="govuk-body">This page is a placeholder for the defendant details screen.</p>
+    <form method="post" action="/claims/defendant-details" novalidate>
+
+      {# ========================================
+         SECTION 1: Defendant Name
+         ======================================== #}
+      <div class="govuk-form-group {% if fieldErrors.nameKnown %}govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Defendant name</h2>
+          </legend>
+
+          {% set nameFieldsHtml %}
+            {{ govukInput({
+              id: "firstName",
+              name: "firstName",
+              label: {
+                text: "First name"
+              },
+              classes: "govuk-!-width-two-thirds",
+              value: values.firstName,
+              errorMessage: {
+                text: fieldErrors.firstName
+              } if fieldErrors.firstName
+            }) }}
+
+            {{ govukInput({
+              id: "lastName",
+              name: "lastName",
+              label: {
+                text: "Last name"
+              },
+              classes: "govuk-!-width-two-thirds",
+              value: values.lastName,
+              errorMessage: {
+                text: fieldErrors.lastName
+              } if fieldErrors.lastName
+            }) }}
+          {% endset %}
+
+          {{ govukRadios({
+            name: "nameKnown",
+            fieldset: {
+              legend: {
+                html: "Do you know the defendant's name",
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "yes",
+                text: "Yes",
+                checked: values.nameKnown == "yes",
+                conditional: {
+                  html: nameFieldsHtml
+                }
+              },
+              {
+                value: "no",
+                text: "No",
+                checked: values.nameKnown == "no"
+              }
+            ],
+            errorMessage: {
+              text: fieldErrors.nameKnown
+            } if fieldErrors.nameKnown
+          }) }}
+        </fieldset>
+      </div>
+
+      {# ========================================
+         SECTION 2: Defendant Correspondence Address
+         ======================================== #}
+      <div class="govuk-form-group {% if fieldErrors.addressKnown %}govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Defendant correspondence address</h2>
+          </legend>
+
+          {% set addressFieldsHtml %}
+            <div class="govuk-form-group {% if fieldErrors.addressSameAsProperty %}govuk-form-group--error{% endif %}">
+
+              {% set manualAddressHtml %}
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-!-font-weight-bold" for="postcode-lookup">
+                    Enter a UK postcode
+                  </label>
+                  <div class="govuk-input__wrapper">
+                    <input class="govuk-input govuk-input--width-10" id="postcode-lookup" name="postcode-lookup" type="text">
+                  </div>
+                  <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-top-2" data-module="govuk-button">
+                    Find address
+                  </button>
+                </div>
+
+                {{ govukInput({
+                  id: "buildingAndStreet",
+                  name: "buildingAndStreet",
+                  label: {
+                    text: "Building and street"
+                  },
+                  classes: "govuk-!-width-full",
+                  value: values.buildingAndStreet,
+                  errorMessage: {
+                    text: fieldErrors.buildingAndStreet
+                  } if fieldErrors.buildingAndStreet
+                }) }}
+
+                {{ govukInput({
+                  id: "addressLine2",
+                  name: "addressLine2",
+                  label: {
+                    text: "Address line 2 (optional)"
+                  },
+                  classes: "govuk-!-width-full",
+                  value: values.addressLine2
+                }) }}
+
+                {{ govukInput({
+                  id: "townOrCity",
+                  name: "townOrCity",
+                  label: {
+                    text: "Town or city"
+                  },
+                  classes: "govuk-!-width-two-thirds",
+                  value: values.townOrCity,
+                  errorMessage: {
+                    text: fieldErrors.townOrCity
+                  } if fieldErrors.townOrCity
+                }) }}
+
+                {{ govukInput({
+                  id: "county",
+                  name: "county",
+                  label: {
+                    text: "County (optional)"
+                  },
+                  classes: "govuk-!-width-two-thirds",
+                  value: values.county
+                }) }}
+
+                {{ govukInput({
+                  id: "postcode",
+                  name: "postcode",
+                  label: {
+                    text: "Postcode"
+                  },
+                  classes: "govuk-input--width-10",
+                  value: values.postcode,
+                  errorMessage: {
+                    text: fieldErrors.postcode
+                  } if fieldErrors.postcode
+                }) }}
+              {% endset %}
+
+              {{ govukRadios({
+                name: "addressSameAsProperty",
+                fieldset: {
+                  legend: {
+                    text: "Is the correspondence address the same as the property?",
+                    classes: "govuk-fieldset__legend--s"
+                  }
+                },
+                items: [
+                  {
+                    value: "yes",
+                    text: "Yes",
+                    checked: values.addressSameAsProperty == "yes"
+                  },
+                  {
+                    value: "no",
+                    text: "No",
+                    checked: values.addressSameAsProperty == "no",
+                    conditional: {
+                      html: manualAddressHtml
+                    }
+                  }
+                ],
+                errorMessage: {
+                  text: fieldErrors.addressSameAsProperty
+                } if fieldErrors.addressSameAsProperty
+              }) }}
+            </div>
+          {% endset %}
+
+          {{ govukRadios({
+            name: "addressKnown",
+            fieldset: {
+              legend: {
+                html: "Do you know the defendant's correspondence address",
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "yes",
+                text: "Yes",
+                checked: values.addressKnown == "yes",
+                conditional: {
+                  html: addressFieldsHtml
+                }
+              },
+              {
+                value: "no",
+                text: "No",
+                checked: values.addressKnown == "no"
+              }
+            ],
+            errorMessage: {
+              text: fieldErrors.addressKnown
+            } if fieldErrors.addressKnown
+          }) }}
+        </fieldset>
+      </div>
+
+      {# ========================================
+         SECTION 3: Additional Defendants
+         ======================================== #}
+      <div class="govuk-form-group {% if fieldErrors.addAnotherDefendant %}govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Additional defendants</h2>
+          </legend>
+
+          {% set additionalDefendantHtml %}
+            {{ govukInsetText({
+              text: "Adding multiple defendants is not yet supported in this prototype. This feature will be available in a future release."
+            }) }}
+          {% endset %}
+
+          {{ govukRadios({
+            name: "addAnotherDefendant",
+            fieldset: {
+              legend: {
+                text: "Do you need to add another defendant?",
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "yes",
+                text: "Yes",
+                checked: values.addAnotherDefendant == "yes",
+                conditional: {
+                  html: additionalDefendantHtml
+                }
+              },
+              {
+                value: "no",
+                text: "No",
+                checked: values.addAnotherDefendant == "no"
+              }
+            ],
+            errorMessage: {
+              text: fieldErrors.addAnotherDefendant
+            } if fieldErrors.addAnotherDefendant
+          }) }}
+        </fieldset>
+      </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/contact-preferences"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
 
     <p class="govuk-body">
-      <a href="/claims/contact-preferences" class="govuk-link">Back to contact preferences</a>
+      <a href="/case-list" class="govuk-link">Cancel</a>
     </p>
 
   </div>

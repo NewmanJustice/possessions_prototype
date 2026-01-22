@@ -559,16 +559,234 @@ router.post('/contact-preferences/lookup-address', (req, res) => {
   res.redirect('/claims/contact-preferences');
 });
 
-// GET /claims/defendant-details (placeholder for next screen)
+// GET /claims/defendant-details
 router.get('/defendant-details', (req, res) => {
-  const claim = claimService.getClaim(req.session);
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get property address from session (needed for "same as property" option)
+  const propertyAddress = claim.propertyAddress || null;
+
+  // Get defendant from session (support single defendant for now)
+  const defendant = claim.defendants && claim.defendants[0] ? claim.defendants[0] : {};
+
+  // Extract address - check both top-level (from validation errors) and nested correspondenceAddress
+  const address = defendant.correspondenceAddress || {};
 
   res.render('pages/claims/defendant-details', {
     pageTitle: 'Defendant details',
-    showBackLink: true,
-    backLinkHref: '/claims/contact-preferences',
-    claim,
+    errors: errors, // For layout template to check for error title prefix
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      nameKnown: defendant.nameKnown || '',
+      firstName: defendant.firstName || '',
+      lastName: defendant.lastName || '',
+      addressKnown: defendant.addressKnown || '',
+      addressSameAsProperty: defendant.addressSameAsProperty || '',
+      // Prefer top-level properties (from validation failure) over nested correspondenceAddress
+      buildingAndStreet: defendant.buildingAndStreet || address.buildingAndStreet || '',
+      addressLine2: defendant.addressLine2 || address.addressLine2 || '',
+      townOrCity: defendant.townOrCity || address.townOrCity || '',
+      county: defendant.county || address.county || '',
+      postcode: defendant.postcode || address.postcode || '',
+      addAnotherDefendant: defendant.addAnotherDefendant || ''
+    },
+    propertyAddress,
   });
+
+  delete req.session.errors;
+});
+
+// POST /claims/defendant-details
+router.post('/defendant-details', (req, res) => {
+  const {
+    nameKnown,
+    firstName,
+    lastName,
+    addressKnown,
+    addressSameAsProperty,
+    buildingAndStreet,
+    addressLine2,
+    townOrCity,
+    county,
+    postcode,
+    addAnotherDefendant
+  } = req.body;
+
+  const errors = [];
+
+  // Validate nameKnown selection
+  if (!nameKnown) {
+    errors.push({
+      field: 'nameKnown',
+      message: 'Select yes if you know the defendant\'s name',
+      href: '#nameKnown',
+    });
+  }
+
+  // If name known, validate name fields
+  if (nameKnown === 'yes') {
+    if (!firstName || firstName.trim() === '') {
+      errors.push({
+        field: 'firstName',
+        message: 'Enter the defendant\'s first name',
+        href: '#firstName',
+      });
+    } else if (firstName.trim().length > 255) {
+      errors.push({
+        field: 'firstName',
+        message: 'First name must be 255 characters or less',
+        href: '#firstName',
+      });
+    }
+
+    if (!lastName || lastName.trim() === '') {
+      errors.push({
+        field: 'lastName',
+        message: 'Enter the defendant\'s last name',
+        href: '#lastName',
+      });
+    } else if (lastName.trim().length > 255) {
+      errors.push({
+        field: 'lastName',
+        message: 'Last name must be 255 characters or less',
+        href: '#lastName',
+      });
+    }
+  }
+
+  // Validate addressKnown selection
+  if (!addressKnown) {
+    errors.push({
+      field: 'addressKnown',
+      message: 'Select yes if you know the defendant\'s correspondence address',
+      href: '#addressKnown',
+    });
+  }
+
+  // If address known, validate addressSameAsProperty and address fields
+  if (addressKnown === 'yes') {
+    if (!addressSameAsProperty) {
+      errors.push({
+        field: 'addressSameAsProperty',
+        message: 'Select yes if the correspondence address is the same as the property',
+        href: '#addressSameAsProperty',
+      });
+    }
+
+    // If different address, validate address fields
+    if (addressSameAsProperty === 'no') {
+      if (!buildingAndStreet || buildingAndStreet.trim() === '') {
+        errors.push({
+          field: 'buildingAndStreet',
+          message: 'Enter building and street',
+          href: '#buildingAndStreet',
+        });
+      }
+      if (!townOrCity || townOrCity.trim() === '') {
+        errors.push({
+          field: 'townOrCity',
+          message: 'Enter town or city',
+          href: '#townOrCity',
+        });
+      }
+      if (!postcode || postcode.trim() === '') {
+        errors.push({
+          field: 'postcode',
+          message: 'Enter postcode',
+          href: '#postcode',
+        });
+      }
+    }
+  }
+
+  // Validate addAnotherDefendant selection
+  if (!addAnotherDefendant) {
+    errors.push({
+      field: 'addAnotherDefendant',
+      message: 'Select yes if you need to add another defendant',
+      href: '#addAnotherDefendant',
+    });
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    // Store submitted values temporarily so they can be displayed back to the user
+    const claim = claimService.getClaim(req.session) || {};
+    claim.defendants = [{
+      nameKnown,
+      firstName,
+      lastName,
+      addressKnown,
+      addressSameAsProperty,
+      buildingAndStreet,
+      addressLine2,
+      townOrCity,
+      county,
+      postcode,
+      addAnotherDefendant
+    }];
+    req.session.claimDraft = claim;
+    return res.redirect('/claims/defendant-details');
+  }
+
+  // Build defendant object
+  const defendant = {
+    nameKnown,
+    addAnotherDefendant
+  };
+
+  // Add name if known
+  if (nameKnown === 'yes') {
+    defendant.firstName = firstName.trim();
+    defendant.lastName = lastName.trim();
+  }
+
+  // Handle address
+  defendant.addressKnown = addressKnown;
+  if (addressKnown === 'yes') {
+    defendant.addressSameAsProperty = addressSameAsProperty;
+
+    if (addressSameAsProperty === 'yes') {
+      // Copy property address
+      const claim = claimService.getClaim(req.session) || {};
+      const propertyAddress = claim.propertyAddress || {};
+      defendant.correspondenceAddress = {
+        buildingAndStreet: propertyAddress.buildingAndStreet || '',
+        addressLine2: propertyAddress.addressLine2 || '',
+        townOrCity: propertyAddress.townOrCity || '',
+        county: propertyAddress.county || '',
+        postcode: propertyAddress.postcode || ''
+      };
+    } else {
+      // Use provided address
+      defendant.correspondenceAddress = {
+        buildingAndStreet: buildingAndStreet.trim(),
+        addressLine2: addressLine2 ? addressLine2.trim() : '',
+        townOrCity: townOrCity.trim(),
+        county: county ? county.trim() : '',
+        postcode: postcode.trim()
+      };
+    }
+  }
+
+  // Store defendant as array (single defendant for now)
+  claimService.updateClaim(req.session, 'defendants', [defendant]);
+
+  res.redirect('/claims/grounds');
 });
 
 // GET /claims/claimant-details (placeholder for next screen)

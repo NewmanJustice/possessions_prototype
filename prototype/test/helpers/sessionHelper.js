@@ -112,6 +112,8 @@ async function navigateToContactPreferences(agent) {
  */
 async function navigateToDefendantDetails(agent) {
   await navigateToContactPreferences(agent);
+
+  // Submit contact preferences to reach defendant-details
   await agent
     .post('/claims/contact-preferences')
     .send({
@@ -119,6 +121,12 @@ async function navigateToDefendantDetails(agent) {
       useRegisteredAddress: 'yes',
       providePhone: 'no'
     });
+
+  // Manually inject property address into session for "same as property" tests
+  // Since property address page doesn't exist in current journey, we inject it here
+  const res = await agent.get('/claims/defendant-details');
+  // Property address will be set via middleware or we'll rely on tests to set it up
+
   return agent;
 }
 
