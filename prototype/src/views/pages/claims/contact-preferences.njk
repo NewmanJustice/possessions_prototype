@@ -1,0 +1,279 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Contact preferences</h1>
+
+    <form method="post" action="/claims/contact-preferences" novalidate>
+
+      {# ========================================
+         SECTION 1: Notification Email
+         ======================================== #}
+      <div class="govuk-form-group {% if fieldErrors.useRegisteredEmail %}govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Notification email</h2>
+          </legend>
+
+          <p class="govuk-body govuk-!-font-weight-bold">Your My HMCTS registered email address is:</p>
+          <p class="govuk-body">{{ registeredEmail }}</p>
+
+          {% set alternateEmailHtml %}
+            {{ govukInput({
+              id: "alternateEmail",
+              name: "alternateEmail",
+              type: "email",
+              label: {
+                text: "Enter your alternate email address"
+              },
+              classes: "govuk-!-width-full",
+              value: values.alternateEmail,
+              errorMessage: {
+                text: fieldErrors.alternateEmail
+              } if fieldErrors.alternateEmail
+            }) }}
+          {% endset %}
+
+          {{ govukRadios({
+            name: "useRegisteredEmail",
+            fieldset: {
+              legend: {
+                text: "Do you want to use this email address for notifications about this claim?",
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "yes",
+                text: "Yes",
+                checked: values.useRegisteredEmail == "yes"
+              },
+              {
+                value: "no",
+                text: "No",
+                checked: values.useRegisteredEmail == "no",
+                conditional: {
+                  html: alternateEmailHtml
+                }
+              }
+            ],
+            errorMessage: {
+              text: fieldErrors.useRegisteredEmail
+            } if fieldErrors.useRegisteredEmail
+          }) }}
+        </fieldset>
+      </div>
+
+      {# ========================================
+         SECTION 2: Correspondence Address
+         ======================================== #}
+      <div class="govuk-form-group {% if fieldErrors.useRegisteredAddress %}govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Correspondence address</h2>
+          </legend>
+
+          <p class="govuk-body govuk-!-font-weight-bold">Your organisation's My HMCTS registered address is:</p>
+          <p class="govuk-body">
+            {{ registeredAddress.buildingAndStreet }}<br>
+            {% if registeredAddress.addressLine2 %}{{ registeredAddress.addressLine2 }}<br>{% endif %}
+            {{ registeredAddress.townOrCity }}<br>
+            {% if registeredAddress.county %}{{ registeredAddress.county }}<br>{% endif %}
+            {{ registeredAddress.postcode }}
+          </p>
+
+          {% set alternateAddressHtml %}
+            <div class="govuk-form-group">
+              <label class="govuk-label govuk-!-font-weight-bold" for="postcode-lookup">
+                Enter a UK postcode
+              </label>
+              <div class="govuk-input__wrapper">
+                <input class="govuk-input govuk-input--width-10" id="postcode-lookup" name="postcode-lookup" type="text">
+              </div>
+              <button type="button" class="govuk-button govuk-button--secondary govuk-!-margin-top-2" data-module="govuk-button">
+                Find address
+              </button>
+            </div>
+
+            {{ govukInput({
+              id: "buildingAndStreet",
+              name: "buildingAndStreet",
+              label: {
+                text: "Building and street"
+              },
+              classes: "govuk-!-width-full",
+              value: values.buildingAndStreet,
+              errorMessage: {
+                text: fieldErrors.buildingAndStreet
+              } if fieldErrors.buildingAndStreet
+            }) }}
+
+            {{ govukInput({
+              id: "addressLine2",
+              name: "addressLine2",
+              label: {
+                text: "Address line 2 (optional)"
+              },
+              classes: "govuk-!-width-full",
+              value: values.addressLine2
+            }) }}
+
+            {{ govukInput({
+              id: "townOrCity",
+              name: "townOrCity",
+              label: {
+                text: "Town or city"
+              },
+              classes: "govuk-!-width-two-thirds",
+              value: values.townOrCity,
+              errorMessage: {
+                text: fieldErrors.townOrCity
+              } if fieldErrors.townOrCity
+            }) }}
+
+            {{ govukInput({
+              id: "county",
+              name: "county",
+              label: {
+                text: "County (optional)"
+              },
+              classes: "govuk-!-width-two-thirds",
+              value: values.county
+            }) }}
+
+            {{ govukInput({
+              id: "postcode",
+              name: "postcode",
+              label: {
+                text: "Postcode"
+              },
+              classes: "govuk-input--width-10",
+              value: values.postcode,
+              errorMessage: {
+                text: fieldErrors.postcode
+              } if fieldErrors.postcode
+            }) }}
+          {% endset %}
+
+          {{ govukRadios({
+            name: "useRegisteredAddress",
+            fieldset: {
+              legend: {
+                text: "Do you want to use this address for correspondence about this claim?",
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "yes",
+                text: "Yes",
+                checked: values.useRegisteredAddress == "yes"
+              },
+              {
+                value: "no",
+                text: "No",
+                checked: values.useRegisteredAddress == "no",
+                conditional: {
+                  html: alternateAddressHtml
+                }
+              }
+            ],
+            errorMessage: {
+              text: fieldErrors.useRegisteredAddress
+            } if fieldErrors.useRegisteredAddress
+          }) }}
+        </fieldset>
+      </div>
+
+      {# ========================================
+         SECTION 3: Contact Phone (Optional)
+         ======================================== #}
+      <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Contact phone number</h2>
+          </legend>
+
+          <p class="govuk-body">
+            This is optional. We may use this to contact you about urgent updates to your claim.
+          </p>
+
+          {% set phoneInputHtml %}
+            {{ govukInput({
+              id: "contactPhone",
+              name: "contactPhone",
+              type: "tel",
+              label: {
+                text: "Phone number"
+              },
+              classes: "govuk-input--width-20",
+              value: values.contactPhone,
+              errorMessage: {
+                text: fieldErrors.contactPhone
+              } if fieldErrors.contactPhone
+            }) }}
+          {% endset %}
+
+          {{ govukRadios({
+            name: "providePhone",
+            fieldset: {
+              legend: {
+                text: "Do you want to provide a phone number?",
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "yes",
+                text: "Yes",
+                checked: values.providePhone == "yes",
+                conditional: {
+                  html: phoneInputHtml
+                }
+              },
+              {
+                value: "no",
+                text: "No",
+                checked: values.providePhone == "no"
+              }
+            ]
+          }) }}
+        </fieldset>
+      </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/name-of-claimant"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

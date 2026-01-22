@@ -125,10 +125,18 @@ router.post('/one-time-code', (req, res) => {
   // Set user session with role based on selected user type
   req.session.user = {
     email: req.session.pendingAuth.email,
+    email_registered: req.session.pendingAuth.email, // For contact preferences
     role: role,
     userType: req.session.userType,
     signedInAt: new Date().toISOString(),
     registeredClaimantName: 'Treetops Housing', // Default for prototype
+    registeredAddress: {
+      buildingAndStreet: '123 Registered Street',
+      addressLine2: '',
+      townOrCity: 'London',
+      county: 'Greater London',
+      postcode: 'SW1A 1AA'
+    }
   };
 
   delete req.session.pendingAuth;

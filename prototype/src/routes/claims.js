@@ -295,6 +295,282 @@ router.post('/name-of-claimant', (req, res) => {
   res.redirect('/claims/claimant-details');
 });
 
+// GET /claims/contact-preferences
+router.get('/contact-preferences', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get registered email and address from user session
+  const registeredEmail = req.session.user?.email_registered || req.session.user?.email || '';
+  const registeredAddress = req.session.user?.registeredAddress || {
+    buildingAndStreet: '123 Registered Street',
+    addressLine2: '',
+    townOrCity: 'London',
+    county: 'Greater London',
+    postcode: 'SW1A 1AA'
+  };
+
+  // Get contact preferences from claim or use defaults
+  const contactPreferences = claim.contactPreferences || {};
+
+  res.render('pages/claims/contact-preferences', {
+    pageTitle: 'Contact preferences',
+    errors: errors, // For layout template to check for error title prefix
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      useRegisteredEmail: contactPreferences.useRegisteredEmail || '',
+      alternateEmail: contactPreferences.alternateEmail || '',
+      useRegisteredAddress: contactPreferences.useRegisteredAddress || '',
+      buildingAndStreet: contactPreferences.buildingAndStreet || '',
+      addressLine2: contactPreferences.addressLine2 || '',
+      townOrCity: contactPreferences.townOrCity || '',
+      county: contactPreferences.county || '',
+      postcode: contactPreferences.postcode || '',
+      providePhone: contactPreferences.providePhone || '',
+      contactPhone: contactPreferences.contactPhone || ''
+    },
+    registeredEmail,
+    registeredAddress,
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/contact-preferences
+router.post('/contact-preferences', (req, res) => {
+  const {
+    useRegisteredEmail,
+    alternateEmail,
+    useRegisteredAddress,
+    buildingAndStreet,
+    addressLine2,
+    townOrCity,
+    county,
+    postcode,
+    providePhone,
+    contactPhone
+  } = req.body;
+
+  const errors = [];
+
+  // Validate email selection
+  if (!useRegisteredEmail) {
+    errors.push({
+      field: 'useRegisteredEmail',
+      message: 'Select yes if you want to use your registered email',
+      href: '#useRegisteredEmail',
+    });
+  }
+
+  // If "no" selected for email, validate alternate email
+  if (useRegisteredEmail === 'no') {
+    if (!alternateEmail || alternateEmail.trim() === '') {
+      errors.push({
+        field: 'alternateEmail',
+        message: 'Enter an email address',
+        href: '#alternateEmail',
+      });
+    } else {
+      const trimmedEmail = alternateEmail.trim();
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        errors.push({
+          field: 'alternateEmail',
+          message: 'Enter an email address in the correct format',
+          href: '#alternateEmail',
+        });
+      } else if (trimmedEmail.length > 254) {
+        errors.push({
+          field: 'alternateEmail',
+          message: 'Email address must be 254 characters or less',
+          href: '#alternateEmail',
+        });
+      }
+    }
+  }
+
+  // Validate address selection
+  if (!useRegisteredAddress) {
+    errors.push({
+      field: 'useRegisteredAddress',
+      message: 'Select yes if you want to use your registered address',
+      href: '#useRegisteredAddress',
+    });
+  }
+
+  // If "no" selected for address, validate alternate address fields
+  if (useRegisteredAddress === 'no') {
+    if (!buildingAndStreet || buildingAndStreet.trim() === '') {
+      errors.push({
+        field: 'buildingAndStreet',
+        message: 'Enter building and street',
+        href: '#buildingAndStreet',
+      });
+    }
+    if (!townOrCity || townOrCity.trim() === '') {
+      errors.push({
+        field: 'townOrCity',
+        message: 'Enter town or city',
+        href: '#townOrCity',
+      });
+    }
+    if (!postcode || postcode.trim() === '') {
+      errors.push({
+        field: 'postcode',
+        message: 'Enter postcode',
+        href: '#postcode',
+      });
+    }
+  }
+
+  // Validate phone if "yes" selected
+  if (providePhone === 'yes') {
+    if (!contactPhone || contactPhone.trim() === '') {
+      errors.push({
+        field: 'contactPhone',
+        message: 'Enter a phone number',
+        href: '#contactPhone',
+      });
+    } else {
+      // Strip formatting characters and validate digit count
+      const digitsOnly = contactPhone.replace(/[\s\+\(\)\-]/g, '');
+      if (!/^\d+$/.test(digitsOnly)) {
+        errors.push({
+          field: 'contactPhone',
+          message: 'Enter a phone number using only numbers',
+          href: '#contactPhone',
+        });
+      } else if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+        errors.push({
+          field: 'contactPhone',
+          message: 'Phone number must be between 7 and 15 digits',
+          href: '#contactPhone',
+        });
+      }
+    }
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    // Store submitted values temporarily so they can be displayed back to the user
+    const claim = claimService.getClaim(req.session) || {};
+    claim.contactPreferences = {
+      useRegisteredEmail,
+      alternateEmail,
+      useRegisteredAddress,
+      buildingAndStreet,
+      addressLine2,
+      townOrCity,
+      county,
+      postcode,
+      providePhone,
+      contactPhone
+    };
+    req.session.claimDraft = claim;
+    return res.redirect('/claims/contact-preferences');
+  }
+
+  // Determine which email to use
+  let notificationEmail;
+  if (useRegisteredEmail === 'yes') {
+    notificationEmail = req.session.user?.email_registered || req.session.user?.email || '';
+  } else {
+    notificationEmail = alternateEmail.trim();
+  }
+
+  // Determine which address to use
+  let correspondenceAddress;
+  if (useRegisteredAddress === 'yes') {
+    correspondenceAddress = req.session.user?.registeredAddress || {};
+  } else {
+    correspondenceAddress = {
+      buildingAndStreet: buildingAndStreet.trim(),
+      addressLine2: addressLine2 ? addressLine2.trim() : '',
+      townOrCity: townOrCity.trim(),
+      county: county ? county.trim() : '',
+      postcode: postcode.trim()
+    };
+  }
+
+  // Store contact preferences
+  const contactPreferences = {
+    useRegisteredEmail,
+    alternateEmail: useRegisteredEmail === 'no' ? alternateEmail.trim() : null,
+    notificationEmail,
+    useRegisteredAddress,
+    correspondenceAddress,
+    providePhone,
+    contactPhone: providePhone === 'yes' ? contactPhone.trim() : null,
+    contactPhoneActive: providePhone === 'yes'
+  };
+
+  claimService.updateClaim(req.session, 'contactPreferences', contactPreferences);
+  res.redirect('/claims/defendant-details');
+});
+
+// POST /claims/contact-preferences/lookup-address - Postcode lookup endpoint
+router.post('/contact-preferences/lookup-address', (req, res) => {
+  const { postcode } = req.body;
+
+  // Simulated postcode lookup - returns dummy addresses for known postcodes
+  const knownAddresses = {
+    'LU5 6TB': [
+      {
+        value: 'addr1',
+        text: '14 Long Street, Luton, LU5 6TB',
+        buildingAndStreet: '14 Long Street',
+        townOrCity: 'Luton',
+        postcode: 'LU5 6TB'
+      },
+      {
+        value: 'addr2',
+        text: '16 Long Street, Luton, LU5 6TB',
+        buildingAndStreet: '16 Long Street',
+        townOrCity: 'Luton',
+        postcode: 'LU5 6TB'
+      }
+    ]
+  };
+
+  const normalizedPostcode = postcode ? postcode.trim().toUpperCase() : '';
+  const addresses = knownAddresses[normalizedPostcode] || [];
+
+  // Return JSON for AJAX handling or redirect with session data
+  if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+    return res.json({ addresses });
+  }
+
+  // For non-AJAX, store in session and redirect
+  req.session.addressLookupResults = addresses;
+  res.redirect('/claims/contact-preferences');
+});
+
+// GET /claims/defendant-details (placeholder for next screen)
+router.get('/defendant-details', (req, res) => {
+  const claim = claimService.getClaim(req.session);
+
+  res.render('pages/claims/defendant-details', {
+    pageTitle: 'Defendant details',
+    showBackLink: true,
+    backLinkHref: '/claims/contact-preferences',
+    claim,
+  });
+});
+
 // GET /claims/claimant-details (placeholder for next screen)
 router.get('/claimant-details', (req, res) => {
   const claim = claimService.getClaim(req.session);

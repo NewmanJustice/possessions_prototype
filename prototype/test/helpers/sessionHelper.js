@@ -92,9 +92,41 @@ async function navigateToClaimantName(agent) {
   return agent;
 }
 
+/**
+ * Navigates to the contact preferences page
+ * @param {object} agent - Supertest agent (will be authenticated if not already)
+ * @returns {Promise<object>} The authenticated agent at the contact preferences step
+ */
+async function navigateToContactPreferences(agent) {
+  await navigateToClaimantName(agent);
+  await agent
+    .post('/claims/name-of-claimant')
+    .send({ useRegisteredName: 'yes' });
+  return agent;
+}
+
+/**
+ * Navigates to the defendant details page
+ * @param {object} agent - Supertest agent (will be authenticated if not already)
+ * @returns {Promise<object>} The authenticated agent at the defendant details step
+ */
+async function navigateToDefendantDetails(agent) {
+  await navigateToContactPreferences(agent);
+  await agent
+    .post('/claims/contact-preferences')
+    .send({
+      useRegisteredEmail: 'yes',
+      useRegisteredAddress: 'yes',
+      providePhone: 'no'
+    });
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
   navigateToClaimsStep,
-  navigateToClaimantName
+  navigateToClaimantName,
+  navigateToContactPreferences,
+  navigateToDefendantDetails
 };
