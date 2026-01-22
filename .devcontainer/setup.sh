@@ -25,6 +25,24 @@ npm install -g @anthropic-ai/claude-code
 # Verify Claude CLI installation
 echo "Claude CLI version: $(claude --version)"
 
+# Install GitHub Copilot CLI
+echo "Installing GitHub Copilot CLI..."
+npm install -g @githubnext/github-copilot-cli
+
+# Verify GitHub Copilot CLI installation
+echo "GitHub Copilot CLI installed"
+
+# Install Ollama
+echo "Installing Ollama..."
+if ! command -v ollama &> /dev/null; then
+	# Prefer npm installation in container environments
+	npm install -g ollama || {
+		echo "Failed to install Ollama with npm. Please install manually from https://ollama.com/download";
+	}
+else
+	echo "Ollama is already installed."
+fi
+
 # Optional: ensure Playwright browsers are installed globally
 #npx playwright install --with-deps
 
