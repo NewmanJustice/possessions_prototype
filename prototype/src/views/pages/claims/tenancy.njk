@@ -1,0 +1,236 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/date-input/macro.njk" import govukDateInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Tenancy or licence details</h1>
+
+    <form method="post" action="/claims/tenancy" novalidate>
+
+      {# ========================================
+         SECTION 1: Tenancy Type
+         ======================================== #}
+      <div class="govuk-form-group {% if fieldErrors.tenancyType %}govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Tenancy or licence type</h2>
+          </legend>
+
+          {% set otherTypeDetailsHtml %}
+            {{ govukInput({
+              id: "otherTypeDetails",
+              name: "otherTypeDetails",
+              label: {
+                text: "Please specify"
+              },
+              classes: "govuk-!-width-full",
+              value: values.otherTypeDetails,
+              errorMessage: {
+                text: fieldErrors.otherTypeDetails
+              } if fieldErrors.otherTypeDetails
+            }) }}
+          {% endset %}
+
+          {{ govukRadios({
+            name: "tenancyType",
+            fieldset: {
+              legend: {
+                text: "Select the tenancy or licence type",
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "assured-tenancy",
+                text: "Assured tenancy",
+                checked: values.tenancyType == "assured-tenancy"
+              },
+              {
+                value: "secure-tenancy",
+                text: "Secure tenancy",
+                checked: values.tenancyType == "secure-tenancy"
+              },
+              {
+                value: "introductory-tenancy",
+                text: "Introductory tenancy",
+                checked: values.tenancyType == "introductory-tenancy"
+              },
+              {
+                value: "flexible-tenancy",
+                text: "Flexible tenancy",
+                checked: values.tenancyType == "flexible-tenancy"
+              },
+              {
+                value: "demoted-tenancy",
+                text: "Demoted tenancy",
+                checked: values.tenancyType == "demoted-tenancy"
+              },
+              {
+                value: "other",
+                text: "Other",
+                checked: values.tenancyType == "other",
+                conditional: {
+                  html: otherTypeDetailsHtml
+                }
+              }
+            ],
+            errorMessage: {
+              text: fieldErrors.tenancyType
+            } if fieldErrors.tenancyType
+          }) }}
+        </fieldset>
+      </div>
+
+      {# ========================================
+         SECTION 2: Start Date (Optional)
+         ======================================== #}
+      <div class="govuk-form-group {% if fieldErrors.startDate or fieldErrors['startDate-day'] or fieldErrors['startDate-month'] or fieldErrors['startDate-year'] %}govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset" role="group">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Start date</h2>
+          </legend>
+          <div class="govuk-hint">
+            For example, 27 3 2007. This is optional.
+          </div>
+
+          {% if fieldErrors.startDate or fieldErrors['startDate-day'] or fieldErrors['startDate-month'] or fieldErrors['startDate-year'] %}
+            <p class="govuk-error-message">
+              <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.startDate or fieldErrors['startDate-day'] or fieldErrors['startDate-month'] or fieldErrors['startDate-year'] }}
+            </p>
+          {% endif %}
+
+          <div class="govuk-date-input" id="startDate">
+            <div class="govuk-date-input__item">
+              <div class="govuk-form-group">
+                <label class="govuk-label govuk-date-input__label" for="startDate-day">
+                  Day
+                </label>
+                <input class="govuk-input govuk-date-input__input govuk-input--width-2 {% if fieldErrors.startDate or fieldErrors['startDate-day'] %}govuk-input--error{% endif %}"
+                       id="startDate-day"
+                       name="startDate-day"
+                       type="text"
+                       inputmode="numeric"
+                       value="{{ values['startDate-day'] }}">
+              </div>
+            </div>
+            <div class="govuk-date-input__item">
+              <div class="govuk-form-group">
+                <label class="govuk-label govuk-date-input__label" for="startDate-month">
+                  Month
+                </label>
+                <input class="govuk-input govuk-date-input__input govuk-input--width-2 {% if fieldErrors.startDate or fieldErrors['startDate-month'] %}govuk-input--error{% endif %}"
+                       id="startDate-month"
+                       name="startDate-month"
+                       type="text"
+                       inputmode="numeric"
+                       value="{{ values['startDate-month'] }}">
+              </div>
+            </div>
+            <div class="govuk-date-input__item">
+              <div class="govuk-form-group">
+                <label class="govuk-label govuk-date-input__label" for="startDate-year">
+                  Year
+                </label>
+                <input class="govuk-input govuk-date-input__input govuk-input--width-4 {% if fieldErrors.startDate or fieldErrors['startDate-year'] %}govuk-input--error{% endif %}"
+                       id="startDate-year"
+                       name="startDate-year"
+                       type="text"
+                       inputmode="numeric"
+                       value="{{ values['startDate-year'] }}">
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      {# ========================================
+         SECTION 3: Document Upload (Simulated)
+         ======================================== #}
+      <div class="govuk-form-group {% if fieldErrors.uploadedFileName %}govuk-form-group--error{% endif %}">
+        <fieldset class="govuk-fieldset">
+          <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+            <h2 class="govuk-fieldset__heading">Upload tenancy or licence agreement</h2>
+          </legend>
+          <p class="govuk-body">This is optional. You can upload PDF, DOC, DOCX, JPG, or PNG files.</p>
+
+          {% if values.documents.length > 0 %}
+            <div class="govuk-summary-card">
+              <div class="govuk-summary-card__title-wrapper">
+                <h3 class="govuk-summary-card__title">Uploaded documents</h3>
+              </div>
+              <div class="govuk-summary-card__content">
+                <ul class="govuk-list">
+                  {% for doc in values.documents %}
+                    <li>
+                      {{ doc.name }}
+                      <form method="post" action="/claims/tenancy/remove-document" style="display: inline;">
+                        <input type="hidden" name="documentId" value="{{ doc.id }}">
+                        <button type="submit" class="govuk-link" style="border: none; background: none; color: #1d70b8; cursor: pointer; text-decoration: underline;">
+                          Remove
+                        </button>
+                      </form>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          {% endif %}
+
+          {{ govukInput({
+            id: "uploadedFileName",
+            name: "uploadedFileName",
+            label: {
+              text: "Enter filename to upload (simulated)"
+            },
+            hint: {
+              text: "For example: tenancy-agreement.pdf"
+            },
+            classes: "govuk-!-width-full",
+            errorMessage: {
+              text: fieldErrors.uploadedFileName
+            } if fieldErrors.uploadedFileName
+          }) }}
+
+          <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+            Add new
+          </button>
+        </fieldset>
+      </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/defendant-details"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

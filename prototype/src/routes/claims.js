@@ -786,7 +786,226 @@ router.post('/defendant-details', (req, res) => {
   // Store defendant as array (single defendant for now)
   claimService.updateClaim(req.session, 'defendants', [defendant]);
 
+  res.redirect('/claims/tenancy');
+});
+
+// GET /claims/tenancy
+router.get('/tenancy', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get tenancy from session or use defaults
+  const tenancy = claim.tenancy || {};
+
+  res.render('pages/claims/tenancy', {
+    pageTitle: 'Tenancy or licence details',
+    errors: errors, // For layout template to check for error title prefix
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      tenancyType: tenancy.tenancyType || '',
+      otherTypeDetails: tenancy.otherTypeDetails || '',
+      'startDate-day': tenancy.startDate?.day || '',
+      'startDate-month': tenancy.startDate?.month || '',
+      'startDate-year': tenancy.startDate?.year || '',
+      documents: tenancy.documents || []
+    },
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/tenancy
+router.post('/tenancy', (req, res) => {
+  const tenancyType = req.body.tenancyType;
+  const otherTypeDetails = req.body.otherTypeDetails;
+  const startDateDay = req.body['startDate-day'];
+  const startDateMonth = req.body['startDate-month'];
+  const startDateYear = req.body['startDate-year'];
+  const uploadedFileName = req.body.uploadedFileName;
+  const uploadedFileSize = req.body.uploadedFileSize;
+
+  const errors = [];
+
+  // Validate tenancy type is selected
+  if (!tenancyType) {
+    errors.push({
+      field: 'tenancyType',
+      message: 'Select the tenancy or licence type',
+      href: '#tenancyType',
+    });
+  }
+
+  // Validate "Other" free-text if "Other" is selected
+  if (tenancyType === 'other') {
+    if (otherTypeDetails && otherTypeDetails.length > 255) {
+      errors.push({
+        field: 'otherTypeDetails',
+        message: 'Tenancy type description must be 255 characters or less',
+        href: '#otherTypeDetails',
+      });
+    }
+  }
+
+  // Validate start date (optional, but if any part entered, all required)
+  const hasDay = startDateDay && startDateDay.trim() !== '';
+  const hasMonth = startDateMonth && startDateMonth.trim() !== '';
+  const hasYear = startDateYear && startDateYear.trim() !== '';
+  const hasAnyDate = hasDay || hasMonth || hasYear;
+  const hasCompleteDate = hasDay && hasMonth && hasYear;
+
+  if (hasAnyDate && !hasCompleteDate) {
+    errors.push({
+      field: 'startDate',
+      message: 'Enter a complete start date or leave all fields blank',
+      href: '#startDate-day',
+    });
+  }
+
+  // Validate date values if complete
+  if (hasCompleteDate) {
+    const day = parseInt(startDateDay, 10);
+    const month = parseInt(startDateMonth, 10);
+    const year = parseInt(startDateYear, 10);
+
+    if (isNaN(day) || day < 1 || day > 31) {
+      errors.push({
+        field: 'startDate-day',
+        message: 'Day must be between 1 and 31',
+        href: '#startDate-day',
+      });
+    }
+
+    if (isNaN(month) || month < 1 || month > 12) {
+      errors.push({
+        field: 'startDate-month',
+        message: 'Month must be between 1 and 12',
+        href: '#startDate-month',
+      });
+    }
+
+    if (isNaN(year) || year < 1800 || year > 2100) {
+      errors.push({
+        field: 'startDate-year',
+        message: 'Year must be between 1800 and 2100',
+        href: '#startDate-year',
+      });
+    }
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    // Store submitted values temporarily
+    const claim = claimService.getClaim(req.session) || {};
+    claim.tenancy = {
+      tenancyType,
+      otherTypeDetails,
+      startDate: {
+        day: startDateDay,
+        month: startDateMonth,
+        year: startDateYear
+      },
+      documents: claim.tenancy?.documents || []
+    };
+    req.session.claimDraft = claim;
+    return res.redirect('/claims/tenancy');
+  }
+
+  // Build tenancy object
+  const tenancy = {
+    tenancyType
+  };
+
+  // Add other type if specified
+  if (tenancyType === 'other' && otherTypeDetails) {
+    tenancy.otherTypeDetails = otherTypeDetails.trim();
+  }
+
+  // Add start date if complete
+  if (hasCompleteDate) {
+    tenancy.startDate = {
+      day: startDateDay.trim(),
+      month: startDateMonth.trim(),
+      year: startDateYear.trim()
+    };
+  }
+
+  // Preserve existing documents
+  const existingTenancy = claimService.getClaim(req.session)?.tenancy || {};
+  tenancy.documents = existingTenancy.documents || [];
+
+  // Handle file upload (simulated)
+  if (uploadedFileName && uploadedFileName.trim() !== '') {
+    const fileName = uploadedFileName.trim();
+
+    // Validate file extension
+    const allowedExtensions = ['.pdf', '.doc', '.docx', '.jpg', '.png'];
+    const hasValidExtension = allowedExtensions.some(ext =>
+      fileName.toLowerCase().endsWith(ext)
+    );
+
+    if (!hasValidExtension) {
+      req.session.errors = [{
+        field: 'uploadedFileName',
+        message: 'File must be a PDF, DOC, DOCX, JPG, or PNG',
+        href: '#uploadedFileName',
+      }];
+      const claim = claimService.getClaim(req.session) || {};
+      claim.tenancy = tenancy;
+      req.session.claimDraft = claim;
+      return res.redirect('/claims/tenancy');
+    }
+
+    // Validate file size (5MB limit)
+    if (uploadedFileSize && parseInt(uploadedFileSize, 10) > 5000000) {
+      req.session.errors = [{
+        field: 'uploadedFileName',
+        message: 'File must be smaller than 5MB',
+        href: '#uploadedFileName',
+      }];
+      const claim = claimService.getClaim(req.session) || {};
+      claim.tenancy = tenancy;
+      req.session.claimDraft = claim;
+      return res.redirect('/claims/tenancy');
+    }
+
+    // Add file to documents array (simulated metadata)
+    tenancy.documents.push({
+      id: Date.now().toString(),
+      name: fileName,
+      uploadedAt: new Date().toISOString()
+    });
+  }
+
+  claimService.updateClaim(req.session, 'tenancy', tenancy);
   res.redirect('/claims/grounds');
+});
+
+// POST /claims/tenancy/remove-document
+router.post('/tenancy/remove-document', (req, res) => {
+  const { documentId } = req.body;
+
+  const claim = claimService.getClaim(req.session) || {};
+  const tenancy = claim.tenancy || {};
+
+  if (tenancy.documents && Array.isArray(tenancy.documents)) {
+    tenancy.documents = tenancy.documents.filter(doc => doc.id !== documentId);
+    claimService.updateClaim(req.session, 'tenancy', tenancy);
+  }
+
+  res.redirect('/claims/tenancy');
 });
 
 // GET /claims/claimant-details (placeholder for next screen)
@@ -912,46 +1131,73 @@ router.post('/defendant', (req, res) => {
   res.redirect('/claims/grounds');
 });
 
-// GET /claims/grounds
+// GET /claims/grounds - Screen 13.1: Rent arrears branch point
 router.get('/grounds', (req, res) => {
-  const claim = claimService.getClaim(req.session);
+  const claim = claimService.getClaim(req.session) || {};
   const errors = req.session.errors || [];
 
-  // Transform errors to have 'text' property for error summary
-  const transformedErrors = errors.map(error => ({
-    ...error,
-    text: error.message
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
   }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get saved rent arrears selection
+  const grounds = claim.grounds || {};
+  const rentArrears = grounds.rentArrears;
 
   res.render('pages/claims/grounds', {
     pageTitle: 'Grounds for possession',
-    showBackLink: true,
-    backLinkHref: '/claims/defendant',
-    errors: transformedErrors,
-    values: { grounds: claim?.grounds || [] },
+    errors: errors, // For layout template to check for error title prefix
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      rentArrears: rentArrears === true ? 'yes' : rentArrears === false ? 'no' : ''
+    },
   });
 
   delete req.session.errors;
 });
 
-// POST /claims/grounds
+// POST /claims/grounds - Screen 13.1: Branch based on rent arrears
 router.post('/grounds', (req, res) => {
-  let grounds = req.body.grounds || [];
+  const { rentArrears } = req.body;
 
-  // Ensure grounds is always an array
-  if (!Array.isArray(grounds)) {
-    grounds = [grounds];
+  const errors = [];
+
+  // Validate rent arrears selection
+  if (!rentArrears) {
+    errors.push({
+      field: 'rentArrears',
+      message: 'Select yes if you are claiming possession because of rent arrears',
+      href: '#rentArrears',
+    });
   }
-
-  const errors = claimService.validateStep('grounds', { grounds });
 
   if (errors.length > 0) {
     req.session.errors = errors;
     return res.redirect('/claims/grounds');
   }
 
+  // Store rent arrears as boolean in grounds object
+  const grounds = {
+    rentArrears: rentArrears === 'yes'
+  };
+
   claimService.updateClaim(req.session, 'grounds', grounds);
-  res.redirect('/claims/key-dates');
+
+  // Branch based on selection
+  if (rentArrears === 'yes') {
+    res.redirect('/claims/assured-tenancy-grounds-selection');
+  } else {
+    res.redirect('/claims/other-tenancy-grounds');
+  }
 });
 
 // GET /claims/key-dates

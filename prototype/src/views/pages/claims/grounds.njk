@@ -1,6 +1,6 @@
 {% extends "layouts/main.njk" %}
 
-{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
@@ -8,84 +8,60 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    {% if errors and errors.length > 0 %}
+    {% if errorList.length > 0 %}
       {{ govukErrorSummary({
         titleText: "There is a problem",
-        errorList: errors
+        errorList: errorList
       }) }}
     {% endif %}
 
-    {% set groundsError = null %}
-    {% for error in errors %}
-      {% if error.field == 'grounds' %}
-        {% set groundsError = error %}
-      {% endif %}
-    {% endfor %}
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Grounds for possession</h1>
 
     <form method="post" action="/claims/grounds" novalidate>
 
-      {{ govukCheckboxes({
-        name: "grounds",
+      {{ govukRadios({
+        name: "rentArrears",
         fieldset: {
           legend: {
-            text: "Grounds for possession",
-            isPageHeading: true,
-            classes: "govuk-fieldset__legend--l"
+            text: "Are you claiming possession because of rent arrears?",
+            classes: "govuk-fieldset__legend--m"
           }
-        },
-        hint: {
-          text: "Select all that apply"
         },
         items: [
           {
-            value: "rent-arrears",
-            text: "Rent arrears",
-            hint: {
-              text: "The tenant owes rent"
-            },
-            checked: "rent-arrears" in values.grounds
+            value: "yes",
+            text: "Yes",
+            checked: values.rentArrears == "yes"
           },
           {
-            value: "anti-social-behaviour",
-            text: "Anti-social behaviour",
-            hint: {
-              text: "The tenant or anyone living with them has been involved in anti-social behaviour"
-            },
-            checked: "anti-social-behaviour" in values.grounds
-          },
-          {
-            value: "breach-of-tenancy",
-            text: "Breach of tenancy agreement",
-            hint: {
-              text: "The tenant has broken terms of the tenancy agreement"
-            },
-            checked: "breach-of-tenancy" in values.grounds
-          },
-          {
-            value: "property-damage",
-            text: "Damage to property",
-            hint: {
-              text: "The tenant has damaged the property or allowed it to deteriorate"
-            },
-            checked: "property-damage" in values.grounds
-          },
-          {
-            value: "end-of-fixed-term",
-            text: "End of fixed-term tenancy",
-            hint: {
-              text: "The fixed-term tenancy has ended and you want the property back"
-            },
-            checked: "end-of-fixed-term" in values.grounds
+            value: "no",
+            text: "No",
+            checked: values.rentArrears == "no"
           }
         ],
-        errorMessage: { text: groundsError.message } if groundsError
+        errorMessage: {
+          text: fieldErrors.rentArrears
+        } if fieldErrors.rentArrears
       }) }}
 
-      {{ govukButton({
-        text: "Continue"
-      }) }}
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/tenancy"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
 
     </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
 
   </div>
 </div>

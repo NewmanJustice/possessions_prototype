@@ -130,11 +130,43 @@ async function navigateToDefendantDetails(agent) {
   return agent;
 }
 
+/**
+ * Navigates to the tenancy details page
+ * @param {object} agent - Supertest agent (will be authenticated if not already)
+ * @returns {Promise<object>} The authenticated agent at the tenancy step
+ */
+async function navigateToTenancy(agent) {
+  await navigateToDefendantDetails(agent);
+  await agent
+    .post('/claims/defendant-details')
+    .send({
+      nameKnown: 'no',
+      addressKnown: 'no',
+      addAnotherDefendant: 'no'
+    });
+  return agent;
+}
+
+/**
+ * Navigates to the grounds for possession page
+ * @param {object} agent - Supertest agent (will be authenticated if not already)
+ * @returns {Promise<object>} The authenticated agent at the grounds step
+ */
+async function navigateToGrounds(agent) {
+  await navigateToTenancy(agent);
+  await agent
+    .post('/claims/tenancy')
+    .send({ tenancyType: 'assured-tenancy' });
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
   navigateToClaimsStep,
   navigateToClaimantName,
   navigateToContactPreferences,
-  navigateToDefendantDetails
+  navigateToDefendantDetails,
+  navigateToTenancy,
+  navigateToGrounds
 };

@@ -154,7 +154,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
     });
 
@@ -172,7 +172,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
 
       it('T-3.2: should clear stored name values when changing from Yes to No', async () => {
@@ -295,7 +295,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
 
       it('T-2.E.6: should preserve entered names on validation failure', async () => {
@@ -379,7 +379,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
 
       it('T-5.3: should store addressKnown=false when No selected', async () => {
@@ -449,7 +449,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
 
       it('T-7.2: should clear manual address when same as property selected', async () => {
@@ -557,7 +557,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
     });
 
@@ -643,7 +643,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
 
       it('T-11.5: should not require Country (optional)', async () => {
@@ -664,7 +664,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
     });
 
@@ -793,7 +793,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
     });
 
@@ -837,11 +837,11 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         // Verify by going to next page
-        const nextPage = await testSession.get('/claims/grounds');
+        const nextPage = await testSession.get('/claims/tenancy');
         expect(nextPage.status).toBe(200);
       });
 
-      it('T-16.2: should redirect to /claims/grounds on success', async () => {
+      it('T-16.2: should redirect to /claims/tenancy on success', async () => {
         const testSession = session(app);
         await navigateToDefendantDetails(testSession);
         
@@ -854,7 +854,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
     });
 
@@ -1087,7 +1087,7 @@ describe('Defendant Details Route - /claims/defendant-details', () => {
         });
       
       // Go to next page
-      await testSession.get('/claims/grounds');
+      await testSession.get('/claims/tenancy');
       
       // Come back
       const response = await testSession.get('/claims/defendant-details');

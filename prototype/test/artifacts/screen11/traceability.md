@@ -49,7 +49,7 @@
 
 | Acceptance Criterion | Test IDs | Notes |
 |---------------------|----------|-------|
-| AC-16 — Continue saves and proceeds | T-16.1, T-16.2 | Redirects to /claims/grounds |
+| AC-16 — Continue saves and proceeds | T-16.1, T-16.2 | Redirects to /claims/tenancy |
 | AC-17 — Previous navigation | T-17.1, T-17.2 | Previous = /claims/contact-preferences |
 | AC-18 — Cancel behaviour | T-18.1, T-18.2 | |
 
