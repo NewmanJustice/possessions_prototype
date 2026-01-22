@@ -181,7 +181,7 @@ describe('Claimant Name Route', () => {
 
   describe('POST /claims/name-of-claimant - Happy Paths', () => {
     describe('Select "Yes" (Use Registered Name)', () => {
-      it('should accept "Yes" and redirect to /claims/claimant-details', async () => {
+      it('should accept "Yes" and redirect to /claims/contact-preferences', async () => {
         const testSession = session(app);
         await navigateToClaimantName(testSession);
         
@@ -190,7 +190,7 @@ describe('Claimant Name Route', () => {
           .send({ useRegisteredName: 'yes' });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/claimant-details');
+        expect(response.headers.location).toBe('/claims/contact-preferences');
       });
 
       it('should store registered name "Treetops Housing" in session', async () => {
@@ -202,7 +202,7 @@ describe('Claimant Name Route', () => {
           .send({ useRegisteredName: 'yes' });
         
         // Verify by navigating to next page and checking session persists
-        const nextPageResponse = await testSession.get('/claims/claimant-details');
+        const nextPageResponse = await testSession.get('/claims/contact-preferences');
         expect(nextPageResponse.status).toBe(200);
         
         // Could also navigate back and verify data is preserved
@@ -224,10 +224,10 @@ describe('Claimant Name Route', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/claimant-details');
+        expect(response.headers.location).toBe('/claims/contact-preferences');
       });
 
-      it('should redirect to /claims/claimant-details after custom name', async () => {
+      it('should redirect to /claims/contact-preferences after custom name', async () => {
         const testSession = session(app);
         await navigateToClaimantName(testSession);
         
@@ -239,7 +239,7 @@ describe('Claimant Name Route', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/claimant-details');
+        expect(response.headers.location).toBe('/claims/contact-preferences');
       });
 
       it('should store custom name in session, not registered name', async () => {
@@ -254,7 +254,7 @@ describe('Claimant Name Route', () => {
           });
         
         // Verify by accessing next page (session should persist)
-        const nextPageResponse = await testSession.get('/claims/claimant-details');
+        const nextPageResponse = await testSession.get('/claims/contact-preferences');
         expect(nextPageResponse.status).toBe(200);
       });
 
@@ -270,7 +270,7 @@ describe('Claimant Name Route', () => {
           });
         
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/claimant-details');
+        expect(response.headers.location).toBe('/claims/contact-preferences');
       });
     });
   });
@@ -386,7 +386,7 @@ describe('Claimant Name Route', () => {
         });
       
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/claimant-details');
+      expect(response.headers.location).toBe('/claims/contact-preferences');
     });
   });
 });

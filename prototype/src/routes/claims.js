@@ -292,7 +292,7 @@ router.post('/name-of-claimant', (req, res) => {
     claimService.updateClaim(req.session, 'customClaimantName', customClaimantName.trim());
   }
 
-  res.redirect('/claims/claimant-details');
+  res.redirect('/claims/contact-preferences');
 });
 
 // GET /claims/contact-preferences
