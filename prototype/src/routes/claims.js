@@ -1614,10 +1614,130 @@ router.post('/preaction-protocol', (req, res) => {
   res.redirect('/claims/mediation-settlement');
 });
 
-// GET /claims/mediation-settlement - Placeholder for next screen after pre-action protocol
+// GET /claims/mediation-settlement - Screen 17: Mediation and settlement
 router.get('/mediation-settlement', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get saved mediation/settlement data
+  const mediationSettlement = claim.mediationSettlement || {};
+
   res.render('pages/claims/mediation-settlement', {
     pageTitle: 'Mediation and settlement',
+    errors: errors,
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      mediationAttempted: mediationSettlement.mediationAttempted === true ? 'true' : mediationSettlement.mediationAttempted === false ? 'false' : '',
+      mediationDetails: mediationSettlement.mediationDetails || '',
+      settlementAttempted: mediationSettlement.settlementAttempted === true ? 'true' : mediationSettlement.settlementAttempted === false ? 'false' : '',
+      settlementDetails: mediationSettlement.settlementDetails || ''
+    },
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/mediation-settlement - Screen 17: Mediation and settlement
+router.post('/mediation-settlement', (req, res) => {
+  const { mediationAttempted, mediationDetails, settlementAttempted, settlementDetails } = req.body;
+
+  const errors = [];
+
+  // Validate mediationAttempted selection (required)
+  if (!mediationAttempted) {
+    errors.push({
+      field: 'mediationAttempted',
+      message: 'Select whether you have attempted mediation',
+      href: '#mediationAttempted',
+    });
+  }
+
+  // Validate settlementAttempted selection (required)
+  if (!settlementAttempted) {
+    errors.push({
+      field: 'settlementAttempted',
+      message: 'Select whether you have tried to reach a settlement',
+      href: '#settlementAttempted',
+    });
+  }
+
+  // Validate mediation details character limit (only if Yes selected)
+  if (mediationAttempted === 'true' && mediationDetails && mediationDetails.length > 250) {
+    errors.push({
+      field: 'mediationDetails',
+      message: 'Enter 250 characters or fewer',
+      href: '#mediationDetails',
+    });
+  }
+
+  // Validate settlement details character limit (only if Yes selected)
+  if (settlementAttempted === 'true' && settlementDetails && settlementDetails.length > 250) {
+    errors.push({
+      field: 'settlementDetails',
+      message: 'Enter 250 characters or fewer',
+      href: '#settlementDetails',
+    });
+  }
+
+  if (errors.length > 0) {
+    // Build error list for error summary
+    const errorList = errors.map(error => ({
+      text: error.message,
+      href: error.href
+    }));
+
+    // Build field-specific error messages
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = error.message;
+    });
+
+    return res.status(400).render('pages/claims/mediation-settlement', {
+      pageTitle: 'Mediation and settlement',
+      errors: errors,
+      errorList: errorList,
+      fieldErrors: fieldErrors,
+      values: {
+        mediationAttempted: mediationAttempted || '',
+        mediationDetails: mediationDetails || '',
+        settlementAttempted: settlementAttempted || '',
+        settlementDetails: settlementDetails || ''
+      },
+    });
+  }
+
+  // Build mediation settlement object with data clearing logic
+  const mediationSettlementData = {
+    mediationAttempted: mediationAttempted === 'true',
+    // Clear details if No selected, otherwise store the value
+    mediationDetails: mediationAttempted === 'true' ? (mediationDetails || null) : null,
+    settlementAttempted: settlementAttempted === 'true',
+    // Clear details if No selected, otherwise store the value
+    settlementDetails: settlementAttempted === 'true' ? (settlementDetails || null) : null
+  };
+
+  claimService.updateClaim(req.session, 'mediationSettlement', mediationSettlementData);
+
+  res.redirect('/claims/notice-of-intention');
+});
+
+// GET /claims/notice-of-intention - Placeholder for next screen after mediation-settlement
+router.get('/notice-of-intention', (req, res) => {
+  res.render('pages/claims/notice-of-intention', {
+    pageTitle: 'Notice of intention',
   });
 });
 
