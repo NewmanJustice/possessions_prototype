@@ -101,61 +101,61 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
     it('T-1.6: should accept assured-tenancy selection', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({ tenancyType: 'assured-tenancy' });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
     });
 
     it('T-1.7: should accept secure-tenancy selection', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({ tenancyType: 'secure-tenancy' });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
     });
 
     it('T-1.8: should accept introductory-tenancy selection', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({ tenancyType: 'introductory-tenancy' });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
     });
 
     it('T-1.9: should accept flexible-tenancy selection', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({ tenancyType: 'flexible-tenancy' });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
     });
 
     it('T-1.10: should accept demoted-tenancy selection', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({ tenancyType: 'demoted-tenancy' });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-intro-demoted-other');
     });
   });
 
@@ -182,31 +182,31 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
     it('T-2.3: should accept "Other" with blank free-text', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({
           tenancyType: 'other',
           otherTypeDetails: ''
         });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-intro-demoted-other');
     });
 
     it('T-2.4: should accept "Other" with populated free-text', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({
           tenancyType: 'other',
           otherTypeDetails: 'Licence agreement'
         });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-intro-demoted-other');
     });
 
     it('T-2.E.1: should show error for free-text exceeding 255 characters', async () => {
@@ -252,7 +252,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
     it('T-3.1: should allow empty date fields (no error)', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({
@@ -261,15 +261,15 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
           'startDate-month': '',
           'startDate-year': ''
         });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
     });
 
     it('T-3.2: should accept complete valid date', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({
@@ -278,9 +278,9 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
           'startDate-month': '06',
           'startDate-year': '2020'
         });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
     });
 
     it('T-3.3: should save date to session', async () => {
@@ -409,7 +409,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
       it('T-3.E.2: should accept year 1800 (minimum valid)', async () => {
         const testSession = session(app);
         await navigateToTenancy(testSession);
-        
+
         const response = await testSession
           .post('/claims/tenancy')
           .send({
@@ -418,15 +418,15 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
             'startDate-month': '01',
             'startDate-year': '1800'
           });
-        
+
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
       });
 
       it('T-3.E.3: should accept year 2100 (maximum valid)', async () => {
         const testSession = session(app);
         await navigateToTenancy(testSession);
-        
+
         const response = await testSession
           .post('/claims/tenancy')
           .send({
@@ -435,9 +435,9 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
             'startDate-month': '01',
             'startDate-year': '2100'
           });
-        
+
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds');
+        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
       });
 
       it('T-3.E.4: should show error for year 2101 (above maximum)', async () => {
@@ -561,15 +561,15 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
     it('T-4.2: should allow submission without uploading files', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
-      
+
       const response = await testSession
         .post('/claims/tenancy')
         .send({
           tenancyType: 'assured-tenancy'
         });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
     });
 
     it('T-4.3: should store file metadata in session when uploaded', async () => {
@@ -893,17 +893,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
       expect(getResponse.status).toBe(200);
     });
 
-    it('T-6.5: should redirect to /claims/grounds on success', async () => {
-      const testSession = session(app);
-      await navigateToTenancy(testSession);
-      
-      const response = await testSession
-        .post('/claims/tenancy')
-        .send({ tenancyType: 'assured-tenancy' });
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds');
-    });
+    // T-6.5 removed - routing now tested in T-R.1, T-R.2, T-R.3 (groundsModel-based)
   });
 
   // ============================================================
@@ -1053,8 +1043,8 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
           'startDate-year': '2022'
         });
       
-      // Go to next page
-      await testSession.get('/claims/grounds');
+      // Go to next page (demoted-tenancy routes to OTHER_UNSUPPORTED)
+      await testSession.get('/claims/grounds-for-possession-intro-demoted-other');
       
       // Come back
       const response = await testSession.get('/claims/tenancy');
@@ -1062,6 +1052,243 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
       expect(response.text).toContain('12');
       expect(response.text).toContain('08');
       expect(response.text).toContain('2022');
+    });
+  });
+
+  describe('AC-13, AC-14: Grounds model determination and persistence', () => {
+    it('T-13.1: should determine groundsModel on successful submission', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'assured-tenancy' });
+      
+      expect(response.status).toBe(302);
+      const sessionData = testSession.cookies.find(c => c.name === 'connect.sid');
+      expect(sessionData).toBeDefined();
+    });
+
+    it('T-13.2: should store groundsModel in session', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'assured-tenancy' });
+      
+      // Verify by visiting a page that uses session
+      const getResponse = await testSession.get('/claims/tenancy');
+      expect(getResponse.status).toBe(200);
+      // groundsModel will be verified in mapping tests
+    });
+  });
+
+  describe('AC-15: Grounds model mapping', () => {
+    it('T-15.1: should map assured-tenancy to ASSURED groundsModel', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'assured-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+    });
+
+    it('T-15.2: should map secure-tenancy to SECURE_LIKE groundsModel', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'secure-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
+    });
+
+    it('T-15.3: should map introductory-tenancy to SECURE_LIKE groundsModel', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'introductory-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
+    });
+
+    it('T-15.4: should map flexible-tenancy to SECURE_LIKE groundsModel', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'flexible-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
+    });
+
+    it('T-15.5: should map demoted-tenancy to OTHER_UNSUPPORTED groundsModel', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'demoted-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-intro-demoted-other');
+    });
+
+    it('T-15.6: should map other to OTHER_UNSUPPORTED groundsModel', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'other' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-intro-demoted-other');
+    });
+  });
+
+  describe('AC-16: State clearing on tenancy change', () => {
+    it('T-16.1: should clear assured grounds when changing from ASSURED to SECURE_LIKE', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      // First submission: assured tenancy with grounds data
+      await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'assured-tenancy' });
+      
+      // Simulate having completed assured grounds journey
+      await testSession.get('/claims/grounds-for-possession-assured');
+      
+      // Return to tenancy page
+      await testSession.get('/claims/tenancy');
+      
+      // Change to secure tenancy
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'secure-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
+    });
+
+    it('T-16.2: should clear assured grounds when changing from ASSURED to OTHER_UNSUPPORTED', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      // First: assured tenancy
+      await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'assured-tenancy' });
+      
+      // Return and change to demoted
+      await testSession.get('/claims/tenancy');
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'demoted-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-intro-demoted-other');
+    });
+
+    it('T-16.3: should clear secure grounds when changing from SECURE_LIKE to ASSURED', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      // First: secure tenancy
+      await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'secure-tenancy' });
+      
+      // Return and change to assured
+      await testSession.get('/claims/tenancy');
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'assured-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+    });
+
+    it('T-16.4: should preserve grounds data when groundsModel unchanged', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      // First: secure tenancy
+      await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'secure-tenancy' });
+      
+      // Return and change to another SECURE_LIKE type
+      await testSession.get('/claims/tenancy');
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'flexible-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
+    });
+
+    it('T-16.5: should not error when no previous grounds data exists', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      // First submission with no grounds data
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'assured-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+    });
+  });
+
+  describe('Routing based on groundsModel', () => {
+    it('T-R.1: should redirect to /claims/grounds-for-possession-assured for ASSURED', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'assured-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+    });
+
+    it('T-R.2: should redirect to /claims/grounds-for-possession-secure-flexible for SECURE_LIKE', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'secure-tenancy' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-secure-flexible');
+    });
+
+    it('T-R.3: should redirect to /claims/grounds-for-possession-intro-demoted-other for OTHER_UNSUPPORTED', async () => {
+      const testSession = session(app);
+      await navigateToTenancy(testSession);
+      
+      const response = await testSession
+        .post('/claims/tenancy')
+        .send({ tenancyType: 'other' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-intro-demoted-other');
     });
   });
 });

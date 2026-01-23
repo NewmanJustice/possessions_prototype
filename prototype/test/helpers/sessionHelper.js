@@ -160,6 +160,19 @@ async function navigateToGrounds(agent) {
   return agent;
 }
 
+/**
+ * Navigates to the assured tenancy grounds selection page
+ * @param {object} agent - Supertest agent (will be authenticated if not already)
+ * @returns {Promise<object>} The authenticated agent at the assured tenancy grounds step
+ */
+async function navigateToAssuredTenancyGrounds(agent) {
+  await navigateToGrounds(agent);
+  await agent
+    .post('/claims/grounds')
+    .send({ rentArrears: 'yes' });
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -168,5 +181,6 @@ module.exports = {
   navigateToContactPreferences,
   navigateToDefendantDetails,
   navigateToTenancy,
-  navigateToGrounds
+  navigateToGrounds,
+  navigateToAssuredTenancyGrounds
 };

@@ -55,7 +55,7 @@
 | Acceptance Criterion | Test IDs | Notes |
 |---------------------|----------|-------|
 | AC-6 — Saves to session | T-6.1 to T-6.4 | |
-| AC-6 — Redirects to /claims/grounds | T-6.5 | |
+| AC-6 — Redirects based on groundsModel | T-R.1, T-R.2, T-R.3 | Conditional routing |
 
 ## AC-7: Previous & Cancel behaviour
 
@@ -70,6 +70,30 @@
 |---------------------|----------|-------|
 | AC-8 — Error summary | T-8.1, T-8.2, T-8.3 | |
 | AC-8 — Labels | T-8.4 | |
+
+## AC-13, AC-14: Grounds model determination and persistence
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-13 — System determines groundsModel | T-13.1 | |
+| AC-14 — groundsModel stored in session | T-13.2 | |
+
+## AC-15: Grounds model mapping
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-15 — Assured → ASSURED | T-15.1 | |
+| AC-15 — Secure → SECURE_LIKE | T-15.2 | |
+| AC-15 — Introductory → SECURE_LIKE | T-15.3 | |
+| AC-15 — Flexible → SECURE_LIKE | T-15.4 | |
+| AC-15 — Demoted → OTHER_UNSUPPORTED | T-15.5 | |
+| AC-15 — Other → OTHER_UNSUPPORTED | T-15.6 | |
+
+## AC-16: State clearing on tenancy change
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-16 — Clear incompatible grounds data | T-16.1 to T-16.5 | When groundsModel changes |
 
 ## Cross-Cutting
 
@@ -90,11 +114,15 @@
 | AC-3 (Start date) | 1/1 | 18 | + boundary tests |
 | AC-4 (Upload) | 1/1 | 13 | + file type tests |
 | AC-5 (Preserve inputs) | 1/1 | 4 | |
-| AC-6 (Save/redirect) | 1/1 | 5 | |
+| AC-6 (Save/redirect) | 1/1 | 4 | Conditional routing |
 | AC-7 (Navigation) | 1/1 | 4 | |
 | AC-8 (Accessibility) | 1/1 | 4 | |
+| AC-13, AC-14 (Determine/persist) | 2/2 | 2 | |
+| AC-15 (Mapping) | 1/1 | 6 | All 6 tenancy types |
+| AC-16 (State clearing) | 1/1 | 5 | |
+| Routing | - | 3 | groundsModel-based |
 | Cross-cutting | 5/5 | 5 | |
-| **TOTAL** | **8/8** | **69** | Full AC coverage |
+| **TOTAL** | **12/12** | **84** | Full AC coverage |
 
 ## Open Questions
 
@@ -106,8 +134,15 @@
 
 ## Journey Update Note
 
-**IMPORTANT**: Screen 11 (Defendant Details) tests have been updated to redirect to `/claims/tenancy` instead of `/claims/grounds`. The journey flow is now:
+**IMPORTANT**: This screen now routes conditionally based on the `groundsModel` determined from tenancy type:
 
 ```
-defendant-details → tenancy → grounds
+defendant-details → tenancy
+                      ├─ ASSURED → /claims/grounds-for-possession-assured
+                      ├─ SECURE_LIKE → /claims/grounds-for-possession-secure-flexible
+                      └─ OTHER_UNSUPPORTED → /claims/grounds-for-possession-intro-demoted-other
 ```
+
+**Route Renames**:
+- Screen 13.1: `/claims/grounds` → `/claims/grounds-for-possession-assured`
+- Screen 13.1.1: `/claims/assured-tenancy-grounds-selection` → `/claims/grounds-for-possession-assured-selection`

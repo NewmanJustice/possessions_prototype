@@ -103,6 +103,37 @@
 | AC-8 | Focus moves to error summary | T-8.3 | Error |
 | AC-8 | Form controls have associated labels | T-8.4 | UX |
 
+## AC-13, AC-14, AC-15: Grounds model determination and persistence
+
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-13 | System determines groundsModel on submission | T-13.1 | Happy |
+| AC-14 | groundsModel stored in session | T-13.2 | State |
+| AC-15 | Assured tenancy → groundsModel 'ASSURED' | T-15.1 | Mapping |
+| AC-15 | Secure tenancy → groundsModel 'SECURE_LIKE' | T-15.2 | Mapping |
+| AC-15 | Introductory tenancy → groundsModel 'SECURE_LIKE' | T-15.3 | Mapping |
+| AC-15 | Flexible tenancy → groundsModel 'SECURE_LIKE' | T-15.4 | Mapping |
+| AC-15 | Demoted tenancy → groundsModel 'OTHER_UNSUPPORTED' | T-15.5 | Mapping |
+| AC-15 | Other → groundsModel 'OTHER_UNSUPPORTED' | T-15.6 | Mapping |
+
+## AC-16: State clearing on tenancy change
+
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-16 | Changing ASSURED→SECURE_LIKE clears assured grounds | T-16.1 | State |
+| AC-16 | Changing ASSURED→OTHER_UNSUPPORTED clears assured grounds | T-16.2 | State |
+| AC-16 | Changing SECURE_LIKE→ASSURED clears secure grounds | T-16.3 | State |
+| AC-16 | Same groundsModel preserves grounds data | T-16.4 | State |
+| AC-16 | No previous grounds data doesn't cause error | T-16.5 | Edge |
+
+## Routing based on groundsModel
+
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| - | ASSURED → redirects to /claims/grounds-for-possession-assured | T-R.1 | Routing |
+| - | SECURE_LIKE → redirects to /claims/grounds-for-possession-secure-flexible | T-R.2 | Routing |
+| - | OTHER_UNSUPPORTED → redirects to /claims/grounds-for-possession-intro-demoted-other | T-R.3 | Routing |
+
 ## Cross-Cutting
 
 | Behaviour | Test ID | Type |

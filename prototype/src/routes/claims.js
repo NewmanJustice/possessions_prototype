@@ -989,8 +989,54 @@ router.post('/tenancy', (req, res) => {
     });
   }
 
+  // Determine groundsModel based on tenancy type
+  let groundsModel;
+  if (tenancyType === 'assured-tenancy') {
+    groundsModel = 'ASSURED';
+  } else if (['secure-tenancy', 'introductory-tenancy', 'flexible-tenancy'].includes(tenancyType)) {
+    groundsModel = 'SECURE_LIKE';
+  } else {
+    // demoted-tenancy or other
+    groundsModel = 'OTHER_UNSUPPORTED';
+  }
+
+  // Store groundsModel in tenancy
+  tenancy.groundsModel = groundsModel;
+
+  // Check if groundsModel has changed and clear incompatible grounds data
+  const claim = claimService.getClaim(req.session) || {};
+  const previousGroundsModel = claim.tenancy?.groundsModel;
+
+  if (previousGroundsModel && previousGroundsModel !== groundsModel) {
+    // Clear grounds data when groundsModel changes
+    if (claim.grounds) {
+      if (previousGroundsModel === 'ASSURED') {
+        // Clear assured-specific grounds
+        delete claim.grounds.assuredTenancy;
+        delete claim.grounds.rentArrears;
+        delete claim.grounds.hasAdditionalGrounds;
+      } else if (previousGroundsModel === 'SECURE_LIKE') {
+        // Clear secure-like-specific grounds
+        delete claim.grounds.secureTenancy;
+      }
+      // For OTHER_UNSUPPORTED or any transition to it, clear all grounds
+      if (groundsModel === 'OTHER_UNSUPPORTED') {
+        claim.grounds = {};
+      }
+      claimService.updateClaim(req.session, 'grounds', claim.grounds);
+    }
+  }
+
   claimService.updateClaim(req.session, 'tenancy', tenancy);
-  res.redirect('/claims/grounds');
+
+  // Route based on groundsModel
+  if (groundsModel === 'ASSURED') {
+    res.redirect('/claims/grounds-for-possession-assured');
+  } else if (groundsModel === 'SECURE_LIKE') {
+    res.redirect('/claims/grounds-for-possession-secure-flexible');
+  } else {
+    res.redirect('/claims/grounds-for-possession-intro-demoted-other');
+  }
 });
 
 // POST /claims/tenancy/remove-document
@@ -1131,7 +1177,90 @@ router.post('/defendant', (req, res) => {
   res.redirect('/claims/grounds');
 });
 
-// GET /claims/grounds - Screen 13.1: Rent arrears branch point
+// GET /claims/grounds-for-possession-assured - Screen 13.1: Rent arrears branch point (ASSURED path)
+router.get('/grounds-for-possession-assured', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get saved rent arrears selection
+  const grounds = claim.grounds || {};
+  const rentArrears = grounds.rentArrears;
+
+  res.render('pages/claims/grounds', {
+    pageTitle: 'Grounds for possession',
+    errors: errors,
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      rentArrears: rentArrears === true ? 'yes' : rentArrears === false ? 'no' : ''
+    },
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/grounds-for-possession-assured - Screen 13.1: Branch based on rent arrears
+router.post('/grounds-for-possession-assured', (req, res) => {
+  const { rentArrears } = req.body;
+
+  const errors = [];
+
+  // Validate rent arrears selection
+  if (!rentArrears) {
+    errors.push({
+      field: 'rentArrears',
+      message: 'Select yes if you are claiming possession because of rent arrears',
+      href: '#rentArrears',
+    });
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    return res.redirect('/claims/grounds-for-possession-assured');
+  }
+
+  // Store rent arrears as boolean in grounds object
+  const claim = claimService.getClaim(req.session) || {};
+  const grounds = claim.grounds || {};
+  grounds.rentArrears = rentArrears === 'yes';
+
+  claimService.updateClaim(req.session, 'grounds', grounds);
+
+  // Branch based on selection
+  if (rentArrears === 'yes') {
+    res.redirect('/claims/assured-tenancy-grounds-selection');
+  } else {
+    res.redirect('/claims/other-tenancy-grounds');
+  }
+});
+
+// GET /claims/grounds-for-possession-secure-flexible - Placeholder for SECURE_LIKE path
+router.get('/grounds-for-possession-secure-flexible', (req, res) => {
+  res.render('pages/claims/grounds-secure-flexible', {
+    pageTitle: 'Grounds for possession',
+  });
+});
+
+// GET /claims/grounds-for-possession-intro-demoted-other - Placeholder for OTHER_UNSUPPORTED path
+router.get('/grounds-for-possession-intro-demoted-other', (req, res) => {
+  res.render('pages/claims/grounds-intro-demoted-other', {
+    pageTitle: 'Grounds for possession',
+  });
+});
+
+// GET /claims/grounds - Screen 13.1: Rent arrears branch point (legacy route - redirects to new name)
 router.get('/grounds', (req, res) => {
   const claim = claimService.getClaim(req.session) || {};
   const errors = req.session.errors || [];
