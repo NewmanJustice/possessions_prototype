@@ -1,3 +1,8 @@
+# Social Housing L3 Process Map
+
+Civil Possession – Make a Claim (Social Housing Providers)
+
+```mermaid
 flowchart LR
   %% Civil Possession – Make a Claim (Social Housing Providers) – High-level service map
   %% Source: "Civil Possession - base board for exporting as PDF" (visual board) :contentReference[oaicite:1]{index=1}
@@ -93,3 +98,4 @@ flowchart LR
 
   %% End
   K3 --> Z1[End of make-a-claim journey]
+```
