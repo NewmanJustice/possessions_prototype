@@ -1,3 +1,4 @@
 /.devcontainer/claudeinit.sh
-businessArtifacts/
+businessArtifacts/*
+!businessArtifacts/socialHousingL3_processMap.md
 publishProfile.xml
