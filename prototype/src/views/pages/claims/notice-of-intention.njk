@@ -1,30 +1,86 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <span class="govuk-caption-l">Make a claim</span>
-    <h1 class="govuk-heading-l">Notice of intention</h1>
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
 
-    <div class="govuk-inset-text">
-      This page is for the notice of intention to seek possession.
-      This feature is not yet implemented.
-    </div>
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Notice of your intention to seek possession</h1>
 
     <p class="govuk-body">
-      Information about the notice of intention will be available in a future iteration.
+      Before you can make a possession claim, you must give notice to the defendants of your intention to seek possession.
     </p>
 
-    <div class="govuk-button-group">
-      {{ govukButton({
-        text: "Previous",
-        classes: "govuk-button--secondary",
-        href: "/claims/mediation-settlement"
+    <p class="govuk-body">
+      The notice period required depends on the grounds you are using. Some grounds may not require notice.
+      <a href="https://www.gov.uk/evicting-tenants/section-21-and-section-8-notices"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="govuk-link">
+        Read guidance on notice periods (opens in new tab)
+      </a>
+    </p>
+
+    {{ govukWarningText({
+      text: "The judge may not grant a possession order if you have not followed the correct notice procedure.",
+      iconFallbackText: "Warning"
+    }) }}
+
+    <form method="post" action="/claims/notice-of-intention" novalidate>
+
+      {{ govukRadios({
+        name: "noticeServed",
+        fieldset: {
+          legend: {
+            text: "Have you served notice to the defendants?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "true",
+            text: "Yes",
+            checked: values.noticeServed == "true"
+          },
+          {
+            value: "false",
+            text: "No",
+            checked: values.noticeServed == "false"
+          }
+        ],
+        errorMessage: {
+          text: fieldErrors.noticeServed
+        } if fieldErrors.noticeServed
       }) }}
-    </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/mediation-settlement"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
 
     <p class="govuk-body">
       <a href="/case-list" class="govuk-link">Cancel</a>

@@ -148,11 +148,11 @@ async function navigateToTenancy(agent) {
 }
 
 /**
- * Navigates to the grounds for possession page
+ * Navigates to the assured journey confirmation page (Screen 13.1)
  * @param {object} agent - Supertest agent (will be authenticated if not already)
- * @returns {Promise<object>} The authenticated agent at the grounds step
+ * @returns {Promise<object>} The authenticated agent at the assured confirmation step
  */
-async function navigateToGrounds(agent) {
+async function navigateToAssuredConfirmation(agent) {
   await navigateToTenancy(agent);
   await agent
     .post('/claims/tenancy')
@@ -161,16 +161,88 @@ async function navigateToGrounds(agent) {
 }
 
 /**
- * Navigates to the assured tenancy grounds selection page
+ * Navigates to the assured tenancy grounds selection page (Screen 13.1.1)
  * @param {object} agent - Supertest agent (will be authenticated if not already)
- * @returns {Promise<object>} The authenticated agent at the assured tenancy grounds step
+ * @returns {Promise<object>} The authenticated agent at the assured grounds selection step
  */
 async function navigateToAssuredTenancyGrounds(agent) {
-  await navigateToGrounds(agent);
+  await navigateToAssuredConfirmation(agent);
   await agent
-    .post('/claims/grounds')
-    .send({ rentArrears: 'yes' });
+    .post('/claims/grounds-for-possession-assured-confirmation')
+    .send({ assuredProceed: 'yes' });
   return agent;
+}
+
+/**
+ * Navigate to Pre-action Protocol (Screen 16)
+ * Entry: Screen 13.1.1 (No additional grounds) → Screen 16
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToPreActionProtocol(agent) {
+  await navigateToAssuredConfirmation(agent);
+  
+  // Screen 13.1: Select No (don't proceed with assured grounds)
+  await agent
+    .post('/claims/grounds-for-possession-assured-confirmation')
+    .send({ assuredProceed: 'false' })
+    .expect(302);
+  
+  // Screen 13.1.1: Select No (no additional grounds)
+  await agent
+    .post('/claims/grounds-for-possession-assured-selection')
+    .send({ hasAdditionalGrounds: 'false' })
+    .expect(302);
+    
+  return agent;
+}
+
+/**
+ * Navigate to Mediation and Settlement (Screen 17)
+ * Entry: Screen 16 (Pre-action protocol) → Screen 17
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToMediationSettlement(agent) {
+  await navigateToPreActionProtocol(agent);
+  
+  // Screen 16: Select either Yes or No (both go to mediation-settlement)
+  await agent
+    .post('/claims/preaction-protocol')
+    .send({ followed: 'true' })
+    .expect(302);
+    
+  return agent;
+}
+
+/**
+ * Navigate to Notice of Intention (Screen 18)
+ * Entry: Screen 17 (Mediation and settlement) → Screen 18
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToNoticeOfIntention(agent) {
+  await navigateToMediationSettlement(agent);
+  
+  // Screen 17: Submit mediation and settlement
+  await agent
+    .post('/claims/mediation-settlement')
+    .send({ 
+      mediationAttempted: 'false',
+      settlementAttempted: 'false'
+    })
+    .expect(302);
+    
+  return agent;
+}
+
+/**
+ * DEPRECATED: Old navigation helper for rent arrears question
+ * Use navigateToAssuredConfirmation instead
+ */
+async function navigateToGrounds(agent) {
+  console.warn('navigateToGrounds is deprecated - use navigateToAssuredConfirmation');
+  return navigateToAssuredConfirmation(agent);
 }
 
 module.exports = {
@@ -181,6 +253,10 @@ module.exports = {
   navigateToContactPreferences,
   navigateToDefendantDetails,
   navigateToTenancy,
-  navigateToGrounds,
-  navigateToAssuredTenancyGrounds
+  navigateToAssuredConfirmation,
+  navigateToAssuredTenancyGrounds,
+  navigateToPreActionProtocol,
+  navigateToMediationSettlement,
+  navigateToNoticeOfIntention,
+  navigateToGrounds  // Deprecated - kept for backward compatibility
 };

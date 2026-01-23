@@ -1734,10 +1734,94 @@ router.post('/mediation-settlement', (req, res) => {
   res.redirect('/claims/notice-of-intention');
 });
 
-// GET /claims/notice-of-intention - Placeholder for next screen after mediation-settlement
+// GET /claims/notice-of-intention - Screen 18: Notice of intention
 router.get('/notice-of-intention', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get saved notice served selection
+  const noticeOfIntention = claim.noticeOfIntention || {};
+  const noticeServed = noticeOfIntention.noticeServed;
+
   res.render('pages/claims/notice-of-intention', {
-    pageTitle: 'Notice of intention',
+    pageTitle: 'Notice of your intention to seek possession',
+    errors: errors,
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      noticeServed: noticeServed === true ? 'true' : noticeServed === false ? 'false' : ''
+    },
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/notice-of-intention - Screen 18: Notice of intention
+router.post('/notice-of-intention', (req, res) => {
+  const { noticeServed } = req.body;
+
+  const errors = [];
+
+  // Validate noticeServed selection
+  if (!noticeServed) {
+    errors.push({
+      field: 'noticeServed',
+      message: 'Select whether you have served notice to the defendants',
+      href: '#noticeServed',
+    });
+  }
+
+  if (errors.length > 0) {
+    // Build error list for error summary
+    const errorList = errors.map(error => ({
+      text: error.message,
+      href: error.href
+    }));
+
+    // Build field-specific error messages
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = error.message;
+    });
+
+    return res.status(400).render('pages/claims/notice-of-intention', {
+      pageTitle: 'Notice of your intention to seek possession',
+      errors: errors,
+      errorList: errorList,
+      fieldErrors: fieldErrors,
+      values: {
+        noticeServed: noticeServed || ''
+      },
+    });
+  }
+
+  // Store notice of intention as boolean
+  const noticeOfIntention = {
+    noticeServed: noticeServed === 'true'
+  };
+
+  claimService.updateClaim(req.session, 'noticeOfIntention', noticeOfIntention);
+
+  // Both paths redirect to notice-details
+  res.redirect('/claims/notice-details');
+});
+
+// GET /claims/notice-details - Screen 19: Notice details (placeholder)
+router.get('/notice-details', (req, res) => {
+  res.render('pages/claims/notice-details', {
+    pageTitle: 'Notice details',
   });
 });
 
