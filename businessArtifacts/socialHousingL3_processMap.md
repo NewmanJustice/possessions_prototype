@@ -41,8 +41,8 @@ flowchart LR
     E1["Tenancy or licence details - Screen 12"]
     E1 --> E2{groundsModel derived<br/>from tenancy type}
     E2 -->|ASSURED| E3[groundsModel = ASSURED]
-    E2 -->|SECURE_LIKE| E4[groundsModel = SECURE_LIKE]
-    E2 -->|OTHER_UNSUPPORTED| E5["Tenancy type not supported<br/>- placeholder"]
+    E2 -->|SECURE & FLEXIBLE | E4[groundsModel = SECURE_LIKE]
+    E2 -->|INTRO/DEMOTED/OTHER| E5["Tenancy type not supported<br/>- placeholder"]
   end
 
   subgraph F[Grounds – entry question]
