@@ -704,24 +704,30 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         expect(response.status).toBe(302);
       });
 
-      it('T-4.E.6: should allow file removal from list', async () => {
+      it('T-4.E.6: should allow file removal from list via GET link', async () => {
         const testSession = session(app);
         await navigateToTenancy(testSession);
-        
-        // Upload a file first
+
+        // Upload a file first (with action to stay on page)
         await testSession
           .post('/claims/tenancy')
           .send({
             tenancyType: 'assured-tenancy',
-            uploadedFileName: 'to_remove.pdf'
+            uploadedFileName: 'to_remove.pdf',
+            action: 'addDocument'
           });
-        
-        // Remove the file
+
+        // Get page to find document ID
+        const pageResponse = await testSession.get('/claims/tenancy');
+        const docIdMatch = pageResponse.text.match(/documentId=([^"&]+)/);
+        const documentId = docIdMatch ? docIdMatch[1] : 'unknown';
+
+        // Remove the file via GET (as the template now uses links)
         const response = await testSession
-          .post('/claims/tenancy/remove-document')
-          .send({ documentId: 'DOC-1' });
-        
-        expect([200, 302]).toContain(response.status);
+          .get(`/claims/tenancy/remove-document?documentId=${documentId}`);
+
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/claims/tenancy');
       });
 
       it('T-4.E.7: should allow multiple files to be uploaded', async () => {

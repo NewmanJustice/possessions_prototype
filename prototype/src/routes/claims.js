@@ -1045,7 +1045,22 @@ router.post('/tenancy', (req, res) => {
   }
 });
 
-// POST /claims/tenancy/remove-document
+// GET /claims/tenancy/remove-document - Remove document via link (avoids nested form issue)
+router.get('/tenancy/remove-document', (req, res) => {
+  const { documentId } = req.query;
+
+  const claim = claimService.getClaim(req.session) || {};
+  const tenancy = claim.tenancy || {};
+
+  if (tenancy.documents && Array.isArray(tenancy.documents)) {
+    tenancy.documents = tenancy.documents.filter(doc => doc.id !== documentId);
+    claimService.updateClaim(req.session, 'tenancy', tenancy);
+  }
+
+  res.redirect('/claims/tenancy');
+});
+
+// POST /claims/tenancy/remove-document (kept for backwards compatibility)
 router.post('/tenancy/remove-document', (req, res) => {
   const { documentId } = req.body;
 

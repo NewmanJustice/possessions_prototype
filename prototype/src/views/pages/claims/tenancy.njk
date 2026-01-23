@@ -179,12 +179,9 @@
                   {% for doc in values.documents %}
                     <li>
                       {{ doc.name }}
-                      <form method="post" action="/claims/tenancy/remove-document" style="display: inline;">
-                        <input type="hidden" name="documentId" value="{{ doc.id }}">
-                        <button type="submit" class="govuk-link" style="border: none; background: none; color: #1d70b8; cursor: pointer; text-decoration: underline;">
-                          Remove
-                        </button>
-                      </form>
+                      <a href="/claims/tenancy/remove-document?documentId={{ doc.id }}" class="govuk-link">
+                        Remove
+                      </a>
                     </li>
                   {% endfor %}
                 </ul>
