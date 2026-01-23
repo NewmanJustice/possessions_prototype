@@ -836,6 +836,7 @@ router.post('/tenancy', (req, res) => {
   const startDateYear = req.body['startDate-year'];
   const uploadedFileName = req.body.uploadedFileName;
   const uploadedFileSize = req.body.uploadedFileSize;
+  const action = req.body.action; // 'addDocument' when Add new button clicked
 
   const errors = [];
 
@@ -1028,6 +1029,11 @@ router.post('/tenancy', (req, res) => {
   }
 
   claimService.updateClaim(req.session, 'tenancy', tenancy);
+
+  // If "Add new" button was clicked, stay on the tenancy page
+  if (action === 'addDocument') {
+    return res.redirect('/claims/tenancy');
+  }
 
   // Route based on groundsModel
   if (groundsModel === 'ASSURED') {

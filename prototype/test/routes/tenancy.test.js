@@ -727,15 +727,55 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
       it('T-4.E.7: should allow multiple files to be uploaded', async () => {
         const testSession = session(app);
         await navigateToTenancy(testSession);
-        
+
         const response = await testSession
           .post('/claims/tenancy')
           .send({
             tenancyType: 'assured-tenancy',
             uploadedFileNames: ['file1.pdf', 'file2.pdf']
           });
-        
+
         expect(response.status).toBe(302);
+      });
+
+      it('T-4.E.8: should stay on tenancy page when Add new button clicked', async () => {
+        const testSession = session(app);
+        await navigateToTenancy(testSession);
+
+        const response = await testSession
+          .post('/claims/tenancy')
+          .send({
+            tenancyType: 'assured-tenancy',
+            uploadedFileName: 'document.pdf',
+            action: 'addDocument'
+          });
+
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/claims/tenancy');
+      });
+
+      it('T-4.E.9: should redirect to grounds page when Continue clicked after adding document', async () => {
+        const testSession = session(app);
+        await navigateToTenancy(testSession);
+
+        // First add a document with Add new button
+        await testSession
+          .post('/claims/tenancy')
+          .send({
+            tenancyType: 'assured-tenancy',
+            uploadedFileName: 'document.pdf',
+            action: 'addDocument'
+          });
+
+        // Then click Continue (no action param)
+        const response = await testSession
+          .post('/claims/tenancy')
+          .send({
+            tenancyType: 'assured-tenancy'
+          });
+
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
       });
     });
   });
