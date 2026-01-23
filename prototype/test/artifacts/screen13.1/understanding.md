@@ -1,46 +1,78 @@
-# Screen 13.1: Grounds for Possession - Understanding Document
+# Screen 13.1: Assured Journey Confirmation - Understanding Document
 
 ## Summary
 
-As a solicitor making a possession claim, I need to indicate whether I am claiming possession because of rent arrears. This is a **branch point** that determines the next step in the journey.
+As a solicitor making a possession claim with an assured tenancy, I need to confirm whether I want to proceed with the assured-tenancy grounds journey or switch to an alternate grounds flow.
+
+This is a **confirmation and branch point** screen that determines whether the user follows the assured-tenancy-specific grounds journey or proceeds to a general grounds selection.
 
 ## Key Behaviours
 
 ### Primary Behaviour (Happy Path)
-- Solicitor is asked "Are you claiming possession because of rent arrears?"
-- Yes/No radio selection
-- Selection determines which grounds selection page comes next
+- Solicitor is asked "Do you want to proceed with assured-tenancy grounds?"
+- Yes/No radio selection (required)
+- Selection determines next screen and stores confirmation choice
+- Yes path continues to assured grounds selection
+- No path switches to alternate grounds flow
 
 ### Branch Logic
 ```
-Are you claiming possession because of rent arrears?
-├─ Yes → /claims/assured-tenancy-grounds-selection
-│        (stores rentArrears = true)
-└─ No  → /claims/other-tenancy-grounds
-         (stores rentArrears = false)
+Do you want to proceed with assured-tenancy grounds?
+├─ Yes → /claims/grounds-for-possession-assured-selection (Screen 13.1.1)
+│        (stores assuredProceed = true)
+└─ No  → /claims/grounds-for-possession (Screen 14.1)
+         (stores assuredProceed = false)
 ```
 
 ### Constraints
-- This is a **hard branch point** - the selection alone determines the branch
-- Radio selection is required
-- Session must store `session.claim.grounds.rentArrears` as boolean
+- Radio selection is required (validation error if not selected)
+- Session must store `session.claim.grounds.assuredProceed` as boolean
+- Only applies to assured tenancy journey (groundsModel = 'ASSURED')
+
+## Route Details
+
+1. **Route**: `/claims/grounds-for-possession-assured-confirmation`
+2. **Previous page**: `/claims/tenancy` (when groundsModel = 'ASSURED')
+3. **Next pages**: 
+   - Yes → `/claims/grounds-for-possession-assured-selection` (Screen 13.1.1)
+   - No → `/claims/grounds-for-possession` (Screen 14.1)
+4. **Session storage**: `session.claim.grounds.assuredProceed` (boolean)
+
+## Session State Structure
+
+```js
+session.claim.grounds = {
+  ...existing,
+  assuredProceed: true | false  // NEW - confirmation of assured journey
+}
+```
+
+## Page Content
+
+### Question
+"Do you want to proceed with assured-tenancy grounds?"
+
+### Radio Options
+- Yes
+- No
+
+### Error Message
+"Select whether you want to proceed with assured-tenancy grounds"
+
+### Supporting Text
+Explanatory text about what assured-tenancy grounds are and when to use them vs. alternate grounds flow.
 
 ## Initial Assumptions
 
-1. **Route**: `/claims/grounds`
-2. **Previous page**: `/claims/tenancy`
-3. **Next pages**: 
-   - Yes → `/claims/assured-tenancy-grounds-selection`
-   - No → `/claims/other-tenancy-grounds`
-4. **Session storage**: `session.claim.grounds.rentArrears` (boolean)
-
-## Ambiguities Identified
-
-| Item | Ambiguity | Resolution |
-|------|-----------|------------|
-| A1 | User story file said "secure-tenancy-grounds" for No | Steve clarified: `/claims/other-tenancy-grounds` |
+1. This screen is **only reached** when user has selected "Assured tenancy" on Screen 12
+2. The "No" path allows users to access a more general grounds selection (Screen 14.1)
+3. AC-4 mentions preserving answers if Screen 14.1 was visited - assume this is not relevant for prototype (per Steve's Q3 answer)
+4. Previous link goes back to Screen 12 (Tenancy details)
+5. Cancel link goes to /case-list
 
 ## Out of Scope
 
-- The actual grounds selection pages (separate screens)
-- Tenancy type validation against selection
+- Actual assured grounds selection (Screen 13.1.1 - separate)
+- General grounds selection (Screen 14.1 - separate)
+- Toggling between assured/non-assured after completion
+- Validation of which grounds are legally appropriate

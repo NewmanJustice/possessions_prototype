@@ -1,22 +1,57 @@
-# Screen 13.1: Grounds for Possession - Traceability Table
+# Screen 13.1: Assured Journey Confirmation - Traceability Table
 
-## AC-5: Continue behaviour (branching)
+## AC-1: Display confirmation question
 
 | Acceptance Criterion | Test IDs | Notes |
 |---------------------|----------|-------|
-| AC-5 — Rent arrears question displayed | T-5.1 | Yes/No radios |
-| AC-5 — Yes redirects to assured-tenancy-grounds-selection | T-5.2 | Branch point |
-| AC-5 — Yes stores rentArrears = true | T-5.3 | |
-| AC-5 — No redirects to other-tenancy-grounds | T-5.4 | Branch point |
-| AC-5 — No stores rentArrears = false | T-5.5 | |
-| Validation errors | T-5.E.1, T-5.E.2, T-5.E.3 | |
+| AC-1 — Question and radio options displayed | T-1.1, T-1.2, T-1.3 | With explanatory text |
 
-## Navigation
+## AC-2: Selection is required
 
-| Requirement | Test IDs | Notes |
-|-------------|----------|-------|
-| Previous to /claims/tenancy | T-N.1, T-N.2 | |
-| Cancel to /case-list | T-N.3, T-N.4 | |
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-2 — Error on empty submission | T-2.1, T-2.2 | Specific error message |
+| AC-2 — Accessibility on error | T-2.3, T-2.4 | Focus + links |
+
+## AC-3: Yes path - proceed with assured-tenancy grounds
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-3 — Store assuredProceed = true | T-3.1 | Session state |
+| AC-3 — Redirect to Screen 13.1.1 | T-3.2 | Assured selection page |
+
+## AC-4: No path - proceed to alternate grounds flow
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-4 — Store assuredProceed = false | T-4.1 | Session state |
+| AC-4 — Redirect to Screen 14.1 | T-4.2 | General grounds page |
+
+## AC-5: Preserve selection on validation failure
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-5 — Yes preserved | T-5.1 | On validation error |
+| AC-5 — No preserved | T-5.2 | On validation error |
+
+## AC-6: Previous navigation
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-6 — Previous link to tenancy | T-6.1, T-6.2 | Preserves data |
+
+## AC-7: Cancel behaviour
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-7 — Cancel link to case-list | T-7.1, T-7.2 | Preserves draft |
+
+## AC-8: Accessibility compliance
+
+| Acceptance Criterion | Test IDs | Notes |
+|---------------------|----------|-------|
+| AC-8 — Error summary | T-8.1, T-8.2, T-8.3 | Focus + links |
+| AC-8 — Labels and keyboard | T-8.4, T-8.5 | |
 
 ## Cross-Cutting
 
@@ -24,7 +59,7 @@
 |-------------|----------|-------|
 | Authentication required | T-X.1 | |
 | SOLICITOR role required | T-X.2 | |
-| Page title | T-X.3 | |
+| Page title pattern | T-X.3 | |
 | Error page title | T-X.4 | |
 | Re-visiting shows saved selection | T-X.5 | |
 
@@ -32,23 +67,28 @@
 
 | Section | ACs Covered | Tests Written | Notes |
 |---------|-------------|---------------|-------|
-| AC-5 (Branching) | 1/1 | 8 | Both branches + errors |
-| Navigation | 2/2 | 4 | Previous + Cancel |
+| AC-1 (Display question) | 1/1 | 3 | |
+| AC-2 (Required validation) | 1/1 | 4 | |
+| AC-3 (Yes path) | 1/1 | 2 | |
+| AC-4 (No path) | 1/1 | 2 | |
+| AC-5 (Preserve selection) | 1/1 | 2 | |
+| AC-6 (Previous) | 1/1 | 2 | |
+| AC-7 (Cancel) | 1/1 | 2 | |
+| AC-8 (Accessibility) | 1/1 | 5 | |
 | Cross-cutting | 5/5 | 5 | |
-| **TOTAL** | **8/8** | **17** | Full coverage |
-
-## Branch Logic Summary
-
-```
-POST /claims/grounds
-├─ rentArrears: 'yes' → 302 /claims/assured-tenancy-grounds-selection
-│                       session.claim.grounds.rentArrears = true
-└─ rentArrears: 'no'  → 302 /claims/other-tenancy-grounds
-                        session.claim.grounds.rentArrears = false
-```
+| **TOTAL** | **8/8** | **27** | Full AC coverage |
 
 ## Open Questions
 
-| # | Question | Status |
-|---|----------|--------|
-| Q1 | User story file said "secure-tenancy-grounds" | Resolved: Steve confirmed `/claims/other-tenancy-grounds` |
+None - all clarified with Steve.
+
+## Journey Context
+
+**Previous Screen:** Screen 12 (Tenancy details) - with groundsModel = 'ASSURED'
+
+**Next Screens:**
+- Yes path → Screen 13.1.1 (`/claims/grounds-for-possession-assured-selection`)
+- No path → Screen 14.1 (`/claims/grounds-for-possession`)
+
+**Route Rename Note:**
+The old `/claims/grounds` route is being renamed to `/claims/grounds-for-possession` for the general grounds flow.

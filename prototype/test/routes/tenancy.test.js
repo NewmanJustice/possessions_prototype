@@ -107,7 +107,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         .send({ tenancyType: 'assured-tenancy' });
 
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
     });
 
     it('T-1.7: should accept secure-tenancy selection', async () => {
@@ -263,7 +263,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         });
 
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
     });
 
     it('T-3.2: should accept complete valid date', async () => {
@@ -280,7 +280,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         });
 
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
     });
 
     it('T-3.3: should save date to session', async () => {
@@ -420,7 +420,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
           });
 
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
       });
 
       it('T-3.E.3: should accept year 2100 (maximum valid)', async () => {
@@ -437,7 +437,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
           });
 
         expect(response.status).toBe(302);
-        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
       });
 
       it('T-3.E.4: should show error for year 2101 (above maximum)', async () => {
@@ -569,7 +569,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         });
 
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
     });
 
     it('T-4.3: should store file metadata in session when uploaded', async () => {
@@ -1094,7 +1094,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         .send({ tenancyType: 'assured-tenancy' });
       
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
     });
 
     it('T-15.2: should map secure-tenancy to SECURE_LIKE groundsModel', async () => {
@@ -1169,7 +1169,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         .send({ tenancyType: 'assured-tenancy' });
       
       // Simulate having completed assured grounds journey
-      await testSession.get('/claims/grounds-for-possession-assured');
+      await testSession.get('/claims/grounds-for-possession-assured-confirmation');
       
       // Return to tenancy page
       await testSession.get('/claims/tenancy');
@@ -1218,7 +1218,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         .send({ tenancyType: 'assured-tenancy' });
       
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
     });
 
     it('T-16.4: should preserve grounds data when groundsModel unchanged', async () => {
@@ -1250,12 +1250,12 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         .send({ tenancyType: 'assured-tenancy' });
       
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
     });
   });
 
   describe('Routing based on groundsModel', () => {
-    it('T-R.1: should redirect to /claims/grounds-for-possession-assured for ASSURED', async () => {
+    it('T-R.1: should redirect to /claims/grounds-for-possession-assured-confirmation for ASSURED', async () => {
       const testSession = session(app);
       await navigateToTenancy(testSession);
       
@@ -1264,7 +1264,7 @@ describe('Tenancy or Licence Details Route - /claims/tenancy', () => {
         .send({ tenancyType: 'assured-tenancy' });
       
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured');
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-confirmation');
     });
 
     it('T-R.2: should redirect to /claims/grounds-for-possession-secure-flexible for SECURE_LIKE', async () => {

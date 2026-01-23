@@ -1,0 +1,36 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Grounds for possession</h1>
+
+    <div class="govuk-inset-text">
+      This page is for general grounds selection.
+      This feature is not yet implemented.
+    </div>
+
+    <p class="govuk-body">
+      You have chosen to use the general grounds selection flow.
+      This will be available in a future iteration.
+    </p>
+
+    <div class="govuk-button-group">
+      {{ govukButton({
+        text: "Previous",
+        classes: "govuk-button--secondary",
+        href: "/claims/grounds-for-possession-assured-confirmation"
+      }) }}
+    </div>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

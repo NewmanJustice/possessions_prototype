@@ -1031,7 +1031,7 @@ router.post('/tenancy', (req, res) => {
 
   // Route based on groundsModel
   if (groundsModel === 'ASSURED') {
-    res.redirect('/claims/grounds-for-possession-assured');
+    res.redirect('/claims/grounds-for-possession-assured-confirmation');
   } else if (groundsModel === 'SECURE_LIKE') {
     res.redirect('/claims/grounds-for-possession-secure-flexible');
   } else {
@@ -1177,8 +1177,8 @@ router.post('/defendant', (req, res) => {
   res.redirect('/claims/grounds');
 });
 
-// GET /claims/grounds-for-possession-assured - Screen 13.1: Rent arrears branch point (ASSURED path)
-router.get('/grounds-for-possession-assured', (req, res) => {
+// GET /claims/grounds-for-possession-assured-confirmation - Screen 13.1: Assured journey confirmation
+router.get('/grounds-for-possession-assured-confirmation', (req, res) => {
   const claim = claimService.getClaim(req.session) || {};
   const errors = req.session.errors || [];
 
@@ -1194,55 +1194,74 @@ router.get('/grounds-for-possession-assured', (req, res) => {
     fieldErrors[error.field] = error.message;
   });
 
-  // Get saved rent arrears selection
+  // Get saved assuredProceed selection
   const grounds = claim.grounds || {};
-  const rentArrears = grounds.rentArrears;
+  const assuredProceed = grounds.assuredProceed;
 
-  res.render('pages/claims/grounds', {
-    pageTitle: 'Grounds for possession',
+  res.render('pages/claims/grounds-assured-confirmation', {
+    pageTitle: 'Assured tenancy grounds confirmation',
     errors: errors,
     errorList: errorList,
     fieldErrors: fieldErrors,
     values: {
-      rentArrears: rentArrears === true ? 'yes' : rentArrears === false ? 'no' : ''
+      assuredProceed: assuredProceed === true ? 'yes' : assuredProceed === false ? 'no' : ''
     },
   });
 
   delete req.session.errors;
 });
 
-// POST /claims/grounds-for-possession-assured - Screen 13.1: Branch based on rent arrears
-router.post('/grounds-for-possession-assured', (req, res) => {
-  const { rentArrears } = req.body;
+// POST /claims/grounds-for-possession-assured-confirmation - Screen 13.1: Branch based on assured journey choice
+router.post('/grounds-for-possession-assured-confirmation', (req, res) => {
+  const { assuredProceed } = req.body;
 
   const errors = [];
 
-  // Validate rent arrears selection
-  if (!rentArrears) {
+  // Validate assuredProceed selection
+  if (!assuredProceed) {
     errors.push({
-      field: 'rentArrears',
-      message: 'Select yes if you are claiming possession because of rent arrears',
-      href: '#rentArrears',
+      field: 'assuredProceed',
+      message: 'Select whether you want to proceed with assured-tenancy grounds',
+      href: '#assuredProceed',
     });
   }
 
   if (errors.length > 0) {
-    req.session.errors = errors;
-    return res.redirect('/claims/grounds-for-possession-assured');
+    // Build error list for error summary
+    const errorList = errors.map(error => ({
+      text: error.message,
+      href: error.href
+    }));
+
+    // Build field-specific error messages
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = error.message;
+    });
+
+    return res.render('pages/claims/grounds-assured-confirmation', {
+      pageTitle: 'Assured tenancy grounds confirmation',
+      errors: errors,
+      errorList: errorList,
+      fieldErrors: fieldErrors,
+      values: {
+        assuredProceed: assuredProceed || ''
+      },
+    });
   }
 
-  // Store rent arrears as boolean in grounds object
+  // Store assuredProceed as boolean in grounds object
   const claim = claimService.getClaim(req.session) || {};
   const grounds = claim.grounds || {};
-  grounds.rentArrears = rentArrears === 'yes';
+  grounds.assuredProceed = assuredProceed === 'yes';
 
   claimService.updateClaim(req.session, 'grounds', grounds);
 
   // Branch based on selection
-  if (rentArrears === 'yes') {
-    res.redirect('/claims/assured-tenancy-grounds-selection');
+  if (assuredProceed === 'yes') {
+    res.redirect('/claims/grounds-for-possession-assured-selection');
   } else {
-    res.redirect('/claims/other-tenancy-grounds');
+    res.redirect('/claims/grounds-for-possession');
   }
 });
 
@@ -1418,6 +1437,104 @@ router.post('/assured-tenancy-grounds-selection', (req, res) => {
   } else {
     res.redirect('/claims/reasons-for-possessions');
   }
+});
+
+// GET /claims/grounds-for-possession-assured-selection - Screen 13.1.1 (new route name)
+router.get('/grounds-for-possession-assured-selection', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get saved grounds selection
+  const grounds = claim.grounds || {};
+  const assuredTenancy = grounds.assuredTenancy || {};
+
+  res.render('pages/claims/assured-tenancy-grounds-selection', {
+    pageTitle: 'Grounds for possession',
+    errors: errors,
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      ground8: assuredTenancy.ground8 === true,
+      ground10: assuredTenancy.ground10 === true,
+      ground11: assuredTenancy.ground11 === true,
+      hasAdditionalGrounds: grounds.hasAdditionalGrounds === true ? 'yes' : grounds.hasAdditionalGrounds === false ? 'no' : ''
+    },
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/grounds-for-possession-assured-selection - Screen 13.1.1 (new route name)
+router.post('/grounds-for-possession-assured-selection', (req, res) => {
+  const { ground8, ground10, ground11, hasAdditionalGrounds } = req.body;
+
+  const errors = [];
+
+  // Validate hasAdditionalGrounds selection (required)
+  if (!hasAdditionalGrounds) {
+    errors.push({
+      field: 'hasAdditionalGrounds',
+      message: 'Select whether you have other grounds for possession',
+      href: '#hasAdditionalGrounds',
+    });
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    // Store submitted values temporarily
+    const claim = claimService.getClaim(req.session) || {};
+    const grounds = claim.grounds || {};
+    grounds.assuredTenancy = {
+      ground8: ground8 === 'true',
+      ground10: ground10 === 'true',
+      ground11: ground11 === 'true'
+    };
+    req.session.claimDraft = claim;
+    req.session.claimDraft.grounds = grounds;
+    return res.redirect('/claims/grounds-for-possession-assured-selection');
+  }
+
+  // Get existing grounds object
+  const claim = claimService.getClaim(req.session) || {};
+  const grounds = claim.grounds || {};
+
+  // Store assured tenancy selections
+  grounds.assuredTenancy = {
+    ground8: ground8 === 'true',
+    ground10: ground10 === 'true',
+    ground11: ground11 === 'true'
+  };
+
+  // Store hasAdditionalGrounds as boolean
+  grounds.hasAdditionalGrounds = hasAdditionalGrounds === 'yes';
+
+  claimService.updateClaim(req.session, 'grounds', grounds);
+
+  // Branch based on selection
+  if (hasAdditionalGrounds === 'yes') {
+    res.redirect('/claims/other-tenancy-grounds');
+  } else {
+    res.redirect('/claims/reasons-for-possessions');
+  }
+});
+
+// GET /claims/grounds-for-possession - Screen 14.1: General grounds selection (placeholder)
+router.get('/grounds-for-possession', (req, res) => {
+  res.render('pages/claims/grounds-general', {
+    pageTitle: 'Grounds for possession',
+  });
 });
 
 // GET /claims/key-dates

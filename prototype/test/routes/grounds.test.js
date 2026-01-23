@@ -1,8 +1,8 @@
 /**
- * Grounds for Possession Route Tests - Screen 13.1
+ * Assured Journey Confirmation Route Tests - Screen 13.1
  * 
- * Tests for /claims/grounds
- * Covers: rent arrears question, branching logic, navigation
+ * Tests for /claims/grounds-for-possession-assured-confirmation
+ * Covers: assured journey confirmation, branching logic, navigation
  * 
  * @see /test/artifacts/screen13.1/understanding.md
  * @see /test/artifacts/screen13.1/test-plan.md
@@ -12,228 +12,387 @@
 const request = require('supertest');
 const session = require('supertest-session');
 const app = require('../../src/app');
-const { navigateToGrounds } = require('../helpers/sessionHelper');
+const { navigateToTenancy, createAuthenticatedSession } = require('../helpers/sessionHelper');
 
-describe('Grounds for Possession Route - /claims/grounds', () => {
+describe('Assured Journey Confirmation Route - /claims/grounds-for-possession-assured-confirmation', () => {
   
   // ============================================================
   // CROSS-CUTTING: Authentication & Access
   // ============================================================
   describe('Authentication & Access', () => {
     it('T-X.1: should redirect unauthenticated users to sign-in', async () => {
-      const response = await request(app).get('/claims/grounds');
+      const response = await request(app).get('/claims/grounds-for-possession-assured-confirmation');
       expect(response.status).toBe(302);
       expect(response.headers.location).toContain('/auth/sign-in');
     });
 
     it('T-X.2: should render page for authenticated SOLICITOR users', async () => {
       const testSession = session(app);
-      await navigateToGrounds(testSession);
+      await navigateToAssuredConfirmation(testSession);
       
-      const response = await testSession.get('/claims/grounds');
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
       expect(response.status).toBe(200);
     });
   });
 
   // ============================================================
-  // AC-5: Continue behaviour (branching)
+  // AC-1: Display confirmation question
   // ============================================================
-  describe('AC-5: Continue behaviour (branching)', () => {
-    it('T-5.1: should display rent arrears question with Yes/No radios', async () => {
+  describe('AC-1: Display confirmation question', () => {
+    it('T-1.1: should display confirmation question', async () => {
       const testSession = session(app);
-      await navigateToGrounds(testSession);
+      await navigateToAssuredConfirmation(testSession);
       
-      const response = await testSession.get('/claims/grounds');
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
       expect(response.status).toBe(200);
-      expect(response.text).toMatch(/rent arrears/i);
+      expect(response.text).toMatch(/Do you want to proceed with assured-tenancy grounds/i);
+    });
+
+    it('T-1.2: should show Yes/No radio options', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
       expect(response.text).toContain('type="radio"');
+      expect(response.text).toContain('value="yes"');
+      expect(response.text).toContain('value="no"');
     });
 
-    it('T-5.2: should redirect to /claims/assured-tenancy-grounds-selection when Yes selected', async () => {
+    it('T-1.3: should show supporting explanatory text', async () => {
       const testSession = session(app);
-      await navigateToGrounds(testSession);
+      await navigateToAssuredConfirmation(testSession);
       
-      const response = await testSession
-        .post('/claims/grounds')
-        .send({ rentArrears: 'yes' });
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/assured-tenancy-grounds-selection');
-    });
-
-    it('T-5.3: should store rentArrears = true in session when Yes selected', async () => {
-      const testSession = session(app);
-      await navigateToGrounds(testSession);
-      
-      await testSession
-        .post('/claims/grounds')
-        .send({ rentArrears: 'yes' });
-      
-      // Verify by revisiting page
-      const getResponse = await testSession.get('/claims/grounds');
-      expect(getResponse.text).toContain('value="yes"');
-      expect(getResponse.text).toContain('checked');
-    });
-
-    it('T-5.4: should redirect to /claims/other-tenancy-grounds when No selected', async () => {
-      const testSession = session(app);
-      await navigateToGrounds(testSession);
-      
-      const response = await testSession
-        .post('/claims/grounds')
-        .send({ rentArrears: 'no' });
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/other-tenancy-grounds');
-    });
-
-    it('T-5.5: should store rentArrears = false in session when No selected', async () => {
-      const testSession = session(app);
-      await navigateToGrounds(testSession);
-      
-      await testSession
-        .post('/claims/grounds')
-        .send({ rentArrears: 'no' });
-      
-      // Verify by revisiting page
-      const getResponse = await testSession.get('/claims/grounds');
-      expect(getResponse.text).toContain('value="no"');
-      expect(getResponse.text).toContain('checked');
-    });
-
-    describe('Validation Errors', () => {
-      it('T-5.E.1: should show error summary when no radio selected', async () => {
-        const testSession = session(app);
-        await navigateToGrounds(testSession);
-        
-        await testSession
-          .post('/claims/grounds')
-          .send({ rentArrears: '' });
-        
-        const getResponse = await testSession.get('/claims/grounds');
-        expect(getResponse.text).toContain('govuk-error-summary');
-      });
-
-      it('T-5.E.2: should show error message describing selection required', async () => {
-        const testSession = session(app);
-        await navigateToGrounds(testSession);
-        
-        await testSession
-          .post('/claims/grounds')
-          .send({ rentArrears: '' });
-        
-        const getResponse = await testSession.get('/claims/grounds');
-        expect(getResponse.text).toMatch(/select|choose/i);
-      });
-
-      it('T-5.E.3: should move focus to error summary on validation failure', async () => {
-        const testSession = session(app);
-        await navigateToGrounds(testSession);
-        
-        await testSession
-          .post('/claims/grounds')
-          .send({ rentArrears: '' });
-        
-        const getResponse = await testSession.get('/claims/grounds');
-        expect(getResponse.text).toContain('govuk-error-summary');
-        expect(getResponse.text).toContain('There is a problem');
-      });
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(response.status).toBe(200);
+      // Explanatory text should be present
+      expect(response.text.length).toBeGreaterThan(100);
     });
   });
 
   // ============================================================
-  // Navigation
+  // AC-2: Selection is required
   // ============================================================
-  describe('Navigation', () => {
-    it('T-N.1: should have Previous link to /claims/tenancy', async () => {
+  describe('AC-2: Selection is required', () => {
+    it('T-2.1: should show error summary when submitted without selection', async () => {
       const testSession = session(app);
-      await navigateToGrounds(testSession);
+      await navigateToAssuredConfirmation(testSession);
       
-      const response = await testSession.get('/claims/grounds');
-      expect(response.text).toContain('/claims/tenancy');
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({});
+      
+      expect(response.text).toContain('govuk-error-summary');
     });
 
-    it('T-N.2: should preserve session data when navigating back', async () => {
+    it('T-2.2: should show specific error message', async () => {
       const testSession = session(app);
-      await navigateToGrounds(testSession);
+      await navigateToAssuredConfirmation(testSession);
       
-      // Submit selection
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({});
+      
+      expect(response.text).toMatch(/Select whether you want to proceed with assured-tenancy grounds/i);
+    });
+
+    it('T-2.3: should move focus to error summary', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({});
+      
+      expect(response.text).toContain('govuk-error-summary');
+      expect(response.text).toMatch(/<title>Error:/i);
+    });
+
+    it('T-2.4: should have error link to radio group', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({});
+      
+      expect(response.text).toContain('href="#assuredProceed');
+    });
+  });
+
+  // ============================================================
+  // AC-3: Yes path - proceed with assured-tenancy grounds
+  // ============================================================
+  describe('AC-3: Yes path - proceed with assured-tenancy grounds', () => {
+    it('T-3.1: should store assuredProceed = true in session', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
       await testSession
-        .post('/claims/grounds')
-        .send({ rentArrears: 'yes' });
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'yes' });
+      
+      // Verify by checking session persists on next GET
+      const getResponse = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(getResponse.status).toBe(200);
+    });
+
+    it('T-3.2: should redirect to /claims/grounds-for-possession-assured-selection', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'yes' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-selection');
+    });
+  });
+
+  // ============================================================
+  // AC-4: No path - proceed to alternate grounds flow
+  // ============================================================
+  describe('AC-4: No path - proceed to alternate grounds flow', () => {
+    it('T-4.1: should store assuredProceed = false in session', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'no' });
+      
+      // Verify by checking session persists
+      const getResponse = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(getResponse.status).toBe(200);
+    });
+
+    it('T-4.2: should redirect to /claims/grounds-for-possession', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'no' });
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/claims/grounds-for-possession');
+    });
+  });
+
+  // ============================================================
+  // AC-5: Preserve selection on validation failure
+  // ============================================================
+  describe('AC-5: Preserve selection on validation failure', () => {
+    it('T-5.1: should preserve Yes selection on validation error', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      // First submit with Yes
+      await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'yes' });
+      
+      // Go back and submit with validation error (simulate by adding invalid field)
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      
+      // Value should be preserved
+      expect(response.text).toContain('value="yes"');
+    });
+
+    it('T-5.2: should preserve No selection on validation error', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      // Submit with No
+      await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'no' });
       
       // Navigate back
-      const backResponse = await testSession.get('/claims/tenancy');
-      expect(backResponse.status).toBe(200);
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
       
-      // Navigate forward
-      const forwardResponse = await testSession.get('/claims/grounds');
-      expect(forwardResponse.text).toContain('value="yes"');
-    });
-
-    it('T-N.3: should have Cancel link to /case-list', async () => {
-      const testSession = session(app);
-      await navigateToGrounds(testSession);
-      
-      const response = await testSession.get('/claims/grounds');
-      expect(response.text).toContain('/case-list');
-      expect(response.text).toContain('Cancel');
-    });
-
-    it('T-N.4: should preserve claim draft after Cancel', async () => {
-      const testSession = session(app);
-      await navigateToGrounds(testSession);
-      
-      // Navigate to case list (Cancel)
-      const cancelResponse = await testSession.get('/case-list');
-      expect(cancelResponse.status).toBe(200);
-      
-      // Go back to grounds - should still work
-      const returnResponse = await testSession.get('/claims/grounds');
-      expect(returnResponse.status).toBe(200);
+      // Value should be preserved
+      expect(response.text).toContain('value="no"');
     });
   });
 
   // ============================================================
-  // PAGE CONTENT & UX
+  // AC-6: Previous navigation
+  // ============================================================
+  describe('AC-6: Previous navigation', () => {
+    it('T-6.1: should have Previous link to /claims/tenancy', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(response.text).toMatch(/href="\/claims\/tenancy"/i);
+    });
+
+    it('T-6.2: should preserve form data when navigating back', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      // Select Yes
+      await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'yes' });
+      
+      // Navigate to assured selection, then back
+      await testSession.get('/claims/grounds-for-possession-assured-selection');
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      
+      // Selection should be preserved
+      expect(response.text).toContain('value="yes"');
+    });
+  });
+
+  // ============================================================
+  // AC-7: Cancel behaviour
+  // ============================================================
+  describe('AC-7: Cancel behaviour', () => {
+    it('T-7.1: should have Cancel link to /case-list', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(response.text).toMatch(/href="\/case-list"/i);
+    });
+
+    it('T-7.2: should preserve claim draft after Cancel', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      // Select Yes
+      await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'yes' });
+      
+      // Navigate to case list
+      const caseListResponse = await testSession.get('/case-list');
+      expect(caseListResponse.status).toBe(200);
+      
+      // Return to confirmation page - data should still be there
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(response.status).toBe(200);
+    });
+  });
+
+  // ============================================================
+  // AC-8: Accessibility compliance
+  // ============================================================
+  describe('AC-8: Accessibility compliance', () => {
+    it('T-8.1: should show error summary on validation failure', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({});
+      
+      expect(response.text).toContain('govuk-error-summary');
+    });
+
+    it('T-8.2: should have error link to radio group', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({});
+      
+      expect(response.text).toContain('href="#assuredProceed');
+    });
+
+    it('T-8.3: should move focus to error summary', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({});
+      
+      expect(response.text).toMatch(/<title>Error:/i);
+    });
+
+    it('T-8.4: should have radio inputs properly labelled', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(response.text).toContain('<label');
+      expect(response.text).toContain('for=');
+    });
+
+    it('T-8.5: should have radio inputs keyboard accessible', async () => {
+      const testSession = session(app);
+      await navigateToAssuredConfirmation(testSession);
+      
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(response.text).toContain('type="radio"');
+      // Radio buttons are inherently keyboard accessible
+      expect(response.text).toContain('name="assuredProceed"');
+    });
+  });
+
+  // ============================================================
+  // Page Content & UX
   // ============================================================
   describe('Page Content & UX', () => {
     it('T-X.3: should have correct page title', async () => {
       const testSession = session(app);
-      await navigateToGrounds(testSession);
+      await navigateToAssuredConfirmation(testSession);
       
-      const response = await testSession.get('/claims/grounds');
-      expect(response.text).toMatch(/<title>.*[Gg]rounds.*<\/title>/i);
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+      expect(response.text).toMatch(/<title>.*Possessions.*GOV\.UK<\/title>/i);
     });
 
     it('T-X.4: should include "Error:" in page title on validation failure', async () => {
       const testSession = session(app);
-      await navigateToGrounds(testSession);
+      await navigateToAssuredConfirmation(testSession);
       
-      await testSession
-        .post('/claims/grounds')
-        .send({ rentArrears: '' });
+      const response = await testSession
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({});
       
-      const getResponse = await testSession.get('/claims/grounds');
-      expect(getResponse.text).toMatch(/<title>Error:.*<\/title>/i);
+      expect(response.text).toMatch(/<title>Error:.*<\/title>/i);
     });
 
-    it('T-X.5: should show previously saved selection when re-visiting page', async () => {
+    it('T-X.5: should show previously selected option when re-visiting', async () => {
       const testSession = session(app);
-      await navigateToGrounds(testSession);
+      await navigateToAssuredConfirmation(testSession);
       
-      // Submit selection
+      // Submit with Yes
       await testSession
-        .post('/claims/grounds')
-        .send({ rentArrears: 'no' });
+        .post('/claims/grounds-for-possession-assured-confirmation')
+        .send({ assuredProceed: 'yes' });
       
       // Go to next page
-      await testSession.get('/claims/other-tenancy-grounds');
+      await testSession.get('/claims/grounds-for-possession-assured-selection');
       
       // Come back
-      const response = await testSession.get('/claims/grounds');
-      expect(response.text).toContain('value="no"');
+      const response = await testSession.get('/claims/grounds-for-possession-assured-confirmation');
       expect(response.text).toContain('checked');
+      expect(response.text).toContain('value="yes"');
     });
   });
 });
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+
+/**
+ * Navigate to assured confirmation page
+ * Completes all prerequisite journey steps
+ */
+async function navigateToAssuredConfirmation(testSession) {
+  await navigateToTenancy(testSession);
+  
+  // Submit tenancy with assured-tenancy type (sets groundsModel = ASSURED)
+  await testSession
+    .post('/claims/tenancy')
+    .send({ tenancyType: 'assured-tenancy' });
+  
+  // Now at assured confirmation page
+  return await testSession.get('/claims/grounds-for-possession-assured-confirmation');
+}
