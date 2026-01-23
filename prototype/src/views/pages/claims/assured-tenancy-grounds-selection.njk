@@ -1,0 +1,113 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Grounds for possession</h1>
+
+    <form method="post" action="/claims/assured-tenancy-grounds-selection" novalidate>
+
+      <p class="govuk-body">Select the grounds that apply to your claim. All grounds are optional.</p>
+
+      {{ govukCheckboxes({
+        name: "grounds",
+        fieldset: {
+          legend: {
+            text: "Select the grounds for possession",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "true",
+            id: "ground8",
+            name: "ground8",
+            text: "Serious rent arrears (ground 8)",
+            hint: {
+              text: "At least 8 weeks rent is owed at the date of the notice and the hearing"
+            },
+            checked: values.ground8
+          },
+          {
+            value: "true",
+            id: "ground10",
+            name: "ground10",
+            text: "Rent arrears (ground 10)",
+            hint: {
+              text: "Some rent was owed at the date of the notice and when proceedings were issued"
+            },
+            checked: values.ground10
+          },
+          {
+            value: "true",
+            id: "ground11",
+            name: "ground11",
+            text: "Persistent delay in paying rent (ground 11)",
+            hint: {
+              text: "The tenant has persistently delayed paying rent"
+            },
+            checked: values.ground11
+          }
+        ]
+      }) }}
+
+      {{ govukRadios({
+        name: "hasAdditionalGrounds",
+        fieldset: {
+          legend: {
+            text: "Do you have any other grounds for possession?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: values.hasAdditionalGrounds == "yes"
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: values.hasAdditionalGrounds == "no"
+          }
+        ],
+        errorMessage: {
+          text: fieldErrors.hasAdditionalGrounds
+        } if fieldErrors.hasAdditionalGrounds
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/grounds"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

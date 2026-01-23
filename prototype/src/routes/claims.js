@@ -1200,6 +1200,97 @@ router.post('/grounds', (req, res) => {
   }
 });
 
+// GET /claims/assured-tenancy-grounds-selection - Screen 13.1.1
+router.get('/assured-tenancy-grounds-selection', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get saved grounds selection
+  const grounds = claim.grounds || {};
+  const assuredTenancy = grounds.assuredTenancy || {};
+
+  res.render('pages/claims/assured-tenancy-grounds-selection', {
+    pageTitle: 'Grounds for possession',
+    errors: errors, // For layout template to check for error title prefix
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      ground8: assuredTenancy.ground8 === true,
+      ground10: assuredTenancy.ground10 === true,
+      ground11: assuredTenancy.ground11 === true,
+      hasAdditionalGrounds: grounds.hasAdditionalGrounds === true ? 'yes' : grounds.hasAdditionalGrounds === false ? 'no' : ''
+    },
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/assured-tenancy-grounds-selection - Screen 13.1.1
+router.post('/assured-tenancy-grounds-selection', (req, res) => {
+  const { ground8, ground10, ground11, hasAdditionalGrounds } = req.body;
+
+  const errors = [];
+
+  // Validate hasAdditionalGrounds selection (required)
+  if (!hasAdditionalGrounds) {
+    errors.push({
+      field: 'hasAdditionalGrounds',
+      message: 'Select whether you have other grounds for possession',
+      href: '#hasAdditionalGrounds',
+    });
+  }
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    // Store submitted values temporarily
+    const claim = claimService.getClaim(req.session) || {};
+    const grounds = claim.grounds || {};
+    grounds.assuredTenancy = {
+      ground8: ground8 === 'true',
+      ground10: ground10 === 'true',
+      ground11: ground11 === 'true'
+    };
+    req.session.claimDraft = claim;
+    req.session.claimDraft.grounds = grounds;
+    return res.redirect('/claims/assured-tenancy-grounds-selection');
+  }
+
+  // Get existing grounds object (preserves rentArrears from screen 13.1)
+  const claim = claimService.getClaim(req.session) || {};
+  const grounds = claim.grounds || {};
+
+  // Store assured tenancy selections
+  grounds.assuredTenancy = {
+    ground8: ground8 === 'true',
+    ground10: ground10 === 'true',
+    ground11: ground11 === 'true'
+  };
+
+  // Store hasAdditionalGrounds as boolean
+  grounds.hasAdditionalGrounds = hasAdditionalGrounds === 'yes';
+
+  claimService.updateClaim(req.session, 'grounds', grounds);
+
+  // Branch based on selection
+  if (hasAdditionalGrounds === 'yes') {
+    res.redirect('/claims/other-tenancy-grounds');
+  } else {
+    res.redirect('/claims/reasons-for-possessions');
+  }
+});
+
 // GET /claims/key-dates
 router.get('/key-dates', (req, res) => {
   const claim = claimService.getClaim(req.session);
