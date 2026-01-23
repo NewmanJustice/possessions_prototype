@@ -1433,9 +1433,9 @@ router.post('/assured-tenancy-grounds-selection', (req, res) => {
 
   // Branch based on selection
   if (hasAdditionalGrounds === 'yes') {
-    res.redirect('/claims/other-tenancy-grounds');
+    res.redirect('/claims/grounds-for-possession');
   } else {
-    res.redirect('/claims/reasons-for-possessions');
+    res.redirect('/claims/preaction-protocol');
   }
 });
 
@@ -1524,10 +1524,17 @@ router.post('/grounds-for-possession-assured-selection', (req, res) => {
 
   // Branch based on selection
   if (hasAdditionalGrounds === 'yes') {
-    res.redirect('/claims/other-tenancy-grounds');
+    res.redirect('/claims/grounds-for-possession');
   } else {
-    res.redirect('/claims/reasons-for-possessions');
+    res.redirect('/claims/preaction-protocol');
   }
+});
+
+// GET /claims/preaction-protocol - Screen 16: Preaction protocol (placeholder)
+router.get('/preaction-protocol', (req, res) => {
+  res.render('pages/claims/preaction-protocol', {
+    pageTitle: 'Preaction protocol',
+  });
 });
 
 // GET /claims/grounds-for-possession - Screen 14.1: General grounds selection (placeholder)

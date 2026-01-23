@@ -1,89 +1,125 @@
 # Screen 13.1.1: Assured Tenancy Grounds Selection - Test Behaviour Matrix
 
-## Grounds Checkboxes
+## AC-1: Display assured-tenancy rent arrears grounds
 
-| Test ID | Scenario | Input | Expected | AC |
-|---------|----------|-------|----------|-----|
-| T-1.1 | Ground 8 checkbox displayed | GET | Checkbox with label "Serious rent arrears (ground 8)" | AC-1 |
-| T-1.2 | Ground 10 checkbox displayed | GET | Checkbox with label "Rent arrears (ground 10)" | AC-1 |
-| T-1.3 | Ground 11 checkbox displayed | GET | Checkbox with label "Persistent delay in paying rent (ground 11)" | AC-1 |
-| T-2.1 | No grounds selected - valid | POST no checkboxes, radio=no | 302 redirect, no error | AC-2 |
-| T-3.1 | Ground 8 only stored | POST ground8=true, radio=no | session.grounds.assuredTenancy.ground8=true | AC-3 |
-| T-3.2 | Ground 10 only stored | POST ground10=true, radio=no | session.grounds.assuredTenancy.ground10=true | AC-3 |
-| T-3.3 | Ground 11 only stored | POST ground11=true, radio=no | session.grounds.assuredTenancy.ground11=true | AC-3 |
-| T-3.4 | Multiple grounds stored | POST ground8=true, ground10=true, radio=no | Both true in session | AC-3 |
-| T-3.5 | All grounds stored | POST all grounds=true, radio=no | All three true in session | AC-3 |
-| T-3.6 | Unselected grounds false | POST ground8=true only, radio=no | ground10=false, ground11=false | AC-3 |
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-1 | Page displays explanatory text | T-1.1 | Happy |
+| AC-1 | Ground 8 checkbox displayed | T-1.2 | Happy |
+| AC-1 | Ground 10 checkbox displayed | T-1.3 | Happy |
+| AC-1 | Ground 11 checkbox displayed | T-1.4 | Happy |
 
-## Other Grounds Radio
+## AC-2: Grounds are optional
 
-| Test ID | Scenario | Input | Expected | AC |
-|---------|----------|-------|----------|-----|
-| T-4.1 | Radio question displayed | GET | "Do you have any other grounds for possession?" | AC-4 |
-| T-4.2 | Yes option displayed | GET | Radio option "Yes" | AC-4 |
-| T-4.3 | No option displayed | GET | Radio option "No" | AC-4 |
-| T-5.1 | No selection - error | POST no radio | Validation error | AC-5 |
-| T-5.2 | Error message text | POST no radio | "Select whether you have other grounds for possession" | AC-5 |
-| T-5.3 | Error summary shown | POST no radio | GOV.UK error summary visible | AC-5 |
-| T-5.4 | Error links to radio | POST no radio | Error summary links to radio group | AC-5 |
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-2 | Submit with no grounds selected accepted | T-2.1 | Happy |
+| AC-2 | Submit with one ground selected accepted | T-2.2 | Happy |
+| AC-2 | Submit with multiple grounds accepted | T-2.3 | Happy |
 
-## Branching Navigation
+## AC-3: Multiple grounds may be selected
 
-| Test ID | Scenario | Input | Expected | AC |
-|---------|----------|-------|----------|-----|
-| T-6.1 | Yes redirects correctly | POST hasAdditionalGrounds=yes | 302 /claims/other-tenancy-grounds | AC-6 |
-| T-6.2 | Yes stores true | POST hasAdditionalGrounds=yes | session.grounds.hasAdditionalGrounds=true | AC-6 |
-| T-7.1 | No redirects correctly | POST hasAdditionalGrounds=no | 302 /claims/reasons-for-possessions | AC-7 |
-| T-7.2 | No stores false | POST hasAdditionalGrounds=no | session.grounds.hasAdditionalGrounds=false | AC-7 |
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-3 | Select ground 8 only | T-3.1 | Happy |
+| AC-3 | Select ground 10 only | T-3.2 | Happy |
+| AC-3 | Select ground 11 only | T-3.3 | Happy |
+| AC-3 | Select multiple grounds (8+10) | T-3.4 | Happy |
+| AC-3 | Select all three grounds | T-3.5 | Happy |
 
-## Navigation
+## AC-4: Preserve selections on revisit
 
-| Test ID | Scenario | Input | Expected | AC |
-|---------|----------|-------|----------|-----|
-| T-8.1 | Previous link present | GET | Link to /claims/grounds | AC-8 |
-| T-8.2 | Previous navigates | Click Previous | 302 /claims/grounds | AC-8 |
-| T-8.3 | Previous preserves checkboxes | Select grounds, click Previous | Grounds in session | AC-8 |
-| T-8.4 | Previous preserves radio | Select radio, click Previous | Radio value in session | AC-8 |
-| T-9.1 | Cancel link present | GET | Link to /case-list | AC-9 |
-| T-9.2 | Cancel navigates | Click Cancel | 302 /case-list | AC-9 |
-| T-9.3 | Cancel preserves draft | Click Cancel | Claim draft in session | AC-9 |
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-4 | Checkboxes pre-selected on revisit | T-4.1 | State |
+| AC-4 | Radio pre-selected on revisit | T-4.2 | State |
 
-## Re-visit Behaviour
+## AC-5: Persist assured-tenancy grounds
 
-| Test ID | Scenario | Input | Expected | AC |
-|---------|----------|-------|----------|-----|
-| T-R.1 | Checkboxes pre-populated | GET with session data | Previously selected checked | AC-3 |
-| T-R.2 | Radio pre-populated | GET with session data | Previously selected radio checked | AC-6/7 |
-| T-R.3 | Mixed state preserved | GET after partial selection | Correct combination shown | AC-3 |
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-5 | ground8 stored in session | T-5.1 | State |
+| AC-5 | ground10 stored in session | T-5.2 | State |
+| AC-5 | ground11 stored in session | T-5.3 | State |
+| AC-5 | Unselected grounds stored as false | T-5.4 | State |
 
-## Accessibility
+## AC-6: Display additional grounds question and button
 
-| Test ID | Scenario | Input | Expected | AC |
-|---------|----------|-------|----------|-----|
-| T-10.1 | Error summary on failure | POST invalid | Error summary at top | AC-10 |
-| T-10.2 | Focus on error summary | POST invalid | Focus moves to summary | AC-10 |
-| T-10.3 | Checkboxes labelled | GET | Each checkbox has label | AC-10 |
-| T-10.4 | Radios labelled | GET | Each radio has label | AC-10 |
-| T-10.5 | Keyboard accessible | Tab navigation | All controls reachable | AC-10 |
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-6 | Radio question displayed | T-6.1 | Happy |
+| AC-6 | Yes/No radio options displayed | T-6.2 | Happy |
+| AC-6 | "Add additional grounds" button displayed | T-6.3 | Happy |
+| AC-6 | Button is keyboard focusable | T-6.4 | A11y |
+| AC-6 | Button has accessible name | T-6.5 | A11y |
+| AC-6 | Button is primary style (green) | T-6.6 | UX |
+| AC-6 | Button positioned underneath radios | T-6.7 | UX |
 
-## Cross-cutting
+## AC-7: Branching selection required when using radios
 
-| Test ID | Scenario | Input | Expected | AC |
-|---------|----------|-------|----------|-----|
-| T-X.1 | Auth required | GET unauthenticated | 302 to sign-in | - |
-| T-X.2 | SOLICITOR required | GET as CLAIMANT | 403 or redirect | - |
-| T-X.3 | Page title | GET | "Grounds for possession - Possessions - GOV.UK" | - |
-| T-X.4 | Error page title | POST invalid | "Error: Grounds for possession - Possessions - GOV.UK" | - |
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-7 | Error when no radio selected and button not pressed | T-7.1 | Error |
+| AC-7 | Error message correct | T-7.2 | Error |
+| AC-7 | Focus moves to error summary | T-7.3 | Error |
+| AC-7 | NO error when button pressed (bypasses radio requirement) | T-7.4 | Happy |
 
-## Coverage Summary
+## AC-8: Add additional grounds button behaviour
 
-| Category | Tests | ACs Covered |
-|----------|-------|-------------|
-| Grounds Checkboxes | 10 | AC-1, AC-2, AC-3 |
-| Other Grounds Radio | 7 | AC-4, AC-5 |
-| Branching Navigation | 4 | AC-6, AC-7 |
-| Navigation | 7 | AC-8, AC-9 |
-| Re-visit | 3 | AC-3, AC-6, AC-7 |
-| Accessibility | 5 | AC-10 |
-| Cross-cutting | 4 | - |
-| **TOTAL** | **40** | **AC-1 to AC-10** |
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-8 | Button click stores hasAdditionalGrounds = true | T-8.1 | State |
+| AC-8 | Button click redirects immediately | T-8.2 | Routing |
+| AC-8 | Button redirects to /claims/grounds-for-possession | T-8.3 | Routing |
+| AC-8 | Button bypasses Continue button | T-8.4 | Happy |
+| AC-8 | Button works with checkboxes selected | T-8.5 | Happy |
+| AC-8 | Button works with no checkboxes selected | T-8.6 | Happy |
+
+## AC-9: Yes path via radio selection
+
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-9 | Radio Yes stores hasAdditionalGrounds = true | T-9.1 | State |
+| AC-9 | Radio Yes redirects to /claims/grounds-for-possession | T-9.2 | Routing |
+
+## AC-10: No path - proceed to preaction protocol
+
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-10 | Radio No stores hasAdditionalGrounds = false | T-10.1 | State |
+| AC-10 | Radio No redirects to /claims/preaction-protocol | T-10.2 | Routing |
+
+## AC-11: Previous navigation
+
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-11 | Previous link to assured confirmation page | T-11.1 | Navigation |
+| AC-11 | Previous preserves selections | T-11.2 | Navigation |
+
+## AC-12: Cancel behaviour
+
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-12 | Cancel link to /case-list | T-12.1 | Navigation |
+| AC-12 | Cancel preserves claim draft | T-12.2 | Navigation |
+
+## AC-13: Accessibility compliance
+
+| AC | Behaviour | Test ID | Type |
+|----|-----------|---------|------|
+| AC-13 | Error summary on validation failure | T-13.1 | A11y |
+| AC-13 | Error links to radio group | T-13.2 | A11y |
+| AC-13 | Focus moves to error summary | T-13.3 | A11y |
+| AC-13 | Button keyboard accessible | T-13.4 | A11y |
+| AC-13 | Button has accessible name | T-13.5 | A11y |
+| AC-13 | Checkboxes properly labelled | T-13.6 | A11y |
+| AC-13 | Radios properly labelled | T-13.7 | A11y |
+
+## Cross-Cutting
+
+| Behaviour | Test ID | Type |
+|-----------|---------|------|
+| Unauthenticated user redirected to sign-in | T-X.1 | Security |
+| Page requires SOLICITOR role | T-X.2 | Security |
+| Page has correct title pattern | T-X.3 | UX |
+| Error page title includes "Error:" prefix | T-X.4 | UX |

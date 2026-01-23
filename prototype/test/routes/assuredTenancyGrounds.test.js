@@ -1,6 +1,6 @@
 /**
  * @fileoverview Tests for Assured Tenancy Grounds Selection page (Screen 13.1.1)
- * Route: /claims/assured-tenancy-grounds-selection
+ * Route: /claims/grounds-for-possession-assured-selection
  *
  * Tests grounds checkboxes (8, 10, 11), other grounds radio branching,
  * navigation, and session persistence.
@@ -10,7 +10,7 @@ const session = require('supertest-session');
 const app = require('../../src/app');
 const { navigateToAssuredTenancyGrounds, createAuthenticatedSession } = require('../helpers/sessionHelper');
 
-describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-selection', () => {
+describe('Assured Tenancy Grounds Selection - /claims/grounds-for-possession-assured-selection', () => {
   let agent;
 
   beforeEach(() => {
@@ -24,7 +24,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
     describe('AC-1: Display grounds', () => {
       test('T-1.1: displays ground 8 checkbox with label', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
         expect(res.text).toMatch(/ground\s*8/i);
@@ -33,7 +33,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
 
       test('T-1.2: displays ground 10 checkbox with label', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
         expect(res.text).toMatch(/ground\s*10/i);
@@ -42,7 +42,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
 
       test('T-1.3: displays ground 11 checkbox with label', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
         expect(res.text).toMatch(/ground\s*11/i);
@@ -51,7 +51,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
 
       test('T-1.4: displays explanatory text', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
         expect(res.text.toLowerCase()).toMatch(/grounds|possession/);
@@ -62,7 +62,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-2.1: accepts submission with no grounds selected', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         const res = await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({ hasAdditionalGrounds: 'no' });
 
         expect(res.statusCode).toBe(302);
@@ -71,7 +71,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-2.2: accepts submission with single ground selected', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         const res = await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground8: 'true',
             hasAdditionalGrounds: 'no'
@@ -83,7 +83,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-2.3: accepts submission with all grounds selected', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         const res = await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground8: 'true',
             ground10: 'true',
@@ -99,53 +99,53 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-3.1: stores ground 8 selection in session', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground8: 'true',
             hasAdditionalGrounds: 'no'
           });
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/ground8.*checked|checked.*ground8/i);
       });
 
       test('T-3.2: stores ground 10 selection in session', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground10: 'true',
             hasAdditionalGrounds: 'no'
           });
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/ground10.*checked|checked.*ground10/i);
       });
 
       test('T-3.3: stores ground 11 selection in session', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground11: 'true',
             hasAdditionalGrounds: 'no'
           });
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/ground11.*checked|checked.*ground11/i);
       });
 
       test('T-3.4: stores multiple grounds in session', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground8: 'true',
             ground10: 'true',
             hasAdditionalGrounds: 'no'
           });
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/ground8.*checked|checked.*ground8/i);
         expect(res.text).toMatch(/ground10.*checked|checked.*ground10/i);
       });
@@ -153,7 +153,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-3.5: stores all grounds in session', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground8: 'true',
             ground10: 'true',
@@ -161,7 +161,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
             hasAdditionalGrounds: 'no'
           });
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/ground8.*checked|checked.*ground8/i);
         expect(res.text).toMatch(/ground10.*checked|checked.*ground10/i);
         expect(res.text).toMatch(/ground11.*checked|checked.*ground11/i);
@@ -170,13 +170,13 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-3.6: unselected grounds not checked on revisit', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground8: 'true',
             hasAdditionalGrounds: 'no'
           });
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/ground8.*checked|checked.*ground8/i);
         expect(res.text).not.toMatch(/ground10.*checked/i);
         expect(res.text).not.toMatch(/ground11.*checked/i);
@@ -191,7 +191,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
     describe('AC-4: Ask about other grounds', () => {
       test('T-4.1: displays radio question', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
         expect(res.text).toMatch(/other\s+grounds\s+for\s+possession/i);
@@ -199,7 +199,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
 
       test('T-4.2: displays Yes option', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
         expect(res.text).toMatch(/type="radio".*value="yes"|value="yes".*type="radio"/i);
@@ -207,7 +207,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
 
       test('T-4.3: displays No option', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
         expect(res.text).toMatch(/type="radio".*value="no"|value="no".*type="radio"/i);
@@ -218,40 +218,40 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-5.1: shows error when no radio selected', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({});
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/error/i);
       });
 
       test('T-5.2: error message matches AC spec', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({});
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/select\s+whether\s+you\s+have\s+other\s+grounds/i);
       });
 
       test('T-5.3: GOV.UK error summary shown', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({});
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/govuk-error-summary/);
       });
 
       test('T-5.4: error summary links to radio group', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({});
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/href="#hasAdditionalGrounds/i);
       });
     });
@@ -265,20 +265,20 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-6.1: Yes redirects to other-tenancy-grounds', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         const res = await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({ hasAdditionalGrounds: 'yes' });
 
         expect(res.statusCode).toBe(302);
-        expect(res.headers.location).toBe('/claims/other-tenancy-grounds');
+        expect(res.headers.location).toBe('/claims/grounds-for-possession');
       });
 
       test('T-6.2: Yes stores hasAdditionalGrounds = true', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({ hasAdditionalGrounds: 'yes' });
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/hasAdditionalGrounds.*yes.*checked|checked.*yes/i);
       });
     });
@@ -287,20 +287,20 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
       test('T-7.1: No redirects to reasons-for-possessions', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         const res = await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({ hasAdditionalGrounds: 'no' });
 
         expect(res.statusCode).toBe(302);
-        expect(res.headers.location).toBe('/claims/reasons-for-possessions');
+        expect(res.headers.location).toBe('/claims/preaction-protocol');
       });
 
       test('T-7.2: No stores hasAdditionalGrounds = false', async () => {
         await navigateToAssuredTenancyGrounds(agent);
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({ hasAdditionalGrounds: 'no' });
 
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.text).toMatch(/hasAdditionalGrounds.*no.*checked|checked.*no/i);
       });
     });
@@ -313,15 +313,15 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
     describe('AC-8: Previous navigation', () => {
       test('T-8.1: Previous link present', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
-        expect(res.text).toMatch(/href=".*\/claims\/grounds.*"|href='.*\/claims\/grounds.*'/i);
+        expect(res.text).toMatch(/href=".*\/claims\/grounds-for-possession-assured-confirmation.*"|href='.*\/claims\/grounds-for-possession-assured-confirmation.*'/i);
       });
 
-      test('T-8.2: Previous navigates to grounds page', async () => {
+      test('T-8.2: Previous navigates to confirmation page', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/grounds');
+        const res = await agent.get('/claims/grounds-for-possession-assured-confirmation');
 
         expect(res.statusCode).toBe(200);
       });
@@ -330,15 +330,15 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
         await navigateToAssuredTenancyGrounds(agent);
         // Make selections but don't submit
         await agent
-          .post('/claims/assured-tenancy-grounds-selection')
+          .post('/claims/grounds-for-possession-assured-selection')
           .send({
             ground8: 'true',
             ground10: 'true'
           });
 
         // Go back and return
-        await agent.get('/claims/grounds');
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        await agent.get('/claims/grounds-for-possession-assured-confirmation');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.text).toMatch(/ground8.*checked|checked.*ground8/i);
         expect(res.text).toMatch(/ground10.*checked|checked.*ground10/i);
@@ -348,7 +348,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
     describe('AC-9: Cancel behaviour', () => {
       test('T-9.1: Cancel link present', async () => {
         await navigateToAssuredTenancyGrounds(agent);
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
         expect(res.statusCode).toBe(200);
         expect(res.text).toMatch(/href=".*\/case-list.*"|href='.*\/case-list.*'/i);
@@ -366,7 +366,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
         await agent.get('/case-list');
 
         // Can return to claim journey
-        const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+        const res = await agent.get('/claims/grounds-for-possession-assured-selection');
         expect(res.statusCode).toBe(200);
       });
     });
@@ -379,14 +379,14 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
     test('T-R.1: checkboxes pre-populated on re-visit', async () => {
       await navigateToAssuredTenancyGrounds(agent);
       await agent
-        .post('/claims/assured-tenancy-grounds-selection')
+        .post('/claims/grounds-for-possession-assured-selection')
         .send({
           ground8: 'true',
           ground11: 'true',
           hasAdditionalGrounds: 'no'
         });
 
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
       expect(res.text).toMatch(/ground8.*checked|checked.*ground8/i);
       expect(res.text).toMatch(/ground11.*checked|checked.*ground11/i);
     });
@@ -394,23 +394,23 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
     test('T-R.2: radio pre-populated on re-visit', async () => {
       await navigateToAssuredTenancyGrounds(agent);
       await agent
-        .post('/claims/assured-tenancy-grounds-selection')
+        .post('/claims/grounds-for-possession-assured-selection')
         .send({ hasAdditionalGrounds: 'yes' });
 
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
       expect(res.text).toMatch(/yes.*checked/i);
     });
 
     test('T-R.3: mixed state preserved correctly', async () => {
       await navigateToAssuredTenancyGrounds(agent);
       await agent
-        .post('/claims/assured-tenancy-grounds-selection')
+        .post('/claims/grounds-for-possession-assured-selection')
         .send({
           ground10: 'true',
           hasAdditionalGrounds: 'no'
         });
 
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
       expect(res.text).not.toMatch(/ground8.*checked/i);
       expect(res.text).toMatch(/ground10.*checked|checked.*ground10/i);
       expect(res.text).not.toMatch(/ground11.*checked/i);
@@ -424,37 +424,37 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
     test('T-10.1: error summary shown on validation failure', async () => {
       await navigateToAssuredTenancyGrounds(agent);
       await agent
-        .post('/claims/assured-tenancy-grounds-selection')
+        .post('/claims/grounds-for-possession-assured-selection')
         .send({});
 
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
       expect(res.text).toMatch(/govuk-error-summary/);
     });
 
     test('T-10.2: checkboxes have labels', async () => {
       await navigateToAssuredTenancyGrounds(agent);
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
       expect(res.text).toMatch(/<label.*for=.*ground/i);
     });
 
     test('T-10.3: radios have labels', async () => {
       await navigateToAssuredTenancyGrounds(agent);
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
       expect(res.text).toMatch(/<label.*for=.*hasAdditionalGrounds/i);
     });
 
     test('T-10.4: page uses GOV.UK checkbox component', async () => {
       await navigateToAssuredTenancyGrounds(agent);
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
       expect(res.text).toMatch(/govuk-checkboxes/);
     });
 
     test('T-10.5: page uses GOV.UK radios component', async () => {
       await navigateToAssuredTenancyGrounds(agent);
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
       expect(res.text).toMatch(/govuk-radios/);
     });
@@ -465,7 +465,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
   // ===========================================
   describe('Cross-cutting', () => {
     test('T-X.1: requires authentication', async () => {
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
       expect(res.statusCode).toBe(302);
       expect(res.headers.location).toMatch(/sign-in|access/i);
@@ -473,7 +473,7 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
 
     test('T-X.2: page has correct title', async () => {
       await navigateToAssuredTenancyGrounds(agent);
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
       expect(res.text).toMatch(/<title>.*Grounds for possession.*<\/title>/i);
     });
@@ -481,16 +481,16 @@ describe('Assured Tenancy Grounds Selection - /claims/assured-tenancy-grounds-se
     test('T-X.3: error state shows Error in title', async () => {
       await navigateToAssuredTenancyGrounds(agent);
       await agent
-        .post('/claims/assured-tenancy-grounds-selection')
+        .post('/claims/grounds-for-possession-assured-selection')
         .send({});
 
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
       expect(res.text).toMatch(/<title>.*Error:.*Grounds for possession.*<\/title>/i);
     });
 
     test('T-X.4: Continue button present', async () => {
       await navigateToAssuredTenancyGrounds(agent);
-      const res = await agent.get('/claims/assured-tenancy-grounds-selection');
+      const res = await agent.get('/claims/grounds-for-possession-assured-selection');
 
       expect(res.text).toMatch(/continue/i);
       expect(res.text).toMatch(/type="submit"|type='submit'/i);

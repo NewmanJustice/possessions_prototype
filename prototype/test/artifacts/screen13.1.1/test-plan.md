@@ -1,78 +1,79 @@
 # Screen 13.1.1: Assured Tenancy Grounds Selection - Test Plan
 
 ## Scope
-Tests for `/claims/assured-tenancy-grounds-selection` covering grounds checkboxes, other grounds radio, branching navigation, and session persistence.
 
-## Test Categories
+### In Scope
+- GET `/claims/grounds-for-possession-assured-selection` - Page rendering
+- POST `/claims/grounds-for-possession-assured-selection` - Form submission and validation
+- Checkbox selection (grounds 8, 10, 11) - all optional
+- Radio selection validation (required UNLESS button pressed)
+- **"Add additional grounds" button** - immediate redirect behavior
+- Branching logic (Yes/button → additional grounds, No → preaction protocol)
+- Session storage of grounds and hasAdditionalGrounds
+- Navigation (Previous, Continue, Cancel, Button)
+- GOV.UK error summary and inline error display
+- Focus management on validation failure
+- Selection preservation on validation error and revisit
 
-### 1. Page Rendering (GET)
-- Page loads with correct title
-- All three ground checkboxes displayed (8, 10, 11)
-- Explanatory text displayed
-- Other grounds radio question displayed
-- Previous, Continue, Cancel buttons present
+### Out of Scope
+- Additional grounds page (Screen 14.x - separate)
+- Preaction protocol page (Screen 16 - separate)
+- Legal validation of selected grounds
 
-### 2. Grounds Checkboxes (AC-1, AC-2, AC-3)
-- Ground 8 checkbox present and labelled
-- Ground 10 checkbox present and labelled
-- Ground 11 checkbox present and labelled
-- Can submit with no checkboxes selected
-- Can submit with single checkbox selected
-- Can submit with multiple checkboxes selected
-- Can submit with all checkboxes selected
-- Selected grounds stored in session
+## Types of Tests
 
-### 3. Other Grounds Radio (AC-4, AC-5)
-- Radio question displayed
-- Yes option present
-- No option present
-- Validation error when neither selected
-- Error summary links to radio group
+| Type | Purpose |
+|------|---------|
+| Integration | Route behaviour, session handling, redirects |
+| Validation | Radio selection required (unless button pressed) |
+| State | Session data persistence (grounds + hasAdditionalGrounds) |
+| Navigation | Previous/Continue/Cancel/Button behaviour |
+| Branching | Conditional redirects based on Yes/No/Button |
+| Button | "Add additional grounds" immediate redirect logic |
+| Accessibility | Error summary, focus management, labels, button accessibility |
 
-### 4. Branching Navigation (AC-6, AC-7)
-- Yes → redirects to `/claims/other-tenancy-grounds`
-- Yes → sets `hasAdditionalGrounds = true`
-- No → redirects to `/claims/reasons-for-possessions`
-- No → sets `hasAdditionalGrounds = false`
+## Risks and Constraints
 
-### 5. Navigation (AC-8, AC-9)
-- Previous returns to `/claims/grounds`
-- Previous preserves selections in session
-- Cancel returns to `/case-list`
-- Cancel preserves claim draft
+| Risk | Mitigation |
+|------|------------|
+| Button vs Continue confusion | Test both paths independently |
+| Validation bypass via button | Ensure no error when button pressed |
+| Button accessibility | Test keyboard focus and accessible name |
+| Screen 16 not yet implemented | Test expects redirect only, not page content |
+| Multiple interaction paths | Test all combinations (button only, radio only, both) |
 
-### 6. Re-visit Behaviour
-- Previously selected checkboxes are pre-checked
-- Previously selected radio is pre-selected
+## Test Environment
 
-### 7. Accessibility (AC-10)
-- Error summary shown on validation failure
-- Focus moves to error summary
-- Checkboxes properly labelled
-- Radios properly labelled
-- Keyboard accessible
+- **Framework**: Jest + Supertest + supertest-session
+- **Session setup**: Use `navigateToAssuredTenancyGrounds()` from sessionHelper
+- **Fixtures**: Assured confirmation (Screen 13.1) must be completed before tests
 
-### 8. Cross-cutting
-- Authentication required
-- SOLICITOR role required
-- Session preserves data through journey
+## Assumptions for Testing
 
-## Test Data
+1. Previous page: `/claims/grounds-for-possession-assured-confirmation` (Screen 13.1)
+2. Next pages:
+   - Yes radio OR button → `/claims/grounds-for-possession`
+   - No radio → `/claims/preaction-protocol`
+3. Session storage: 
+   - `session.claim.grounds.assuredTenancy` (object with ground8/10/11)
+   - `session.claim.grounds.hasAdditionalGrounds` (boolean)
+4. Checkbox values: `ground8`, `ground10`, `ground11`
+5. Radio values: `'yes'` and `'no'` (lowercase strings)
+6. Button name: `'addAdditionalGrounds'` or similar
+7. Error message: "Select whether you have additional grounds for possession"
+8. Page title: "Grounds for possession"
+9. Button is primary (green) style, positioned underneath radios
+10. Button behavior: Immediate POST redirect, bypasses Continue button
 
-### Valid Submissions
-| Scenario | ground8 | ground10 | ground11 | hasAdditionalGrounds | Expected Redirect |
-|----------|---------|----------|----------|---------------------|-------------------|
-| No grounds, Yes other | - | - | - | yes | /claims/other-tenancy-grounds |
-| No grounds, No other | - | - | - | no | /claims/reasons-for-possessions |
-| All grounds, Yes | ✓ | ✓ | ✓ | yes | /claims/other-tenancy-grounds |
-| All grounds, No | ✓ | ✓ | ✓ | no | /claims/reasons-for-possessions |
-| Single ground | ✓ | - | - | no | /claims/reasons-for-possessions |
+## Button Test Strategy
 
-### Invalid Submissions
-| Scenario | Error Message |
-|----------|---------------|
-| No radio selected | "Select whether you have other grounds for possession" |
+The "Add additional grounds" button requires special attention:
 
-## Dependencies
-- `navigateToAssuredTenancyGrounds` helper needed in sessionHelper.js
-- Must chain through: auth → claims/start → ... → grounds (Yes) → this page
+- **Button rendering:** Visible, labelled, styled as primary
+- **Button accessibility:** Keyboard focusable, accessible name
+- **Button behavior:** 
+  - Immediate redirect (no Continue click needed)
+  - Stores `hasAdditionalGrounds = true`
+  - Redirects to `/claims/grounds-for-possession`
+- **Validation bypass:** No error when button pressed (even without radio selection)
+- **Independence:** Button works regardless of checkbox/radio state
