@@ -1530,10 +1530,94 @@ router.post('/grounds-for-possession-assured-selection', (req, res) => {
   }
 });
 
-// GET /claims/preaction-protocol - Screen 16: Preaction protocol (placeholder)
+// GET /claims/preaction-protocol - Screen 16: Pre-action protocol
 router.get('/preaction-protocol', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Get saved pre-action protocol selection
+  const preActionProtocol = claim.preActionProtocol || {};
+  const followed = preActionProtocol.followed;
+
   res.render('pages/claims/preaction-protocol', {
-    pageTitle: 'Preaction protocol',
+    pageTitle: 'Pre-action protocol',
+    errors: errors,
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      followed: followed === true ? 'true' : followed === false ? 'false' : ''
+    },
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/preaction-protocol - Screen 16: Pre-action protocol
+router.post('/preaction-protocol', (req, res) => {
+  const { followed } = req.body;
+
+  const errors = [];
+
+  // Validate followed selection
+  if (!followed) {
+    errors.push({
+      field: 'followed',
+      message: 'Select whether you have followed the pre-action protocol',
+      href: '#followed',
+    });
+  }
+
+  if (errors.length > 0) {
+    // Build error list for error summary
+    const errorList = errors.map(error => ({
+      text: error.message,
+      href: error.href
+    }));
+
+    // Build field-specific error messages
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = error.message;
+    });
+
+    return res.status(400).render('pages/claims/preaction-protocol', {
+      pageTitle: 'Pre-action protocol',
+      errors: errors,
+      errorList: errorList,
+      fieldErrors: fieldErrors,
+      values: {
+        followed: followed || ''
+      },
+    });
+  }
+
+  // Store pre-action protocol as boolean
+  const preActionProtocol = {
+    followed: followed === 'true'
+  };
+
+  claimService.updateClaim(req.session, 'preActionProtocol', preActionProtocol);
+
+  // Both paths redirect to mediation-settlement
+  res.redirect('/claims/mediation-settlement');
+});
+
+// GET /claims/mediation-settlement - Placeholder for next screen after pre-action protocol
+router.get('/mediation-settlement', (req, res) => {
+  res.render('pages/claims/mediation-settlement', {
+    pageTitle: 'Mediation and settlement',
   });
 });
 

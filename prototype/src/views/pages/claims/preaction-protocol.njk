@@ -1,31 +1,82 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <span class="govuk-caption-l">Make a claim</span>
-    <h1 class="govuk-heading-l">Preaction protocol</h1>
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
 
-    <div class="govuk-inset-text">
-      This page is for the preaction protocol steps.
-      This feature is not yet implemented.
-    </div>
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Pre-action protocol</h1>
 
     <p class="govuk-body">
-      Before making a possession claim, you must follow the preaction protocol.
-      This will be available in a future iteration.
+      This guidance explains what registered providers should do before making a possession claim
+      for rent arrears. Following the pre-action protocol can help resolve issues without going to court.
     </p>
 
-    <div class="govuk-button-group">
-      {{ govukButton({
-        text: "Previous",
-        classes: "govuk-button--secondary",
-        href: "/claims/grounds-for-possession-assured-selection"
+    <p class="govuk-body">
+      The pre-action protocol sets out the steps landlords and tenants should take before court proceedings begin.
+      This includes attempting to agree a payment plan and providing support information to tenants.
+    </p>
+
+    {{ govukWarningText({
+      text: "If you have not followed the pre-action protocol, your claim may be delayed or rejected by the court. The judge may also consider this when making their decision.",
+      iconFallbackText: "Warning"
+    }) }}
+
+    <form method="post" action="/claims/preaction-protocol" novalidate>
+
+      {{ govukRadios({
+        name: "followed",
+        fieldset: {
+          legend: {
+            text: "Have you followed the pre-action protocol?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "true",
+            text: "Yes",
+            checked: values.followed == "true"
+          },
+          {
+            value: "false",
+            text: "No",
+            checked: values.followed == "false"
+          }
+        ],
+        errorMessage: {
+          text: fieldErrors.followed
+        } if fieldErrors.followed
       }) }}
-    </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/grounds-for-possession-assured-confirmation"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
 
     <p class="govuk-body">
       <a href="/case-list" class="govuk-link">Cancel</a>
