@@ -273,6 +273,29 @@ async function navigateToRentDetails(agent) {
 }
 
 /**
+ * Navigate to Daily Rent Amount (Screen 21)
+ * Entry: Screen 20 (Rent details) → Screen 21
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToDailyRentAmount(agent) {
+  await navigateToRentDetails(agent);
+  
+  // Screen 20: Submit rent details with weekly frequency
+  // Weekly frequency routes to Screen 21 (daily-rent-amount)
+  // 125 weekly = 17.86 daily (calculated)
+  await agent
+    .post('/claims/rent-details')
+    .send({ 
+      rentAmount: '125',
+      rentFrequency: 'weekly'
+    })
+    .expect(302);
+    
+  return agent;
+}
+
+/**
  * DEPRECATED: Old navigation helper for rent arrears question
  * Use navigateToAssuredConfirmation instead
  */
@@ -296,5 +319,6 @@ module.exports = {
   navigateToNoticeOfIntention,
   navigateToNoticeDetails,
   navigateToRentDetails,
+  navigateToDailyRentAmount,
   navigateToGrounds  // Deprecated - kept for backward compatibility
 };
