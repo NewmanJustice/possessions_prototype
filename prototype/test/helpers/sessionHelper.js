@@ -237,6 +237,24 @@ async function navigateToNoticeOfIntention(agent) {
 }
 
 /**
+ * Navigate to Notice Details (Screen 19)
+ * Entry: Screen 18 (Notice of intention) → Screen 19
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToNoticeDetails(agent) {
+  await navigateToNoticeOfIntention(agent);
+  
+  // Screen 18: Select either Yes or No (both go to notice-details)
+  await agent
+    .post('/claims/notice-of-intention')
+    .send({ noticeServed: 'true' })
+    .expect(302);
+    
+  return agent;
+}
+
+/**
  * DEPRECATED: Old navigation helper for rent arrears question
  * Use navigateToAssuredConfirmation instead
  */
@@ -258,5 +276,6 @@ module.exports = {
   navigateToPreActionProtocol,
   navigateToMediationSettlement,
   navigateToNoticeOfIntention,
+  navigateToNoticeDetails,
   navigateToGrounds  // Deprecated - kept for backward compatibility
 };

@@ -1,15 +1,185 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
     <span class="govuk-caption-l">Make a claim</span>
     <h1 class="govuk-heading-l">Notice details</h1>
 
+    <form method="post" action="/claims/notice-details" novalidate>
+
+      {# AC-1: Service method radios - 6 options #}
+      {{ govukRadios({
+        name: "serviceMethod",
+        idPrefix: "serviceMethod",
+        fieldset: {
+          legend: {
+            text: "How did you serve the notice?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "first-class-post",
+            text: "By first class post or other service which provides for delivery on the next business day",
+            checked: values.serviceMethod == "first-class-post"
+          },
+          {
+            value: "permitted-place",
+            text: "By delivering it to or leaving it at a permitted place",
+            checked: values.serviceMethod == "permitted-place"
+          },
+          {
+            value: "personal-service",
+            text: "By personally handing it to or leaving it with someone",
+            checked: values.serviceMethod == "personal-service"
+          },
+          {
+            value: "email",
+            text: "By email",
+            checked: values.serviceMethod == "email"
+          },
+          {
+            value: "other-electronic",
+            text: "By other electronic method",
+            checked: values.serviceMethod == "other-electronic"
+          },
+          {
+            value: "other",
+            text: "Other",
+            checked: values.serviceMethod == "other"
+          }
+        ],
+        errorMessage: {
+          text: fieldErrors.serviceMethod
+        } if fieldErrors.serviceMethod
+      }) }}
+
+      {# AC-3: Upload section #}
+      <h2 class="govuk-heading-m">Do you want to upload a copy of the notice you served or the certificate of service?</h2>
+
+      <p class="govuk-body">
+        Documents can be uploaded now or later and will be included in the hearing bundle.
+      </p>
+
+      {# Display uploaded documents (Q3) #}
+      {% if documents.length > 0 %}
+        <div class="govuk-form-group">
+          <h3 class="govuk-heading-s">Uploaded documents</h3>
+          <ul class="govuk-list">
+            {% for doc in documents %}
+              <li>
+                {{ doc.name }}
+                <a href="#" class="govuk-link remove-document" data-document-id="{{ doc.id }}">Remove</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {# Upload button (simulated) #}
+      <div class="govuk-form-group" id="upload">
+        <button type="button" class="govuk-button govuk-button--secondary" id="add-document-btn" data-module="upload-button">
+          Add document
+        </button>
+        {% if fieldErrors.upload %}
+          <p class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> {{ fieldErrors.upload }}
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/notice-of-intention"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+    </form>
+
     <p class="govuk-body">
-      This page is under construction.
+      <a href="/case-list" class="govuk-link">Cancel</a>
     </p>
 
   </div>
 </div>
+
+{# Simulated upload JavaScript #}
+<script>
+  // Simulated document upload (prototype only)
+  document.getElementById('add-document-btn')?.addEventListener('click', function() {
+    // Simulate file selection with a prompt
+    const filename = prompt('Enter filename to simulate upload (e.g., notice.pdf):');
+    if (!filename) return;
+
+    const mockFile = {
+      id: 'doc-' + Date.now(),
+      name: filename,
+      uploadedAt: new Date().toISOString(),
+      size: 1024 // 1KB simulated
+    };
+
+    fetch('/claims/notice-details/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ document: mockFile })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else if (data.errors) {
+        alert(data.errors.upload?.text || 'Upload failed');
+      }
+    })
+    .catch(err => {
+      console.error('Upload error:', err);
+      alert('Upload failed');
+    });
+  });
+
+  // Document removal
+  document.querySelectorAll('.remove-document').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const documentId = this.dataset.documentId;
+
+      fetch('/claims/notice-details/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId: documentId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        }
+      })
+      .catch(err => {
+        console.error('Remove error:', err);
+      });
+    });
+  });
+</script>
 {% endblock %}

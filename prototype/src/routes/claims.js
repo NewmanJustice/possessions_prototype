@@ -1839,11 +1839,206 @@ router.post('/notice-of-intention', (req, res) => {
   res.redirect('/claims/notice-details');
 });
 
-// GET /claims/notice-details - Screen 19: Notice details (placeholder)
+// GET /claims/notice-details - Screen 19: Notice details
 router.get('/notice-details', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  // Initialize noticeDetails if needed
+  if (!claim.noticeDetails) {
+    claim.noticeDetails = { documents: [] };
+    claimService.updateClaim(req.session, 'noticeDetails', claim.noticeDetails);
+  }
+
+  const noticeDetails = claim.noticeDetails || {};
+
   res.render('pages/claims/notice-details', {
     pageTitle: 'Notice details',
+    errors: errors,
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      serviceMethod: noticeDetails.serviceMethod || ''
+    },
+    documents: noticeDetails.documents || []
   });
+
+  delete req.session.errors;
+});
+
+// POST /claims/notice-details - Screen 19: Notice details
+router.post('/notice-details', (req, res) => {
+  const { serviceMethod, uploadDocument } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  const errors = [];
+
+  // AC-2: Validate serviceMethod selection (required)
+  if (!serviceMethod) {
+    errors.push({
+      field: 'serviceMethod',
+      message: 'Select how you served the notice',
+      href: '#serviceMethod',
+    });
+  }
+
+  // Validate inline upload document if provided (fallback for non-JS scenario)
+  if (uploadDocument && uploadDocument.name) {
+    if (!isValidFileType(uploadDocument.name)) {
+      errors.push({
+        field: 'upload',
+        message: 'The selected file must be a PDF, DOC, DOCX, JPG, JPEG or PNG',
+        href: '#upload',
+      });
+    } else if (uploadDocument.size && !isValidFileSize(uploadDocument.size)) {
+      errors.push({
+        field: 'upload',
+        message: 'The selected file must be smaller than 10MB',
+        href: '#upload',
+      });
+    }
+  }
+
+  if (errors.length > 0) {
+    // Build error list for error summary
+    const errorList = errors.map(error => ({
+      text: error.message,
+      href: error.href
+    }));
+
+    // Build field-specific error messages
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = error.message;
+    });
+
+    const noticeDetails = claim.noticeDetails || { documents: [] };
+
+    return res.status(400).render('pages/claims/notice-details', {
+      pageTitle: 'Notice details',
+      errors: errors,
+      errorList: errorList,
+      fieldErrors: fieldErrors,
+      values: {
+        serviceMethod: serviceMethod || ''
+      },
+      documents: noticeDetails.documents || []
+    });
+  }
+
+  // Initialize noticeDetails if needed, preserving existing documents
+  const existingNoticeDetails = claim.noticeDetails || { documents: [] };
+
+  // AC-8: Store service method
+  const noticeDetails = {
+    serviceMethod: serviceMethod,
+    documents: existingNoticeDetails.documents || []
+  };
+
+  claimService.updateClaim(req.session, 'noticeDetails', noticeDetails);
+
+  // AC-10: Redirect to rent-details
+  res.redirect('/claims/rent-details');
+});
+
+// Helper: Validate file type (Q2)
+function isValidFileType(filename) {
+  if (!filename) return false;
+  const ext = filename.toLowerCase().split('.').pop();
+  return ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'].includes(ext);
+}
+
+// Helper: Validate file size (Q2 - 10MB max)
+function isValidFileSize(size) {
+  const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+  return size <= MAX_SIZE;
+}
+
+// POST /claims/notice-details/upload - Simulated upload endpoint (AC-5, Q1)
+router.post('/notice-details/upload', (req, res) => {
+  const { document } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  // Initialize noticeDetails if needed
+  if (!claim.noticeDetails) {
+    claim.noticeDetails = { documents: [] };
+  }
+
+  const errors = {};
+
+  // Validation: File type (Q2)
+  if (!isValidFileType(document.name)) {
+    errors.upload = {
+      text: 'The selected file must be a PDF, DOC, DOCX, JPG, JPEG or PNG'
+    };
+  }
+
+  // Validation: File size (Q2)
+  if (!errors.upload && !isValidFileSize(document.size)) {
+    errors.upload = {
+      text: 'The selected file must be smaller than 10MB'
+    };
+  }
+
+  // Validation: Max 10 documents (Q3)
+  if (!errors.upload && claim.noticeDetails.documents.length >= 10) {
+    errors.upload = {
+      text: 'You can only upload a maximum of 10 documents'
+    };
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({ errors });
+  }
+
+  // Store metadata only (Q1) - AC-5
+  claim.noticeDetails.documents.push({
+    id: document.id,
+    name: document.name,
+    uploadedAt: document.uploadedAt,
+    size: document.size
+  });
+
+  claimService.updateClaim(req.session, 'noticeDetails', claim.noticeDetails);
+
+  res.json({ success: true, document });
+});
+
+// POST /claims/notice-details/remove - Remove document (Q3)
+router.post('/notice-details/remove', (req, res) => {
+  const { documentId } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  if (claim.noticeDetails && claim.noticeDetails.documents) {
+    claim.noticeDetails.documents = claim.noticeDetails.documents.filter(
+      doc => doc.id !== documentId
+    );
+    claimService.updateClaim(req.session, 'noticeDetails', claim.noticeDetails);
+  }
+
+  res.json({ success: true });
+});
+
+// GET /claims/rent-details - Placeholder for next screen (Q5)
+router.get('/rent-details', (req, res) => {
+  res.send(`
+    <h1>Placeholder: Rent Details</h1>
+    <p>This screen will be implemented in a future iteration.</p>
+    <p><a href="/claims/notice-details">Back to Notice Details</a></p>
+    <p><a href="/case-list">Return to case list</a></p>
+  `);
 });
 
 // GET /claims/grounds-for-possession - Screen 14.1: General grounds selection (placeholder)
