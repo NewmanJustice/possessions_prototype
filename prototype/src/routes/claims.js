@@ -2031,14 +2031,140 @@ router.post('/notice-details/remove', (req, res) => {
   res.json({ success: true });
 });
 
-// GET /claims/rent-details - Placeholder for next screen (Q5)
+// Helper: Validate rent amount (Screen 20)
+function validateRentAmount(amount) {
+  if (!amount || amount.trim() === '') {
+    return 'Enter the rent amount as a number greater than 0';
+  }
+
+  const trimmedAmount = amount.trim();
+
+  // Check for valid numeric format (max 2 decimal places)
+  if (!/^\d+(\.\d{1,2})?$/.test(trimmedAmount)) {
+    return 'Enter the rent amount as a number greater than 0';
+  }
+
+  const numValue = parseFloat(trimmedAmount);
+
+  // Must be positive and not exceed maximum
+  if (isNaN(numValue) || numValue <= 0 || numValue > 1000000) {
+    return 'Enter the rent amount as a number greater than 0';
+  }
+
+  return null;
+}
+
+// Helper: Validate rent frequency (Screen 20)
+function validateRentFrequency(frequency) {
+  const validFrequencies = ['weekly', 'fortnightly', 'monthly', 'other'];
+  if (!frequency || !validFrequencies.includes(frequency)) {
+    return 'Select how often rent should be paid';
+  }
+  return null;
+}
+
+// Helper: Calculate daily rent (Screen 20)
+function calculateDailyRent(amount, frequency) {
+  const numAmount = parseFloat(amount);
+  let dailyAmount = null;
+
+  switch (frequency) {
+    case 'weekly':
+      dailyAmount = (numAmount / 7).toFixed(2);
+      break;
+    case 'fortnightly':
+      dailyAmount = (numAmount / 14).toFixed(2);
+      break;
+    case 'monthly':
+      dailyAmount = (numAmount / 365 * 12).toFixed(2);
+      break;
+    case 'other':
+      dailyAmount = null;
+      break;
+  }
+
+  return dailyAmount !== null ? parseFloat(dailyAmount) : null;
+}
+
+// GET /claims/rent-details - Screen 20: Rent details
 router.get('/rent-details', (req, res) => {
-  res.send(`
-    <h1>Placeholder: Rent Details</h1>
-    <p>This screen will be implemented in a future iteration.</p>
-    <p><a href="/claims/notice-details">Back to Notice Details</a></p>
-    <p><a href="/case-list">Return to case list</a></p>
-  `);
+  const claim = claimService.getClaim(req.session) || {};
+  const rentDetails = claim.rentDetails || {};
+
+  res.render('pages/claims/rent-details', {
+    pageTitle: 'Rent details',
+    amount: rentDetails.amount !== undefined ? rentDetails.amount : '',
+    frequency: rentDetails.frequency || '',
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/rent-details - Screen 20: Rent details
+router.post('/rent-details', (req, res) => {
+  const { amount, frequency } = req.body;
+  const errors = {};
+
+  // Validate amount
+  const amountError = validateRentAmount(amount);
+  if (amountError) {
+    errors.amount = { text: amountError };
+  }
+
+  // Validate frequency
+  const frequencyError = validateRentFrequency(frequency);
+  if (frequencyError) {
+    errors.frequency = { text: frequencyError };
+  }
+
+  // If validation errors, re-render with errors
+  if (Object.keys(errors).length > 0) {
+    const errorList = Object.entries(errors).map(([field, error]) => ({
+      text: error.text,
+      href: `#${field}`
+    }));
+
+    return res.status(400).render('pages/claims/rent-details', {
+      pageTitle: 'Rent details',
+      amount: amount || '',
+      frequency: frequency || '',
+      errors,
+      errorList
+    });
+  }
+
+  // Calculate daily rent
+  const calculatedDailyAmount = calculateDailyRent(amount, frequency);
+
+  // Store in session
+  const rentDetails = {
+    amount: parseFloat(amount),
+    frequency: frequency,
+    calculatedDailyAmount: calculatedDailyAmount
+  };
+
+  claimService.updateClaim(req.session, 'rentDetails', rentDetails);
+
+  // Conditional routing based on frequency
+  if (frequency === 'weekly' || frequency === 'fortnightly' || frequency === 'monthly') {
+    res.redirect('/claims/daily-rent-amount');
+  } else {
+    res.redirect('/claims/details-of-rent-arrears');
+  }
+});
+
+// GET /claims/daily-rent-amount - Placeholder for Screen 21
+router.get('/daily-rent-amount', (req, res) => {
+  res.render('pages/claims/daily-rent-amount', {
+    pageTitle: 'Daily rent amount'
+  });
+});
+
+// GET /claims/details-of-rent-arrears - Placeholder for Screen 21 alternate
+router.get('/details-of-rent-arrears', (req, res) => {
+  res.render('pages/claims/details-of-rent-arrears', {
+    pageTitle: 'Details of rent arrears'
+  });
 });
 
 // GET /claims/grounds-for-possession - Screen 14.1: General grounds selection (placeholder)

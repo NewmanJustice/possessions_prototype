@@ -1,0 +1,92 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Rent details</h1>
+
+    <form method="post" action="/claims/rent-details" novalidate>
+
+      {# AC-1: Rent amount input with £ prefix #}
+      {{ govukInput({
+        label: {
+          text: "How much is the rent?",
+          classes: "govuk-label--m"
+        },
+        id: "amount",
+        name: "amount",
+        prefix: {
+          text: "£"
+        },
+        classes: "govuk-input--width-10",
+        value: amount,
+        errorMessage: errors.amount if errors.amount,
+        spellcheck: false
+      }) }}
+
+      {# AC-3: Frequency radios - 4 options #}
+      {{ govukRadios({
+        name: "frequency",
+        idPrefix: "frequency",
+        fieldset: {
+          legend: {
+            text: "How frequently should rent be paid?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "weekly",
+            text: "Weekly",
+            checked: frequency == "weekly"
+          },
+          {
+            value: "fortnightly",
+            text: "Fortnightly",
+            checked: frequency == "fortnightly"
+          },
+          {
+            value: "monthly",
+            text: "Monthly",
+            checked: frequency == "monthly"
+          },
+          {
+            value: "other",
+            text: "Other",
+            checked: frequency == "other"
+          }
+        ],
+        errorMessage: errors.frequency if errors.frequency
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+        <a class="govuk-link" href="/claims/notice-details">Previous</a>
+        <a class="govuk-link" href="/case-list">Cancel</a>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

@@ -255,6 +255,24 @@ async function navigateToNoticeDetails(agent) {
 }
 
 /**
+ * Navigate to Rent Details (Screen 20)
+ * Entry: Screen 19 (Notice details) → Screen 20
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToRentDetails(agent) {
+  await navigateToNoticeDetails(agent);
+  
+  // Screen 19: Submit notice details (select service method)
+  await agent
+    .post('/claims/notice-details')
+    .send({ serviceMethod: 'first-class-post' })
+    .expect(302);
+    
+  return agent;
+}
+
+/**
  * DEPRECATED: Old navigation helper for rent arrears question
  * Use navigateToAssuredConfirmation instead
  */
@@ -277,5 +295,6 @@ module.exports = {
   navigateToMediationSettlement,
   navigateToNoticeOfIntention,
   navigateToNoticeDetails,
+  navigateToRentDetails,
   navigateToGrounds  // Deprecated - kept for backward compatibility
 };
