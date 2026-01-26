@@ -1286,10 +1286,124 @@ router.post('/grounds-for-possession-assured-confirmation', (req, res) => {
   }
 });
 
-// GET /claims/grounds-for-possession-secure-flexible - Placeholder for SECURE_LIKE path
+// Helper: Validate secure/flexible grounds (at least one required)
+function validateSecureGrounds(body) {
+  const hasAnyGround = body.ground1 || body.ground2 || body.ground2A ||
+                       body.ground3 || body.ground4 || body.ground5 ||
+                       body.ground6 || body.ground7 || body.ground8;
+
+  if (!hasAnyGround) {
+    return 'Select at least one ground for possession';
+  }
+
+  return null;
+}
+
+// Helper: Validate Ground 1 type (required when Ground 1 selected)
+function validateSecureGround1Type(body) {
+  if (body.ground1 && !body.ground1Type) {
+    return 'Select whether ground 1 is rent arrears or breach of tenancy';
+  }
+
+  return null;
+}
+
+// GET /claims/grounds-for-possession-secure-flexible - Screen 13.2
 router.get('/grounds-for-possession-secure-flexible', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const grounds = claim.grounds?.secureFlexible || {};
+
   res.render('pages/claims/grounds-secure-flexible', {
     pageTitle: 'Grounds for possession',
+    ground1: grounds.ground1 || false,
+    ground1Type: grounds.ground1Type || '',
+    ground2: grounds.ground2 || false,
+    ground2A: grounds.ground2A || false,
+    ground3: grounds.ground3 || false,
+    ground4: grounds.ground4 || false,
+    ground5: grounds.ground5 || false,
+    ground6: grounds.ground6 || false,
+    ground7: grounds.ground7 || false,
+    ground8: grounds.ground8 || false,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/grounds-for-possession-secure-flexible - Screen 13.2
+router.post('/grounds-for-possession-secure-flexible', (req, res) => {
+  const {
+    ground1, ground1Type, ground2, ground2A, ground3,
+    ground4, ground5, ground6, ground7, ground8
+  } = req.body;
+
+  const errors = {};
+
+  // Validate: at least one ground selected
+  const groundsError = validateSecureGrounds(req.body);
+  if (groundsError) {
+    errors.grounds = { text: groundsError };
+  }
+
+  // Validate: Ground 1 type required when Ground 1 selected
+  const ground1TypeError = validateSecureGround1Type(req.body);
+  if (ground1TypeError) {
+    errors.ground1Type = { text: ground1TypeError };
+  }
+
+  // If validation errors, re-render with errors
+  if (Object.keys(errors).length > 0) {
+    const errorList = Object.entries(errors).map(([field, error]) => ({
+      text: error.text,
+      href: `#${field}`
+    }));
+
+    return res.status(400).render('pages/claims/grounds-secure-flexible', {
+      pageTitle: 'Grounds for possession',
+      ground1: !!ground1,
+      ground1Type: ground1Type || '',
+      ground2: !!ground2,
+      ground2A: !!ground2A,
+      ground3: !!ground3,
+      ground4: !!ground4,
+      ground5: !!ground5,
+      ground6: !!ground6,
+      ground7: !!ground7,
+      ground8: !!ground8,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  const claim = claimService.getClaim(req.session) || {};
+  if (!claim.grounds) {
+    claim.grounds = {};
+  }
+
+  claim.grounds.secureFlexible = {
+    ground1: !!ground1,
+    ground1Type: ground1 ? (ground1Type || null) : null,
+    ground2: !!ground2,
+    ground2A: !!ground2A,
+    ground3: !!ground3,
+    ground4: !!ground4,
+    ground5: !!ground5,
+    ground6: !!ground6,
+    ground7: !!ground7,
+    ground8: !!ground8
+  };
+
+  claimService.updateClaim(req.session, 'grounds', claim.grounds);
+
+  // Redirect to next screen
+  res.redirect('/claims/rent-arrears-breach-of-tenency');
+});
+
+// GET /claims/rent-arrears-breach-of-tenency - Placeholder for next screen
+router.get('/rent-arrears-breach-of-tenency', (req, res) => {
+  res.render('pages/claims/rent-arrears-breach-of-tenency', {
+    pageTitle: 'Rent arrears or breach of tenency'
   });
 });
 

@@ -1,35 +1,141 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
+    {% if errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
     <span class="govuk-caption-l">Make a claim</span>
     <h1 class="govuk-heading-l">Grounds for possession</h1>
 
-    <div class="govuk-inset-text">
-      This page is for secure and flexible tenancy grounds selection.
-      This feature is not yet implemented.
-    </div>
+    <form method="post" action="/claims/grounds-for-possession-secure-flexible" novalidate>
 
-    <p class="govuk-body">
-      You have selected a secure, introductory, or flexible tenancy type.
-      The grounds selection for these tenancy types will be available in a future iteration.
-    </p>
+      {# Ground 1 conditional radios HTML #}
+      {% set ground1ConditionalHtml %}
+        <div class="govuk-radios__conditional">
+          {{ govukRadios({
+            name: "ground1Type",
+            idPrefix: "ground1Type",
+            classes: "govuk-radios--small",
+            fieldset: {
+              legend: {
+                text: "Is this for:",
+                classes: "govuk-fieldset__legend--s"
+              }
+            },
+            items: [
+              {
+                value: "rentArrears",
+                text: "Rent arrears",
+                checked: ground1Type == 'rentArrears'
+              },
+              {
+                value: "breach",
+                text: "Breach of tenancy",
+                checked: ground1Type == 'breach'
+              }
+            ],
+            errorMessage: errors.ground1Type if errors.ground1Type
+          }) }}
+        </div>
+      {% endset %}
 
-    <div class="govuk-button-group">
-      {{ govukButton({
-        text: "Previous",
-        classes: "govuk-button--secondary",
-        href: "/claims/tenancy"
+      {# All grounds as checkboxes #}
+      {{ govukCheckboxes({
+        name: "grounds",
+        idPrefix: "grounds",
+        fieldset: {
+          legend: {
+            text: "Select all grounds that apply",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.grounds if errors.grounds,
+        items: [
+          {
+            name: "ground1",
+            value: "true",
+            text: "Rent arrears or breach of the tenancy (Ground 1)",
+            checked: ground1,
+            conditional: {
+              html: ground1ConditionalHtml
+            }
+          },
+          {
+            name: "ground2",
+            value: "true",
+            text: "Nuisance or annoyance (Ground 2)",
+            checked: ground2
+          },
+          {
+            name: "ground2A",
+            value: "true",
+            text: "Domestic violence (Ground 2A)",
+            checked: ground2A
+          },
+          {
+            name: "ground3",
+            value: "true",
+            text: "Deterioration of dwelling (Ground 3)",
+            checked: ground3
+          },
+          {
+            name: "ground4",
+            value: "true",
+            text: "Deterioration of furniture (Ground 4)",
+            checked: ground4
+          },
+          {
+            name: "ground5",
+            value: "true",
+            text: "False statement (Ground 5)",
+            checked: ground5
+          },
+          {
+            name: "ground6",
+            value: "true",
+            text: "Premium paid for assignment (Ground 6)",
+            checked: ground6
+          },
+          {
+            name: "ground7",
+            value: "true",
+            text: "Misconduct or conviction (Ground 7)",
+            checked: ground7
+          },
+          {
+            name: "ground8",
+            value: "true",
+            text: "Serious rent arrears (Ground 8)",
+            checked: ground8
+          }
+        ]
       }) }}
-    </div>
 
-    <p class="govuk-body">
-      <a href="/case-list" class="govuk-link">Cancel</a>
-    </p>
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+        <a class="govuk-link" href="/claims/tenancy">Previous</a>
+        <a class="govuk-link" href="/case-list">Cancel</a>
+      </div>
+
+    </form>
 
   </div>
 </div>
