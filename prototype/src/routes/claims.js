@@ -1806,12 +1806,67 @@ router.post('/reasons-for-possession', (req, res) => {
 // ============================================================================
 // GET /claims/money-judgement - Screen 23: Money judgement
 router.get('/money-judgement', (req, res) => {
-  res.send('Screen 23: Money Judgement - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const moneyJudgement = claim.moneyJudgement || {};
+
+  // Convert boolean to form value for pre-population
+  let moneyJudgementRequested = '';
+  if (moneyJudgement.requested === true) {
+    moneyJudgementRequested = 'yes';
+  } else if (moneyJudgement.requested === false) {
+    moneyJudgementRequested = 'no';
+  }
+
+  res.render('pages/claims/money-judgement', {
+    pageTitle: 'Money judgement',
+    moneyJudgementRequested,
+    errors: {},
+    errorList: []
+  });
 });
 
-// POST /claims/money-judgement
+// POST /claims/money-judgement - Screen 23: Money judgement
 router.post('/money-judgement', (req, res) => {
-  res.redirect('/claims/preaction-protocol');
+  const { moneyJudgementRequested, action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/details-of-rent-arrears');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  if (!moneyJudgementRequested) {
+    errors.moneyJudgementRequested = { text: 'Select whether you want the court to make a judgment for the outstanding arrears' };
+    errorList.push({ text: 'Select whether you want the court to make a judgment for the outstanding arrears', href: '#moneyJudgementRequested' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    return res.status(200).render('pages/claims/money-judgement', {
+      pageTitle: 'Money judgement',
+      moneyJudgementRequested: moneyJudgementRequested || '',
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session - convert form value to boolean
+  const moneyJudgement = {
+    requested: moneyJudgementRequested === 'yes'
+  };
+  claimService.updateClaim(req.session, 'moneyJudgement', moneyJudgement);
+
+  // Redirect to next screen
+  res.redirect('/claims/claimants-circumstances');
 });
 
 // ============================================================================

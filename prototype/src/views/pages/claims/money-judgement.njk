@@ -1,0 +1,79 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Money judgement - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-xl">Money judgement</h1>
+
+    <form method="post" action="/claims/money-judgement" novalidate>
+
+      {{ govukRadios({
+        name: "moneyJudgementRequested",
+        idPrefix: "moneyJudgementRequested",
+        fieldset: {
+          legend: {
+            text: "Do you want the court to make a judgment for the outstanding arrears?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.moneyJudgementRequested if errors.moneyJudgementRequested,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: moneyJudgementRequested == 'yes'
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: moneyJudgementRequested == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}
