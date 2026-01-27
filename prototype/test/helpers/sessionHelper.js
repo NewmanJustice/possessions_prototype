@@ -311,18 +311,60 @@ async function navigateToGrounds(agent) {
  * @returns {Object} Agent with session state
  */
 async function navigateToAdditionalGrounds(agent) {
-  await navigateToAssuredTenancyGrounds(agent);
+  await navigateToAssuredConfirmation(agent);
   
-  // Screen 13.1: Submit assured tenancy grounds
+  // Screen 13.1: Proceed with assured journey
   await agent
-    .post('/claims/assured-tenancy-grounds')
-    .send({ grounds: ['ground1'] })
+    .post('/claims/grounds-for-possession-assured-confirmation')
+    .send({ assuredProceed: 'yes' })
     .expect(302);
   
-  // Screen 13.1.1: Select "Yes" to additional grounds
+  // Screen 13.1.1: Select "yes" to additional grounds (with required ground selections)
   await agent
     .post('/claims/grounds-for-possession-assured-selection')
-    .send({ additionalGrounds: 'yes' })
+    .send({ 
+      ground8: 'true',
+      hasAdditionalGrounds: 'yes'
+    })
+    .expect(302);
+    
+  return agent;
+}
+
+/**
+ * Navigate to Details of Rent Arrears (Screen 22)
+ * Entry: Screen 21 (Daily rent amount) → Screen 22
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToDetailsOfRentArrears(agent) {
+  await navigateToDailyRentAmount(agent);
+  
+  // Screen 21: Confirm daily rent amount (Yes path)
+  await agent
+    .post('/claims/daily-rent-amount')
+    .send({ confirmation: 'yes' })
+    .expect(302);
+    
+  return agent;
+}
+
+/**
+ * Navigate to Money Judgement (Screen 23)
+ * Entry: Screen 22 (Details of rent arrears) → Screen 23
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToMoneyJudgement(agent) {
+  await navigateToDetailsOfRentArrears(agent);
+  
+  // Screen 22: Submit rent arrears details
+  await agent
+    .post('/claims/details-of-rent-arrears')
+    .send({
+      totalArrears: '1000',
+      thirdPartyPayments: 'no'
+    })
     .expect(302);
     
   return agent;
@@ -345,5 +387,7 @@ module.exports = {
   navigateToRentDetails,
   navigateToDailyRentAmount,
   navigateToGrounds,  // Deprecated - kept for backward compatibility
-  navigateToAdditionalGrounds
+  navigateToAdditionalGrounds,
+  navigateToDetailsOfRentArrears,
+  navigateToMoneyJudgement
 };

@@ -1,19 +1,193 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 
 {% block pageTitle %}
-  Details of rent arrears - {{ serviceName }} - GOV.UK
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Details of rent arrears - {{ serviceName }} - GOV.UK
 {% endblock %}
 
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <h1 class="govuk-heading-xl">Placeholder: Details of rent arrears</h1>
-    <p class="govuk-body">This is a placeholder for the Details of Rent Arrears screen.</p>
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-xl">Details of rent arrears</h1>
+
+    {# AC-1: Rent statement guidance #}
+    <h2 class="govuk-heading-m">Rent statement</h2>
     <p class="govuk-body">
-      <a href="/claims/rent-details" class="govuk-link">Back to Rent Details</a>
+      You will need to upload a rent statement. The rent statement must show:
     </p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>when each payment was supposed to be made</li>
+      <li>the amount due on each date</li>
+      <li>the actual payments made</li>
+      <li>the total rent arrears</li>
+    </ul>
+    <p class="govuk-body">
+      The rent statement must cover the period from when the arrears started to the current date.
+    </p>
+
+    {# AC-2: Optional upload section #}
+    <div class="govuk-form-group">
+      <h3 class="govuk-heading-s">Upload rent statement (optional)</h3>
+      <p class="govuk-body">
+        <button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          Add new
+        </button>
+      </p>
+    </div>
+
+    <form method="post" action="/claims/details-of-rent-arrears" novalidate>
+
+      {# AC-5, AC-6: Total rent arrears input #}
+      {{ govukInput({
+        id: "totalArrears",
+        name: "totalArrears",
+        type: "text",
+        inputmode: "decimal",
+        classes: "govuk-input--width-10",
+        label: {
+          text: "Total rent arrears",
+          classes: "govuk-label--m"
+        },
+        hint: {
+          text: "How much are the total rent arrears?"
+        },
+        prefix: {
+          text: "£"
+        },
+        value: totalArrears,
+        errorMessage: errors.totalArrears if errors.totalArrears,
+        spellcheck: false
+      }) }}
+
+      {# AC-7, AC-8, AC-9: Third-party payments with conditional reveal #}
+      {% set paymentSourcesHtml %}
+        {# AC-9, AC-10, AC-11: Payment sources checkboxes with Other conditional reveal #}
+        {% set otherPaymentSourceHtml %}
+          {{ govukInput({
+            id: "otherPaymentSource",
+            name: "otherPaymentSource",
+            type: "text",
+            classes: "govuk-!-width-two-thirds",
+            label: {
+              text: "Payment source"
+            },
+            value: otherPaymentSource,
+            errorMessage: errors.otherPaymentSource if errors.otherPaymentSource,
+            spellcheck: false
+          }) }}
+        {% endset %}
+
+        {{ govukCheckboxes({
+          name: "paymentSources",
+          idPrefix: "paymentSources",
+          fieldset: {
+            legend: {
+              text: "Select all that apply",
+              classes: "govuk-fieldset__legend--s"
+            }
+          },
+          errorMessage: errors.paymentSources if errors.paymentSources,
+          items: [
+            {
+              value: "universalCredit",
+              text: "Universal Credit",
+              checked: universalCredit
+            },
+            {
+              value: "housingBenefit",
+              text: "Housing Benefit",
+              checked: housingBenefit
+            },
+            {
+              value: "discretionaryHousingPayment",
+              text: "Discretionary Housing Payment",
+              checked: discretionaryHousingPayment
+            },
+            {
+              value: "homelessPreventionFund",
+              text: "Homeless prevention fund",
+              checked: homelessPreventionFund
+            },
+            {
+              value: "other",
+              text: "Other",
+              checked: other,
+              conditional: {
+                html: otherPaymentSourceHtml
+              }
+            }
+          ]
+        }) }}
+      {% endset %}
+
+      {{ govukRadios({
+        name: "thirdPartyPayments",
+        idPrefix: "thirdPartyPayments",
+        fieldset: {
+          legend: {
+            text: "For the period shown on the rent statement, have any rent payments been paid by someone other than the defendants?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.thirdPartyPayments if errors.thirdPartyPayments,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: thirdPartyPayments == 'yes',
+            conditional: {
+              html: paymentSourcesHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: thirdPartyPayments == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
   </div>
 </div>
 {% endblock %}

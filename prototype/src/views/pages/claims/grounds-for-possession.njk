@@ -1,0 +1,150 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}{{ pageTitle }} - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-xl">{{ pageTitle }}</h1>
+
+    <form method="post" action="/claims/grounds-for-possession" novalidate>
+
+      {{ govukCheckboxes({
+        name: "grounds",
+        fieldset: {
+          legend: {
+            text: "Mandatory grounds",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.grounds if errors.grounds,
+        items: [
+          {
+            value: "mandatoryGround1",
+            text: "Ground 1",
+            checked: mandatoryGround1
+          },
+          {
+            value: "mandatoryGround3",
+            text: "Ground 3",
+            checked: mandatoryGround3
+          },
+          {
+            value: "mandatoryGround4",
+            text: "Ground 4",
+            checked: mandatoryGround4
+          },
+          {
+            value: "mandatoryGround5",
+            text: "Ground 5",
+            checked: mandatoryGround5
+          },
+          {
+            value: "mandatoryGround7",
+            text: "Ground 7",
+            checked: mandatoryGround7
+          },
+          {
+            value: "mandatoryGround8",
+            text: "Ground 8",
+            checked: mandatoryGround8
+          }
+        ]
+      }) }}
+
+      {{ govukCheckboxes({
+        name: "grounds",
+        fieldset: {
+          legend: {
+            text: "Discretionary grounds",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "discretionaryGround9",
+            text: "Ground 9",
+            checked: discretionaryGround9
+          },
+          {
+            value: "discretionaryGround10",
+            text: "Ground 10",
+            checked: discretionaryGround10
+          },
+          {
+            value: "discretionaryGround11",
+            text: "Ground 11",
+            checked: discretionaryGround11
+          },
+          {
+            value: "discretionaryGround12",
+            text: "Ground 12",
+            checked: discretionaryGround12
+          },
+          {
+            value: "discretionaryGround13",
+            text: "Ground 13",
+            checked: discretionaryGround13
+          },
+          {
+            value: "discretionaryGround14",
+            text: "Ground 14",
+            checked: discretionaryGround14
+          },
+          {
+            value: "discretionaryGround15",
+            text: "Ground 15",
+            checked: discretionaryGround15
+          },
+          {
+            value: "discretionaryGround16",
+            text: "Ground 16",
+            checked: discretionaryGround16
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

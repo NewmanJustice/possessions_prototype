@@ -1659,10 +1659,133 @@ router.post('/grounds-for-possession-assured-selection', (req, res) => {
 
   // Branch based on selection
   if (hasAdditionalGrounds === 'yes') {
+    // Set up navigation contract for Screen 14
+    if (!claim.navigation) claim.navigation = {};
+    claim.navigation.screen14 = {
+      previous: '/claims/grounds-for-possession-assured-selection',
+      continue: '/claims/reasons-for-possession',
+      titleMode: 'additional'
+    };
+    claimService.updateClaim(req.session, 'navigation', claim.navigation);
     res.redirect('/claims/grounds-for-possession');
   } else {
     res.redirect('/claims/preaction-protocol');
   }
+});
+
+// ============================================================================
+// Screen 14: Grounds for Possession (Additional Grounds)
+// ============================================================================
+
+// GET /claims/grounds-for-possession - Screen 14
+router.get('/grounds-for-possession', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const navigation = claim.navigation?.screen14 || {};
+  const additional = claim.grounds?.additional || {};
+
+  // Determine title based on titleMode
+  const titleMode = navigation.titleMode || 'additional';
+  const pageTitle = titleMode === 'additional'
+    ? 'Additional grounds for possession'
+    : 'Grounds for possession';
+
+  res.render('pages/claims/grounds-for-possession', {
+    pageTitle,
+    titleMode,
+    navigation,
+    // Mandatory grounds (1, 3, 4, 5, 7, 8)
+    mandatoryGround1: additional.mandatoryGround1 || false,
+    mandatoryGround3: additional.mandatoryGround3 || false,
+    mandatoryGround4: additional.mandatoryGround4 || false,
+    mandatoryGround5: additional.mandatoryGround5 || false,
+    mandatoryGround7: additional.mandatoryGround7 || false,
+    mandatoryGround8: additional.mandatoryGround8 || false,
+    // Discretionary grounds (9-16)
+    discretionaryGround9: additional.discretionaryGround9 || false,
+    discretionaryGround10: additional.discretionaryGround10 || false,
+    discretionaryGround11: additional.discretionaryGround11 || false,
+    discretionaryGround12: additional.discretionaryGround12 || false,
+    discretionaryGround13: additional.discretionaryGround13 || false,
+    discretionaryGround14: additional.discretionaryGround14 || false,
+    discretionaryGround15: additional.discretionaryGround15 || false,
+    discretionaryGround16: additional.discretionaryGround16 || false,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/grounds-for-possession - Screen 14
+router.post('/grounds-for-possession', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const navigation = claim.navigation?.screen14 || {};
+  const { grounds, action } = req.body;
+
+  // Convert grounds array to object with boolean values
+  const groundsArray = Array.isArray(grounds) ? grounds : (grounds ? [grounds] : []);
+
+  const additional = {
+    mandatoryGround1: groundsArray.includes('mandatoryGround1'),
+    mandatoryGround3: groundsArray.includes('mandatoryGround3'),
+    mandatoryGround4: groundsArray.includes('mandatoryGround4'),
+    mandatoryGround5: groundsArray.includes('mandatoryGround5'),
+    mandatoryGround7: groundsArray.includes('mandatoryGround7'),
+    mandatoryGround8: groundsArray.includes('mandatoryGround8'),
+    discretionaryGround9: groundsArray.includes('discretionaryGround9'),
+    discretionaryGround10: groundsArray.includes('discretionaryGround10'),
+    discretionaryGround11: groundsArray.includes('discretionaryGround11'),
+    discretionaryGround12: groundsArray.includes('discretionaryGround12'),
+    discretionaryGround13: groundsArray.includes('discretionaryGround13'),
+    discretionaryGround14: groundsArray.includes('discretionaryGround14'),
+    discretionaryGround15: groundsArray.includes('discretionaryGround15'),
+    discretionaryGround16: groundsArray.includes('discretionaryGround16')
+  };
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    // Don't overwrite selections - preserve what's in session
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    // Don't overwrite selections - preserve what's in session
+    const previousRoute = navigation.previous || '/claims/grounds-for-possession-assured-selection';
+    return res.redirect(previousRoute);
+  }
+
+  // Handle Continue action (default)
+  // Validation: at least one ground required
+  const hasAnyGround = Object.values(additional).some(v => v === true);
+
+  if (!hasAnyGround) {
+    const titleMode = navigation.titleMode || 'additional';
+    const pageTitle = titleMode === 'additional'
+      ? 'Additional grounds for possession'
+      : 'Grounds for possession';
+
+    return res.status(200).render('pages/claims/grounds-for-possession', {
+      pageTitle,
+      titleMode,
+      navigation,
+      ...additional,
+      errors: {
+        grounds: { text: 'Select at least one ground for possession' }
+      },
+      errorList: [{
+        text: 'Select at least one ground for possession',
+        href: '#grounds'
+      }]
+    });
+  }
+
+  // Store in session
+  if (!claim.grounds) claim.grounds = {};
+  claim.grounds.additional = additional;
+  claimService.updateClaim(req.session, 'grounds', claim.grounds);
+
+  // Redirect using navigation contract
+  const continueRoute = navigation.continue || '/claims/reasons-for-possession';
+  res.redirect(continueRoute);
 });
 
 // ============================================================================
@@ -1675,6 +1798,32 @@ router.get('/reasons-for-possession', (req, res) => {
 
 // POST /claims/reasons-for-possession
 router.post('/reasons-for-possession', (req, res) => {
+  res.redirect('/claims/preaction-protocol');
+});
+
+// ============================================================================
+// Screen 23: Money Judgement (PLACEHOLDER)
+// ============================================================================
+// GET /claims/money-judgement - Screen 23: Money judgement
+router.get('/money-judgement', (req, res) => {
+  res.send('Screen 23: Money Judgement - Placeholder');
+});
+
+// POST /claims/money-judgement
+router.post('/money-judgement', (req, res) => {
+  res.redirect('/claims/preaction-protocol');
+});
+
+// ============================================================================
+// Screen 24: Claimants Circumstances (PLACEHOLDER)
+// ============================================================================
+// GET /claims/claimants-circumstances - Screen 24: Claimants circumstances
+router.get('/claimants-circumstances', (req, res) => {
+  res.send('Screen 24: Claimants Circumstances - Placeholder');
+});
+
+// POST /claims/claimants-circumstances
+router.post('/claimants-circumstances', (req, res) => {
   res.redirect('/claims/preaction-protocol');
 });
 
@@ -2386,11 +2535,144 @@ router.post('/daily-rent-amount', (req, res) => {
   res.redirect('/claims/details-of-rent-arrears');
 });
 
-// GET /claims/details-of-rent-arrears - Placeholder for Screen 22
+// GET /claims/details-of-rent-arrears - Screen 22: Details of rent arrears
 router.get('/details-of-rent-arrears', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const rentArrears = claim.rentArrears || {};
+  const paymentSources = rentArrears.paymentSources || {};
+
+  // Format totalArrears to always show 2 decimal places if it's a number
+  let formattedTotalArrears = '';
+  if (rentArrears.totalArrears !== undefined && rentArrears.totalArrears !== null) {
+    formattedTotalArrears = Number(rentArrears.totalArrears).toFixed(2);
+  }
+
   res.render('pages/claims/details-of-rent-arrears', {
-    pageTitle: 'Details of rent arrears'
+    pageTitle: 'Details of rent arrears',
+    // Pre-populate from session
+    totalArrears: formattedTotalArrears,
+    thirdPartyPayments: rentArrears.thirdPartyPayments === true ? 'yes' : (rentArrears.thirdPartyPayments === false ? 'no' : ''),
+    // Payment sources
+    universalCredit: paymentSources.universalCredit || false,
+    housingBenefit: paymentSources.housingBenefit || false,
+    discretionaryHousingPayment: paymentSources.discretionaryHousingPayment || false,
+    homelessPreventionFund: paymentSources.homelessPreventionFund || false,
+    other: paymentSources.other || false,
+    otherPaymentSource: paymentSources.otherDetails || '',
+    // Documents (for future use)
+    documents: rentArrears.documents || [],
+    errors: {},
+    errorList: []
   });
+});
+
+// POST /claims/details-of-rent-arrears - Screen 22: Details of rent arrears
+router.post('/details-of-rent-arrears', (req, res) => {
+  const { totalArrears, thirdPartyPayments, paymentSources, otherPaymentSource, action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  // Convert payment sources array to object
+  const sourcesArray = Array.isArray(paymentSources) ? paymentSources : (paymentSources ? [paymentSources] : []);
+  const paymentSourcesObj = {
+    universalCredit: sourcesArray.includes('universalCredit'),
+    housingBenefit: sourcesArray.includes('housingBenefit'),
+    discretionaryHousingPayment: sourcesArray.includes('discretionaryHousingPayment'),
+    homelessPreventionFund: sourcesArray.includes('homelessPreventionFund'),
+    other: sourcesArray.includes('other'),
+    otherDetails: sourcesArray.includes('other') ? (otherPaymentSource || null) : null
+  };
+
+  // Build rent arrears object
+  const rentArrears = {
+    documents: claim.rentArrears?.documents || [],
+    totalArrears: totalArrears ? parseFloat(totalArrears) : null,
+    thirdPartyPayments: thirdPartyPayments === 'yes' ? true : (thirdPartyPayments === 'no' ? false : null),
+    paymentSources: paymentSourcesObj
+  };
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/daily-rent-amount');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  // AC-6: Validate total arrears
+  if (!totalArrears || totalArrears.trim() === '') {
+    errors.totalArrears = { text: 'Enter the total rent arrears as a number greater than 0' };
+    errorList.push({ text: 'Enter the total rent arrears as a number greater than 0', href: '#totalArrears' });
+  } else {
+    const amount = parseFloat(totalArrears);
+    if (isNaN(amount)) {
+      errors.totalArrears = { text: 'Enter the total rent arrears as a number greater than 0' };
+      errorList.push({ text: 'Enter the total rent arrears as a number greater than 0', href: '#totalArrears' });
+    } else if (amount <= 0) {
+      errors.totalArrears = { text: 'Enter the total rent arrears as a number greater than 0' };
+      errorList.push({ text: 'Enter the total rent arrears as a number greater than 0', href: '#totalArrears' });
+    } else if (amount > 1000000) {
+      errors.totalArrears = { text: 'Enter the total rent arrears as a number greater than 0' };
+      errorList.push({ text: 'Enter the total rent arrears as a number greater than 0', href: '#totalArrears' });
+    } else {
+      // Check decimal places
+      const decimalPart = totalArrears.split('.')[1];
+      if (decimalPart && decimalPart.length > 2) {
+        errors.totalArrears = { text: 'Enter the total rent arrears as a number greater than 0' };
+        errorList.push({ text: 'Enter the total rent arrears as a number greater than 0', href: '#totalArrears' });
+      }
+    }
+  }
+
+  // AC-8: Validate third-party payments selection
+  if (!thirdPartyPayments) {
+    errors.thirdPartyPayments = { text: 'Select whether any rent payments were made by someone other than the defendants' };
+    errorList.push({ text: 'Select whether any rent payments were made by someone other than the defendants', href: '#thirdPartyPayments' });
+  }
+
+  // AC-10: Validate payment sources (only if Yes selected)
+  if (thirdPartyPayments === 'yes') {
+    const hasAnySource = sourcesArray.length > 0;
+    if (!hasAnySource) {
+      errors.paymentSources = { text: 'Select at least one payment source' };
+      errorList.push({ text: 'Select at least one payment source', href: '#paymentSources' });
+    }
+  }
+
+  // AC-12: Validate other details (only if Other selected)
+  if (sourcesArray.includes('other') && (!otherPaymentSource || otherPaymentSource.trim() === '')) {
+    errors.otherPaymentSource = { text: 'Enter the payment source' };
+    errorList.push({ text: 'Enter the payment source', href: '#otherPaymentSource' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    return res.status(200).render('pages/claims/details-of-rent-arrears', {
+      pageTitle: 'Details of rent arrears',
+      totalArrears: totalArrears || '',
+      thirdPartyPayments: thirdPartyPayments || '',
+      universalCredit: paymentSourcesObj.universalCredit,
+      housingBenefit: paymentSourcesObj.housingBenefit,
+      discretionaryHousingPayment: paymentSourcesObj.discretionaryHousingPayment,
+      homelessPreventionFund: paymentSourcesObj.homelessPreventionFund,
+      other: paymentSourcesObj.other,
+      otherPaymentSource: otherPaymentSource || '',
+      documents: claim.rentArrears?.documents || [],
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  claimService.updateClaim(req.session, 'rentArrears', rentArrears);
+
+  // Redirect to next screen
+  res.redirect('/claims/money-judgement');
 });
 
 // GET /claims/grounds-for-possession - Screen 14.1: General grounds selection (placeholder)
