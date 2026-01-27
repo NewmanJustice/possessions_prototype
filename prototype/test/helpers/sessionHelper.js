@@ -357,7 +357,7 @@ async function navigateToDetailsOfRentArrears(agent) {
  */
 async function navigateToMoneyJudgement(agent) {
   await navigateToDetailsOfRentArrears(agent);
-  
+
   // Screen 22: Submit rent arrears details
   await agent
     .post('/claims/details-of-rent-arrears')
@@ -366,7 +366,27 @@ async function navigateToMoneyJudgement(agent) {
       thirdPartyPayments: 'no'
     })
     .expect(302);
-    
+
+  return agent;
+}
+
+/**
+ * Navigate to Claimant's Circumstances (Screen 24)
+ * Entry: Screen 23 (Money judgement) → Screen 24
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToClaimantsCircumstances(agent) {
+  await navigateToMoneyJudgement(agent);
+
+  // Screen 23: Submit money judgement
+  await agent
+    .post('/claims/money-judgement')
+    .send({
+      moneyJudgementRequested: 'yes'
+    })
+    .expect(302);
+
   return agent;
 }
 
@@ -389,5 +409,6 @@ module.exports = {
   navigateToGrounds,  // Deprecated - kept for backward compatibility
   navigateToAdditionalGrounds,
   navigateToDetailsOfRentArrears,
-  navigateToMoneyJudgement
+  navigateToMoneyJudgement,
+  navigateToClaimantsCircumstances
 };

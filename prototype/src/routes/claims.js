@@ -1872,14 +1872,96 @@ router.post('/money-judgement', (req, res) => {
 // ============================================================================
 // Screen 24: Claimants Circumstances (PLACEHOLDER)
 // ============================================================================
-// GET /claims/claimants-circumstances - Screen 24: Claimants circumstances
+// GET /claims/claimants-circumstances - Screen 24: Claimant's circumstances
 router.get('/claimants-circumstances', (req, res) => {
-  res.send('Screen 24: Claimants Circumstances - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const claimantCircumstances = claim.claimantCircumstances || {};
+  const claimantName = claim.claimantName || 'the claimant';
+
+  // Convert boolean to form value for pre-population
+  let provideCircumstances = '';
+  if (claimantCircumstances.provided === true) {
+    provideCircumstances = 'yes';
+  } else if (claimantCircumstances.provided === false) {
+    provideCircumstances = 'no';
+  }
+
+  res.render('pages/claims/claimants-circumstances', {
+    pageTitle: "Claimant's circumstances",
+    claimantName,
+    provideCircumstances,
+    circumstancesDetails: claimantCircumstances.details || '',
+    errors: {},
+    errorList: []
+  });
 });
 
-// POST /claims/claimants-circumstances
+// POST /claims/claimants-circumstances - Screen 24: Claimant's circumstances
 router.post('/claimants-circumstances', (req, res) => {
-  res.redirect('/claims/preaction-protocol');
+  const { provideCircumstances, circumstancesDetails, action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+  const claimantName = claim.claimantName || 'the claimant';
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/money-judgement');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  // AC-2: Selection is required
+  if (!provideCircumstances) {
+    errors.provideCircumstances = { text: "Select whether you want to provide information about the claimant's circumstances" };
+    errorList.push({ text: "Select whether you want to provide information about the claimant's circumstances", href: '#provideCircumstances' });
+  }
+
+  // AC-5: Character limit (only if Yes selected and details provided)
+  if (provideCircumstances === 'yes' && circumstancesDetails && circumstancesDetails.length > 950) {
+    errors.circumstancesDetails = { text: 'Enter 950 characters or fewer' };
+    errorList.push({ text: 'Enter 950 characters or fewer', href: '#circumstancesDetails' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    return res.status(200).render('pages/claims/claimants-circumstances', {
+      pageTitle: "Claimant's circumstances",
+      claimantName,
+      provideCircumstances: provideCircumstances || '',
+      circumstancesDetails: circumstancesDetails || '',
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  const claimantCircumstances = {
+    provided: provideCircumstances === 'yes',
+    details: provideCircumstances === 'yes' ? (circumstancesDetails || null) : null
+  };
+  claimService.updateClaim(req.session, 'claimantCircumstances', claimantCircumstances);
+
+  // Redirect to next screen
+  res.redirect('/claims/defendants-circumstances');
+});
+
+// ============================================================================
+// Screen 25: Defendant's Circumstances (PLACEHOLDER)
+// ============================================================================
+// GET /claims/defendants-circumstances - Screen 25: Defendant's circumstances
+router.get('/defendants-circumstances', (req, res) => {
+  res.send('Screen 25: Defendant\'s Circumstances - Placeholder');
+});
+
+// POST /claims/defendants-circumstances
+router.post('/defendants-circumstances', (req, res) => {
+  res.redirect('/claims/check-answers');
 });
 
 // GET /claims/preaction-protocol - Screen 16: Pre-action protocol
