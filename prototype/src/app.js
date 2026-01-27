@@ -5,6 +5,7 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const path = require('path');
+const fs = require('fs');
 
 // Import routes
 const accessRoutes = require('./routes/access');
@@ -16,6 +17,13 @@ const claimsRoutes = require('./routes/claims');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Prototype Annotator configuration
+// On Azure, use /home for persistent storage; locally use ./data
+const ANNOTATOR_DB_PATH = process.env.ANNOTATOR_DB_PATH ||
+  (process.env.NODE_ENV === 'production' ? '/home/data/annotations.sqlite' : './data/annotations.sqlite');
+const ANNOTATOR_EXPORT_DIR = process.env.ANNOTATOR_EXPORT_DIR ||
+  (process.env.NODE_ENV === 'production' ? '/home/data/exports' : './data/exports');
 
 // Security headers with relaxed settings for prototype
 app.use(
@@ -146,54 +154,156 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Root redirect
-app.get('/', (req, res) => {
-  res.redirect('/access');
-});
-
-// Register routes
-app.use('/access', accessRoutes);
-app.use('/select-user-type', selectUserTypeRoutes);
-app.use('/auth', authRoutes);
-app.use('/case-list', caseListRoutes);
-app.use('/possessions', possessionsRoutes);
-app.use('/claims', claimsRoutes);
-
-// Sign out route
-app.get('/sign-out', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Session destruction error:', err);
+// Async initialization function for prototype annotator
+async function initializeAnnotator() {
+  try {
+    // Ensure data directory exists
+    const dbDir = path.dirname(ANNOTATOR_DB_PATH);
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
     }
+    if (!fs.existsSync(ANNOTATOR_EXPORT_DIR)) {
+      fs.mkdirSync(ANNOTATOR_EXPORT_DIR, { recursive: true });
+    }
+
+    // Dynamic import for ES module
+    const { createPrototypeAnnotator } = await import('prototype-annotator');
+
+    const annotator = await createPrototypeAnnotator({
+      basePath: '/__prototype-annotator',
+      dbPath: ANNOTATOR_DB_PATH,
+      exportDir: ANNOTATOR_EXPORT_DIR,
+      urlMode: 'canonical', // Store canonical URL for consistency across environments
+      enableOverlay: true,
+      enableDashboard: true,
+    });
+
+    // Workaround: Serve annotator client files manually (package has path bugs)
+    const annotatorClientPath = path.join(__dirname, '../node_modules/prototype-annotator/client/dist');
+
+    // Serve overlay.js (only if user has access)
+    app.get('/__prototype-annotator/overlay.js', (req, res, next) => {
+      if (req.session?.accessGranted) {
+        return res.sendFile(path.join(annotatorClientPath, 'overlay.js'));
+      }
+      next();
+    });
+
+    // Serve dashboard static assets (CSS, JS) - only if user has access
+    const dashboardStatic = express.static(path.join(annotatorClientPath, 'dashboard'));
+    app.use('/__prototype-annotator/dashboard', (req, res, next) => {
+      if (!req.session?.accessGranted) {
+        return next('route');
+      }
+      dashboardStatic(req, res, next);
+    });
+
+    // Serve dashboard index.html for SPA routes - only if user has access
+    app.get('/__prototype-annotator/dashboard', (req, res, next) => {
+      if (req.session?.accessGranted) {
+        return res.sendFile(path.join(annotatorClientPath, 'dashboard', 'index.html'));
+      }
+      next();
+    });
+    app.get('/__prototype-annotator/dashboard/*', (req, res, next) => {
+      if (req.session?.accessGranted) {
+        // Check if this is an asset request (has file extension)
+        if (req.path.includes('/assets/')) {
+          return next(); // Let static middleware handle it
+        }
+        return res.sendFile(path.join(annotatorClientPath, 'dashboard', 'index.html'));
+      }
+      next();
+    });
+
+    // Add annotator middleware (router + injector) - only after access screen
+    // The package's router and middleware() both include the HTML injector
+    const annotatorMiddleware = annotator.middleware();
+    app.use((req, res, next) => {
+      if (req.session?.accessGranted) {
+        return annotatorMiddleware(req, res, next);
+      }
+      next();
+    });
+
+    console.log(`Prototype Annotator initialized`);
+    console.log(`  Database: ${ANNOTATOR_DB_PATH}`);
+    console.log(`  Dashboard: http://localhost:${PORT}/__prototype-annotator/dashboard`);
+
+    return annotator;
+  } catch (error) {
+    console.error('Failed to initialize Prototype Annotator:', error.message);
+    return null;
+  }
+}
+
+// Function to register application routes (called after annotator is initialized)
+function registerRoutes() {
+  // Root redirect
+  app.get('/', (req, res) => {
     res.redirect('/access');
   });
-});
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).render('pages/error', {
-    pageTitle: 'Page not found',
-    heading: 'Page not found',
-    message: 'If you typed the web address, check it is correct.',
+  // Register routes
+  app.use('/access', accessRoutes);
+  app.use('/select-user-type', selectUserTypeRoutes);
+  app.use('/auth', authRoutes);
+  app.use('/case-list', caseListRoutes);
+  app.use('/possessions', possessionsRoutes);
+  app.use('/claims', claimsRoutes);
+
+  // Sign out route
+  app.get('/sign-out', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Session destruction error:', err);
+      }
+      res.redirect('/access');
+    });
   });
-});
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error('Application error:', err);
-  res.status(500).render('pages/error', {
-    pageTitle: 'Sorry, there is a problem with the service',
-    heading: 'Sorry, there is a problem with the service',
-    message: 'Try again later.',
+  // 404 handler
+  app.use((req, res) => {
+    res.status(404).render('pages/error', {
+      pageTitle: 'Page not found',
+      heading: 'Page not found',
+      message: 'If you typed the web address, check it is correct.',
+    });
   });
-});
 
-// Only start server if this file is run directly (not required by tests)
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`HMCTS Possessions Prototype running on http://localhost:${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  // Error handler
+  app.use((err, req, res, next) => {
+    console.error('Application error:', err);
+    res.status(500).render('pages/error', {
+      pageTitle: 'Sorry, there is a problem with the service',
+      heading: 'Sorry, there is a problem with the service',
+      message: 'Try again later.',
+    });
   });
 }
 
+// Combined async initialization (for server startup)
+async function initialize() {
+  await initializeAnnotator();
+  registerRoutes();
+}
+
+// Only start server if this file is run directly (not required by tests)
+if (require.main === module) {
+  // Server mode: initialize annotator first, then register routes
+  initialize().then(() => {
+    app.listen(PORT, () => {
+      console.log(`HMCTS Possessions Prototype running on http://localhost:${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  });
+} else {
+  // Test/import mode: register routes synchronously (skip annotator)
+  registerRoutes();
+}
+
+// Export for testing
 module.exports = app;
+module.exports.initialize = initialize;
+module.exports.initializeAnnotator = initializeAnnotator;
+module.exports.registerRoutes = registerRoutes;

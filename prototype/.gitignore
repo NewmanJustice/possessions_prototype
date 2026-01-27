@@ -27,6 +27,9 @@ Thumbs.db
 # Session store (if using file-based sessions)
 sessions/
 
+# Prototype Annotator data (SQLite database and exports)
+data/
+
 # Test coverage
 coverage/
 .nyc_output/
