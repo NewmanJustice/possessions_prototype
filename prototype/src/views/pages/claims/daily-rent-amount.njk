@@ -1,23 +1,92 @@
 {% extends "layouts/main.njk" %}
 
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Daily rent amount - {{ serviceName }} - GOV.UK
+{% endblock %}
+
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
-    <span class="govuk-caption-l">Make a claim</span>
-    <h1 class="govuk-heading-l">Placeholder: Daily Rent Amount</h1>
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-xl">Daily rent amount</h1>
 
     <p class="govuk-body">
-      This is a placeholder for Screen 21 (Daily Rent Amount confirmation).
+      Based on your previous answers about unpaid rent, the amount per day that unpaid rent should be charged at is
+      <strong class="govuk-!-font-weight-bold">£{{ calculatedDailyAmount | default(0) | round(2) }}</strong>.
     </p>
 
-    <p class="govuk-body">
-      <a href="/claims/rent-details" class="govuk-link">Back to Rent Details</a>
-    </p>
+    <form method="post" action="/claims/daily-rent-amount" novalidate>
 
-    <p class="govuk-body">
-      <a href="/case-list" class="govuk-link">Return to case list</a>
-    </p>
+      {% set manualEntryHtml %}
+        {{ govukInput({
+          id: "manualDailyAmount",
+          name: "manualDailyAmount",
+          type: "text",
+          classes: "govuk-input--width-10",
+          label: {
+            text: "Enter the correct daily rent amount"
+          },
+          prefix: {
+            text: "£"
+          },
+          value: manualDailyAmount,
+          errorMessage: errors.manualDailyAmount if errors.manualDailyAmount,
+          spellcheck: false
+        }) }}
+      {% endset %}
+
+      {{ govukRadios({
+        name: "confirmation",
+        idPrefix: "confirmation",
+        fieldset: {
+          legend: {
+            text: "Is the amount per day that unpaid rent should be charged at correct?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: confirmation == 'yes'
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: confirmation == 'no',
+            conditional: {
+              html: manualEntryHtml
+            }
+          }
+        ],
+        errorMessage: errors.confirmation if errors.confirmation
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+        <a class="govuk-link" href="/claims/rent-details">Previous</a>
+        <a class="govuk-link" href="/case-list">Cancel</a>
+      </div>
+
+    </form>
 
   </div>
 </div>

@@ -1665,6 +1665,19 @@ router.post('/grounds-for-possession-assured-selection', (req, res) => {
   }
 });
 
+// ============================================================================
+// Screen 15: Reasons for Possession (PLACEHOLDER)
+// ============================================================================
+// GET /claims/reasons-for-possession - Screen 15: Reasons for possession
+router.get('/reasons-for-possession', (req, res) => {
+  res.send('Screen 15: Reasons for Possession - Placeholder');
+});
+
+// POST /claims/reasons-for-possession
+router.post('/reasons-for-possession', (req, res) => {
+  res.redirect('/claims/preaction-protocol');
+});
+
 // GET /claims/preaction-protocol - Screen 16: Pre-action protocol
 router.get('/preaction-protocol', (req, res) => {
   const claim = claimService.getClaim(req.session) || {};
@@ -2267,14 +2280,113 @@ router.post('/rent-details', (req, res) => {
   }
 });
 
-// GET /claims/daily-rent-amount - Placeholder for Screen 21
+// Helper: Validate manual daily rent amount (Screen 21)
+function validateManualDailyAmount(amount) {
+  if (!amount || amount.trim() === '') {
+    return 'Enter the daily rent amount as a number greater than 0';
+  }
+
+  const trimmed = amount.trim();
+
+  // Check format - max 2 decimal places
+  if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) {
+    return 'Enter the daily rent amount as a number greater than 0';
+  }
+
+  const numValue = parseFloat(trimmed);
+
+  // Must be positive and not exceed maximum
+  if (isNaN(numValue) || numValue <= 0 || numValue > 1000000) {
+    return 'Enter the daily rent amount as a number greater than 0';
+  }
+
+  return null;
+}
+
+// GET /claims/daily-rent-amount - Screen 21: Daily rent amount confirmation
 router.get('/daily-rent-amount', (req, res) => {
+  const claim = claimService.getClaim(req.session);
+  const rentDetails = claim?.rentDetails || {};
+
+  // Redirect back if no calculated amount available
+  if (!rentDetails.calculatedDailyAmount) {
+    return res.redirect('/claims/rent-details');
+  }
+
+  // Pre-populate from session on revisit
+  let confirmation;
+  if (rentDetails.dailyAmountConfirmed === true) {
+    confirmation = 'yes';
+  } else if (rentDetails.dailyAmountConfirmed === false) {
+    confirmation = 'no';
+  }
+
+  // Get manual amount if previously entered (dailyAmountConfirmed === false)
+  const manualDailyAmount = (rentDetails.dailyAmountConfirmed === false && rentDetails.dailyAmount)
+    ? rentDetails.dailyAmount
+    : '';
+
   res.render('pages/claims/daily-rent-amount', {
-    pageTitle: 'Daily rent amount'
+    pageTitle: 'Daily rent amount',
+    calculatedDailyAmount: rentDetails.calculatedDailyAmount,
+    confirmation,
+    manualDailyAmount,
+    errors: {},
+    errorList: []
   });
 });
 
-// GET /claims/details-of-rent-arrears - Placeholder for Screen 21 alternate
+// POST /claims/daily-rent-amount - Screen 21: Daily rent amount confirmation
+router.post('/daily-rent-amount', (req, res) => {
+  const { confirmation, manualDailyAmount } = req.body;
+  const claim = claimService.getClaim(req.session);
+  const rentDetails = claim?.rentDetails || {};
+  const errors = {};
+  const errorList = [];
+
+  // Validation: Radio selection required
+  if (!confirmation) {
+    errors.confirmation = { text: 'Select whether the daily rent amount is correct' };
+    errorList.push({ text: 'Select whether the daily rent amount is correct', href: '#confirmation' });
+  }
+
+  // Validation: Manual entry when "No" selected
+  if (confirmation === 'no') {
+    const amountError = validateManualDailyAmount(manualDailyAmount);
+    if (amountError) {
+      errors.manualDailyAmount = { text: amountError };
+      errorList.push({ text: amountError, href: '#manualDailyAmount' });
+    }
+  }
+
+  // If errors, re-render with preserved values
+  if (errorList.length > 0) {
+    return res.status(400).render('pages/claims/daily-rent-amount', {
+      pageTitle: 'Daily rent amount',
+      calculatedDailyAmount: rentDetails.calculatedDailyAmount,
+      confirmation,
+      manualDailyAmount: manualDailyAmount || '',
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session based on confirmation choice
+  if (confirmation === 'yes') {
+    rentDetails.dailyAmount = rentDetails.calculatedDailyAmount;
+    rentDetails.dailyAmountConfirmed = true;
+  } else {
+    rentDetails.dailyAmount = parseFloat(manualDailyAmount);
+    rentDetails.dailyAmountConfirmed = false;
+  }
+
+  claimService.updateClaim(req.session, 'rentDetails', rentDetails);
+
+  // Redirect to next screen
+  res.redirect('/claims/details-of-rent-arrears');
+});
+
+// GET /claims/details-of-rent-arrears - Placeholder for Screen 22
 router.get('/details-of-rent-arrears', (req, res) => {
   res.render('pages/claims/details-of-rent-arrears', {
     pageTitle: 'Details of rent arrears'

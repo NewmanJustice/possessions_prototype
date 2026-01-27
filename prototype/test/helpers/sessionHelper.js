@@ -286,9 +286,9 @@ async function navigateToDailyRentAmount(agent) {
   // 125 weekly = 17.86 daily (calculated)
   await agent
     .post('/claims/rent-details')
-    .send({ 
-      rentAmount: '125',
-      rentFrequency: 'weekly'
+    .send({
+      amount: '125',
+      frequency: 'weekly'
     })
     .expect(302);
     
@@ -302,6 +302,30 @@ async function navigateToDailyRentAmount(agent) {
 async function navigateToGrounds(agent) {
   console.warn('navigateToGrounds is deprecated - use navigateToAssuredConfirmation');
   return navigateToAssuredConfirmation(agent);
+}
+
+/**
+ * Navigate to Additional Grounds for Possession (Screen 14)
+ * Entry: Screen 13.1.1 (assured additional grounds selection) → "Yes" → Screen 14
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToAdditionalGrounds(agent) {
+  await navigateToAssuredTenancyGrounds(agent);
+  
+  // Screen 13.1: Submit assured tenancy grounds
+  await agent
+    .post('/claims/assured-tenancy-grounds')
+    .send({ grounds: ['ground1'] })
+    .expect(302);
+  
+  // Screen 13.1.1: Select "Yes" to additional grounds
+  await agent
+    .post('/claims/grounds-for-possession-assured-selection')
+    .send({ additionalGrounds: 'yes' })
+    .expect(302);
+    
+  return agent;
 }
 
 module.exports = {
@@ -320,5 +344,6 @@ module.exports = {
   navigateToNoticeDetails,
   navigateToRentDetails,
   navigateToDailyRentAmount,
-  navigateToGrounds  // Deprecated - kept for backward compatibility
+  navigateToGrounds,  // Deprecated - kept for backward compatibility
+  navigateToAdditionalGrounds
 };
