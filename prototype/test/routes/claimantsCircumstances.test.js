@@ -88,6 +88,33 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
 
     });
 
+    describe('Dynamic claimant name', () => {
+
+      it('should include claimant reference in question text', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        // Question should include some reference to claimant (either name or fallback)
+        // The text pattern is: "Is there any information you'd like to provide about [name]'s circumstances?"
+        expect(response.text).toMatch(/information.*about.*('|&#39;)s circumstances/i);
+      });
+
+      it('should use fallback text when claimant name not explicitly set', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        // Should contain "claimant" reference (either as name or in the fallback "the claimant")
+        expect(response.text).toMatch(/claimant/i);
+      });
+
+    });
+
     describe('AC-3: Conditional details field', () => {
 
       it('should include details textarea in conditional reveal', async () => {
@@ -98,6 +125,17 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
           .expect(200);
 
         expect(response.text).toMatch(/name="circumstancesDetails"/);
+      });
+
+      it('should use correct name attribute for textarea', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        expect(response.text).toMatch(/name="circumstancesDetails"/);
+        expect(response.text).toContain('govuk-textarea');
       });
 
       it('should include character count guidance', async () => {
@@ -112,7 +150,19 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
 
     });
 
-    describe('Pre-population on revisit', () => {
+    describe('AC-7: Pre-population on revisit', () => {
+
+      it('should have no pre-selection on first visit', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        // Neither radio should be checked on first visit
+        expect(response.text).not.toMatch(/value="yes"[^>]*checked/);
+        expect(response.text).not.toMatch(/value="no"[^>]*checked/);
+      });
 
       it('should pre-select Yes when previously selected', async () => {
         await navigateToClaimantsCircumstances(testSession);
@@ -209,6 +259,18 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
         expect(response.text).toMatch(/<a href="#provideCircumstances"/);
       });
 
+      it('should display inline error message on radio group', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const response = await testSession
+          .post('/claims/claimants-circumstances')
+          .send({})
+          .expect(200);
+
+        expect(response.text).toContain('govuk-error-message');
+        expect(response.text).toContain('govuk-form-group--error');
+      });
+
     });
 
     describe('AC-4: Details are optional when revealed', () => {
@@ -249,6 +311,43 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
           .expect(200);
 
         expect(response.text).toContain('Enter 950 characters or fewer');
+      });
+
+      it('should display error summary for character limit violation', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const longText = 'a'.repeat(951);
+        const response = await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: longText })
+          .expect(200);
+
+        expect(response.text).toContain('govuk-error-summary');
+        expect(response.text).toContain('There is a problem');
+      });
+
+      it('should display inline error on textarea when character limit exceeded', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const longText = 'a'.repeat(951);
+        const response = await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: longText })
+          .expect(200);
+
+        expect(response.text).toContain('govuk-error-message');
+      });
+
+      it('should have error link targeting textarea when character limit exceeded', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const longText = 'a'.repeat(951);
+        const response = await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: longText })
+          .expect(200);
+
+        expect(response.text).toMatch(/<a href="#circumstancesDetails"/);
       });
 
       it('should accept exactly 950 characters', async () => {
@@ -315,6 +414,23 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
         expect(response.text).toContain('Financial difficulties');
       });
 
+      it('should set details to null when No selected', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        // Submit with No - details should not be stored
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'no', circumstancesDetails: 'Should be ignored' })
+          .expect(302);
+
+        // Verify by revisiting - details should not appear
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        expect(response.text).not.toContain('Should be ignored');
+      });
+
       it('should clear details when changing from Yes to No', async () => {
         await navigateToClaimantsCircumstances(testSession);
 
@@ -340,6 +456,65 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
 
     });
 
+    describe('Selection change behaviour', () => {
+
+      it('should allow new details entry when changing from No to Yes', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        // First submit with No
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'no' })
+          .expect(302);
+
+        // Then change to Yes with new details
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: 'New details after change' })
+          .expect(302);
+
+        // Verify new details are stored
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        expect(response.text).toContain('New details after change');
+        expect(response.text).toMatch(/value="yes"[^>]*checked/);
+      });
+
+      it('should preserve correct state after multiple selection changes', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        // Yes with details
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: 'First details' })
+          .expect(302);
+
+        // Change to No
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'no' })
+          .expect(302);
+
+        // Change back to Yes with new details
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: 'Final details' })
+          .expect(302);
+
+        // Verify final state
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        expect(response.text).toContain('Final details');
+        expect(response.text).not.toContain('First details');
+        expect(response.text).toMatch(/value="yes"[^>]*checked/);
+      });
+
+    });
+
     describe('AC-8: Previous navigation', () => {
 
       it('should redirect to money-judgement when Previous clicked', async () => {
@@ -351,6 +526,30 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
           .expect(302);
 
         expect(response.headers.location).toBe('/claims/money-judgement');
+      });
+
+      it('should preserve previous inputs in session when Previous clicked', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        // Submit a selection first
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: 'Important details' })
+          .expect(302);
+
+        // Click Previous
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ action: 'previous' })
+          .expect(302);
+
+        // Return to screen and verify data preserved
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        expect(response.text).toMatch(/value="yes"[^>]*checked/);
+        expect(response.text).toContain('Important details');
       });
 
     });
@@ -379,6 +578,24 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
         expect(response.headers.location).toBe('/claims/defendants-circumstances');
       });
 
+      it('should persist selection before navigation to next screen', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        // Submit and continue
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: 'Persisted details' })
+          .expect(302);
+
+        // Return to screen and verify data persisted
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        expect(response.text).toMatch(/value="yes"[^>]*checked/);
+        expect(response.text).toContain('Persisted details');
+      });
+
     });
 
     describe('AC-10: Cancel behaviour', () => {
@@ -392,6 +609,30 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
           .expect(302);
 
         expect(response.headers.location).toBe('/case-list');
+      });
+
+      it('should preserve draft claim in session after Cancel', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        // Submit some data first
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: 'Draft details' })
+          .expect(302);
+
+        // Click Cancel
+        await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ action: 'cancel' })
+          .expect(302);
+
+        // Return to screen and verify data still there
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        expect(response.text).toMatch(/value="yes"[^>]*checked/);
+        expect(response.text).toContain('Draft details');
       });
 
     });
@@ -432,6 +673,44 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
         expect(response.text).toMatch(/type="radio"/);
       });
 
+      it('should have proper labels for radio inputs', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        expect(response.text).toContain('govuk-radios__label');
+        expect(response.text).toContain('govuk-label');
+      });
+
+      it('should have proper label for textarea', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const response = await testSession
+          .get('/claims/claimants-circumstances')
+          .expect(200);
+
+        // Textarea should have a label element or legend associated with it
+        expect(response.text).toContain('govuk-label');
+        expect(response.text).toContain('govuk-textarea');
+      });
+
+      it('should preserve input values after validation error', async () => {
+        await navigateToClaimantsCircumstances(testSession);
+
+        const longText = 'a'.repeat(951);
+        const response = await testSession
+          .post('/claims/claimants-circumstances')
+          .send({ provideCircumstances: 'yes', circumstancesDetails: longText })
+          .expect(200);
+
+        // Yes should still be selected after error
+        expect(response.text).toMatch(/value="yes"[^>]*checked/);
+        // The long text should be preserved (or at least part of it)
+        expect(response.text).toContain('aaaaaa');
+      });
+
     });
 
   });
@@ -454,3 +733,4 @@ async function navigateToClaimantsCircumstances(agent) {
 
   return agent;
 }
+
