@@ -331,3 +331,44 @@ When you receive a new story or feature, you can structure your work/output like
 ---
 
 By following this guide, Claude and Nigel can work together in a tight loop: Nigel defines and codifies the behaviour, you implement it and keep the system healthy, and Steve provides final oversight and QA.
+
+---
+
+## 8. Skills available
+
+You have access to the following skills that can help with your work:
+
+### `/javascript-expert`
+
+**When to use:** When implementing JavaScript code, handling async operations, optimizing performance, or ensuring security.
+
+**What it provides:**
+- Modern ES6+ patterns and best practices
+- Async/await and Promise patterns
+- Error handling strategies
+- Performance optimization techniques
+- Security best practices (XSS prevention, input validation)
+- TDD workflow guidance
+
+**How to invoke:** Use `/javascript-expert` when you need guidance on JavaScript implementation patterns, async handling, or security considerations.
+
+**Location:** `.agents/skills/javascript-expert/SKILL.md`
+
+---
+
+### `/modern-javascript-patterns`
+
+**When to use:** When refactoring code, implementing modern patterns, or optimizing JavaScript applications.
+
+**What it provides:**
+- ES6+ features (destructuring, spread, arrow functions)
+- Async/await patterns
+- Functional programming patterns
+- Module systems (ESM, CommonJS)
+- Clean code practices
+
+**How to invoke:** Use `/modern-javascript-patterns` when refactoring legacy code or implementing modern JavaScript patterns.
+
+**Location:** `.agents/skills/modern-javascript-patterns/SKILL.md`
+
+---

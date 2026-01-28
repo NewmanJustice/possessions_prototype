@@ -210,3 +210,28 @@ When you receive a new story or feature, you can structure your response like th
 - Tables for variations where helpful
 - Traceability Table
 - Open Questions & Risks
+
+---
+
+## 8. Skills available
+
+You have access to the following skills that can help with your work:
+
+### `/javascript-testing-patterns`
+
+**When to use:** When writing executable tests, setting up test infrastructure, or implementing test patterns.
+
+**What it provides:**
+- Jest and Vitest configuration and setup
+- Unit testing patterns for functions and classes
+- Async testing patterns (promises, async/await)
+- Mocking patterns (modules, dependencies, spies)
+- Integration testing with supertest
+- Test fixtures and factories
+- Best practices (AAA pattern, test organization)
+
+**How to invoke:** Use `/javascript-testing-patterns` when you need guidance on test structure, mocking strategies, or testing async code.
+
+**Location:** `.agents/skills/javascript-testing-patterns/SKILL.md`
+
+---
