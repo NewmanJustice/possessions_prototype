@@ -2038,6 +2038,91 @@ router.get('/alternative-to-possession', (req, res) => {
 
 // POST /claims/alternative-to-possession
 router.post('/alternative-to-possession', (req, res) => {
+  const { demotionOfTenancy } = req.body;
+
+  // If demotion of tenancy selected, redirect to Screen 26c
+  if (demotionOfTenancy === 'true') {
+    return res.redirect('/claims/select-housing-act-demotion');
+  }
+
+  res.redirect('/claims/check-answers');
+});
+
+// ============================================================================
+// Screen 26c: Housing Act (Demotion of tenancy)
+// ============================================================================
+// GET /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion
+router.get('/select-housing-act-demotion', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const demotionOrder = claim.demotionOrder || {};
+
+  res.render('pages/claims/select-housing-act-demotion', {
+    pageTitle: 'Housing Act',
+    selectedHousingAct: demotionOrder.housingAct || null,
+    errorList: [],
+    errors: {}
+  });
+});
+
+// POST /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion
+router.post('/select-housing-act-demotion', (req, res) => {
+  const { action, demotionHousingAct } = req.body;
+
+  // Handle Previous navigation (no validation required)
+  if (action === 'previous') {
+    return res.redirect('/claims/alternative-to-possession');
+  }
+
+  // Handle Cancel navigation
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Validate Housing Act selection
+  const errors = [];
+  if (!demotionHousingAct) {
+    errors.push({
+      field: 'demotionHousingAct',
+      text: 'Select the Housing Act',
+      href: '#demotionHousingAct'
+    });
+  }
+
+  if (errors.length > 0) {
+    // Build field-specific error messages
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = { text: error.text };
+    });
+
+    return res.render('pages/claims/select-housing-act-demotion', {
+      pageTitle: 'Housing Act',
+      selectedHousingAct: demotionHousingAct || null,
+      errorList: errors,
+      errors: fieldErrors
+    });
+  }
+
+  // Save selection to session
+  const demotionOrder = {
+    housingAct: demotionHousingAct
+  };
+  claimService.updateClaim(req.session, 'demotionOrder', demotionOrder);
+
+  // Navigate to next screen (Screen 26d)
+  res.redirect('/claims/statement-of-express-terms');
+});
+
+// ============================================================================
+// Screen 26d: Statement of Express Terms (PLACEHOLDER)
+// ============================================================================
+// GET /claims/statement-of-express-terms - Screen 26d placeholder
+router.get('/statement-of-express-terms', (req, res) => {
+  res.send('Screen 26d: Statement of Express Terms - Placeholder');
+});
+
+// POST /claims/statement-of-express-terms - Screen 26d placeholder
+router.post('/statement-of-express-terms', (req, res) => {
   res.redirect('/claims/check-answers');
 });
 

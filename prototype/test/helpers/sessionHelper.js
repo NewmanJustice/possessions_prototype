@@ -410,6 +410,62 @@ async function navigateToDefendantsCircumstances(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Select Housing Act Demotion (Screen 26c)
+ * Entry: Screen 25 (Defendant's circumstances) → Screen 26 (select demotion) → Screen 26c
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToSelectHousingActDemotion(agent) {
+  await navigateToDefendantsCircumstances(agent);
+
+  // Screen 25: Submit defendant's circumstances
+  await agent
+    .post('/claims/defendants-circumstances')
+    .send({
+      provideDefendantCircumstances: 'no'
+    })
+    .expect(302);
+
+  // Screen 26: Select demotion of tenancy alternative
+  await agent
+    .post('/claims/alternative-to-possession')
+    .send({
+      demotionOfTenancy: 'true'
+    })
+    .expect(302);
+
+  return agent;
+}
+
+/**
+ * Navigate to Select Housing Act Suspension (Screen 26a)
+ * Entry: Screen 25 (Defendant's circumstances) → Screen 26 (select suspension) → Screen 26a
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToSelectHousingActSuspension(agent) {
+  await navigateToDefendantsCircumstances(agent);
+
+  // Screen 25: Submit defendant's circumstances
+  await agent
+    .post('/claims/defendants-circumstances')
+    .send({
+      provideDefendantCircumstances: 'no'
+    })
+    .expect(302);
+
+  // Screen 26: Select suspension of right to buy alternative
+  await agent
+    .post('/claims/alternative-to-possession')
+    .send({
+      suspensionOfRightToBuy: 'true'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -431,5 +487,7 @@ module.exports = {
   navigateToDetailsOfRentArrears,
   navigateToMoneyJudgement,
   navigateToClaimantsCircumstances,
-  navigateToDefendantsCircumstances
+  navigateToDefendantsCircumstances,
+  navigateToSelectHousingActDemotion,
+  navigateToSelectHousingActSuspension
 };

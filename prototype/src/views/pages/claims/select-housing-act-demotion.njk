@@ -1,0 +1,83 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Housing Act - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-xl">Housing Act</h1>
+
+    <p class="govuk-body">
+      Select the relevant Housing Act for the demotion order request.
+    </p>
+
+    <form method="post" action="/claims/select-housing-act-demotion" novalidate>
+
+      {{ govukRadios({
+        name: "demotionHousingAct",
+        idPrefix: "demotionHousingAct",
+        fieldset: {
+          legend: {
+            text: "Which Housing Act does the demotion order relate to?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.demotionHousingAct if errors.demotionHousingAct,
+        items: [
+          {
+            value: "housing-act-1985-section-82a",
+            text: "Housing Act 1985 (section 82A)",
+            checked: selectedHousingAct == 'housing-act-1985-section-82a'
+          },
+          {
+            value: "housing-act-1996-section-143a",
+            text: "Housing Act 1996 (section 143A)",
+            checked: selectedHousingAct == 'housing-act-1996-section-143a'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}
