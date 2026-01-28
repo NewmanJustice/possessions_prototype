@@ -390,6 +390,26 @@ async function navigateToClaimantsCircumstances(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Defendant's Circumstances (Screen 25)
+ * Entry: Screen 24 (Claimant's circumstances) → Screen 25
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToDefendantsCircumstances(agent) {
+  await navigateToClaimantsCircumstances(agent);
+
+  // Screen 24: Submit claimant's circumstances
+  await agent
+    .post('/claims/claimants-circumstances')
+    .send({
+      provideCircumstances: 'no'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -410,5 +430,6 @@ module.exports = {
   navigateToAdditionalGrounds,
   navigateToDetailsOfRentArrears,
   navigateToMoneyJudgement,
-  navigateToClaimantsCircumstances
+  navigateToClaimantsCircumstances,
+  navigateToDefendantsCircumstances
 };

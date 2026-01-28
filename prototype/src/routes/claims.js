@@ -1952,15 +1952,92 @@ router.post('/claimants-circumstances', (req, res) => {
 });
 
 // ============================================================================
-// Screen 25: Defendant's Circumstances (PLACEHOLDER)
+// Screen 25: Defendant's Circumstances
 // ============================================================================
 // GET /claims/defendants-circumstances - Screen 25: Defendant's circumstances
 router.get('/defendants-circumstances', (req, res) => {
-  res.send('Screen 25: Defendant\'s Circumstances - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const defendantCircumstances = claim.defendantCircumstances || {};
+
+  // Convert boolean to form value for pre-population
+  let provideDefendantCircumstances = '';
+  if (defendantCircumstances.provided === true) {
+    provideDefendantCircumstances = 'yes';
+  } else if (defendantCircumstances.provided === false) {
+    provideDefendantCircumstances = 'no';
+  }
+
+  res.render('pages/claims/defendants-circumstances', {
+    pageTitle: "Defendants' circumstances",
+    provideDefendantCircumstances,
+    defendantDetails: defendantCircumstances.details || '',
+    errors: {},
+    errorList: []
+  });
 });
 
-// POST /claims/defendants-circumstances
+// POST /claims/defendants-circumstances - Screen 25: Defendant's circumstances
 router.post('/defendants-circumstances', (req, res) => {
+  const { provideDefendantCircumstances, defendantDetails, action } = req.body;
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/claimants-circumstances');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  // AC-2: Selection is required
+  if (!provideDefendantCircumstances) {
+    errors.provideDefendantCircumstances = { text: "Select whether you want to provide information about the defendants' circumstances" };
+    errorList.push({ text: "Select whether you want to provide information about the defendants' circumstances", href: '#provideDefendantCircumstances' });
+  }
+
+  // AC-5: Character limit (only if Yes selected and details provided)
+  if (provideDefendantCircumstances === 'yes' && defendantDetails && defendantDetails.length > 950) {
+    errors.defendantDetails = { text: 'Enter 950 characters or fewer' };
+    errorList.push({ text: 'Enter 950 characters or fewer', href: '#defendantDetails' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    return res.status(200).render('pages/claims/defendants-circumstances', {
+      pageTitle: "Defendants' circumstances",
+      provideDefendantCircumstances: provideDefendantCircumstances || '',
+      defendantDetails: defendantDetails || '',
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  const defendantCircumstances = {
+    provided: provideDefendantCircumstances === 'yes',
+    details: provideDefendantCircumstances === 'yes' ? (defendantDetails || null) : null
+  };
+  claimService.updateClaim(req.session, 'defendantCircumstances', defendantCircumstances);
+
+  // Redirect to next screen (Screen 26)
+  res.redirect('/claims/alternative-to-possession');
+});
+
+// ============================================================================
+// Screen 26: Alternative to Possession (PLACEHOLDER)
+// ============================================================================
+// GET /claims/alternative-to-possession - Screen 26: Alternative to possession
+router.get('/alternative-to-possession', (req, res) => {
+  res.send('Screen 26: Alternative to Possession - Placeholder');
+});
+
+// POST /claims/alternative-to-possession
+router.post('/alternative-to-possession', (req, res) => {
   res.redirect('/claims/check-answers');
 });
 

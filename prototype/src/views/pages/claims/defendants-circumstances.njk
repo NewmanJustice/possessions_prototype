@@ -1,0 +1,103 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Defendants' circumstances - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-xl">Defendants' circumstances</h1>
+
+    <p class="govuk-body">
+      This can include any known details or attempts made to obtain details about the defendants' financial or personal situation.
+    </p>
+
+    <form method="post" action="/claims/defendants-circumstances" novalidate>
+
+      {% set detailsHtml %}
+        {{ govukCharacterCount({
+          id: "defendantDetails",
+          name: "defendantDetails",
+          maxlength: 950,
+          label: {
+            text: "Give details about the defendants' circumstances"
+          },
+          hint: {
+            text: "You can enter up to 950 characters"
+          },
+          value: defendantDetails,
+          errorMessage: errors.defendantDetails if errors.defendantDetails
+        }) }}
+      {% endset %}
+
+      {{ govukRadios({
+        name: "provideDefendantCircumstances",
+        idPrefix: "provideDefendantCircumstances",
+        fieldset: {
+          legend: {
+            text: "Is there any information you'd like to provide about the defendants' circumstances?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.provideDefendantCircumstances if errors.provideDefendantCircumstances,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: provideDefendantCircumstances == 'yes',
+            conditional: {
+              html: detailsHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: provideDefendantCircumstances == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}
