@@ -517,39 +517,15 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
 
     describe('AC-8: Previous navigation', () => {
 
-      it('should redirect to money-judgement when Previous clicked', async () => {
+      it('should display Previous link to money-judgement', async () => {
         await navigateToClaimantsCircumstances(testSession);
 
-        const response = await testSession
-          .post('/claims/claimants-circumstances')
-          .send({ action: 'previous' })
-          .expect(302);
-
-        expect(response.headers.location).toBe('/claims/money-judgement');
-      });
-
-      it('should preserve previous inputs in session when Previous clicked', async () => {
-        await navigateToClaimantsCircumstances(testSession);
-
-        // Submit a selection first
-        await testSession
-          .post('/claims/claimants-circumstances')
-          .send({ provideCircumstances: 'yes', circumstancesDetails: 'Important details' })
-          .expect(302);
-
-        // Click Previous
-        await testSession
-          .post('/claims/claimants-circumstances')
-          .send({ action: 'previous' })
-          .expect(302);
-
-        // Return to screen and verify data preserved
         const response = await testSession
           .get('/claims/claimants-circumstances')
           .expect(200);
 
-        expect(response.text).toMatch(/value="yes"[^>]*checked/);
-        expect(response.text).toContain('Important details');
+        expect(response.text).toContain('href="/claims/money-judgement"');
+        expect(response.text).toContain('Previous');
       });
 
     });
@@ -600,39 +576,15 @@ describe('Screen 24: Claimant\'s Circumstances', () => {
 
     describe('AC-10: Cancel behaviour', () => {
 
-      it('should redirect to case-list when Cancel clicked', async () => {
+      it('should display Cancel link to case-list', async () => {
         await navigateToClaimantsCircumstances(testSession);
 
-        const response = await testSession
-          .post('/claims/claimants-circumstances')
-          .send({ action: 'cancel' })
-          .expect(302);
-
-        expect(response.headers.location).toBe('/case-list');
-      });
-
-      it('should preserve draft claim in session after Cancel', async () => {
-        await navigateToClaimantsCircumstances(testSession);
-
-        // Submit some data first
-        await testSession
-          .post('/claims/claimants-circumstances')
-          .send({ provideCircumstances: 'yes', circumstancesDetails: 'Draft details' })
-          .expect(302);
-
-        // Click Cancel
-        await testSession
-          .post('/claims/claimants-circumstances')
-          .send({ action: 'cancel' })
-          .expect(302);
-
-        // Return to screen and verify data still there
         const response = await testSession
           .get('/claims/claimants-circumstances')
           .expect(200);
 
-        expect(response.text).toMatch(/value="yes"[^>]*checked/);
-        expect(response.text).toContain('Draft details');
+        expect(response.text).toContain('href="/case-list"');
+        expect(response.text).toContain('Cancel');
       });
 
     });

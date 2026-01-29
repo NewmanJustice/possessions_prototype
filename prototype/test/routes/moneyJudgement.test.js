@@ -261,20 +261,14 @@ describe('Screen 23: Money Judgement', () => {
 
       it('should persist selection across requests', async () => {
         await navigateToMoneyJudgement(testSession);
-        
+
         // Submit
         await testSession
           .post('/claims/money-judgement')
           .send({ moneyJudgementRequested: 'yes' })
           .expect(302);
-        
-        // Navigate away and back
-        await testSession
-          .post('/claims/money-judgement')
-          .send({ action: 'previous' })
-          .expect(302);
-        
-        // Return
+
+        // Return to verify persistence
         const response = await testSession
           .get('/claims/money-judgement')
           .expect(200);
@@ -435,39 +429,16 @@ describe('Screen 23: Money Judgement', () => {
     });
 
     describe('AC-4: Previous navigation', () => {
-      
-      it('should redirect to /claims/details-of-rent-arrears when Previous clicked', async () => {
-        await navigateToMoneyJudgement(testSession);
-        
-        const response = await testSession
-          .post('/claims/money-judgement')
-          .send({ action: 'previous' })
-          .expect(302);
 
-        expect(response.headers.location).toBe('/claims/details-of-rent-arrears');
-      });
-
-      it('should preserve previous inputs in session', async () => {
+      it('should display Previous link to details-of-rent-arrears', async () => {
         await navigateToMoneyJudgement(testSession);
-        
-        // Make selection
-        await testSession
-          .post('/claims/money-judgement')
-          .send({ moneyJudgementRequested: 'yes' })
-          .expect(302);
-        
-        // Click Previous
-        await testSession
-          .post('/claims/money-judgement')
-          .send({ action: 'previous' })
-          .expect(302);
-        
-        // Return and verify selection preserved
+
         const response = await testSession
           .get('/claims/money-judgement')
           .expect(200);
 
-        expect(response.text).toMatch(/value="yes"[^>]*checked/);
+        expect(response.text).toContain('href="/claims/details-of-rent-arrears"');
+        expect(response.text).toContain('Previous');
       });
 
     });
@@ -515,39 +486,16 @@ describe('Screen 23: Money Judgement', () => {
     });
 
     describe('AC-6: Cancel behaviour', () => {
-      
-      it('should redirect to /case-list when Cancel clicked', async () => {
-        await navigateToMoneyJudgement(testSession);
-        
-        const response = await testSession
-          .post('/claims/money-judgement')
-          .send({ action: 'cancel' })
-          .expect(302);
 
-        expect(response.headers.location).toBe('/case-list');
-      });
-
-      it('should preserve draft claim in session after Cancel', async () => {
+      it('should display Cancel link to case-list', async () => {
         await navigateToMoneyJudgement(testSession);
-        
-        // Make selection
-        await testSession
-          .post('/claims/money-judgement')
-          .send({ moneyJudgementRequested: 'yes' })
-          .expect(302);
-        
-        // Cancel
-        await testSession
-          .post('/claims/money-judgement')
-          .send({ action: 'cancel' })
-          .expect(302);
-        
-        // Return to page - session should be preserved
+
         const response = await testSession
           .get('/claims/money-judgement')
           .expect(200);
 
-        expect(response.status).toBe(200);
+        expect(response.text).toContain('href="/case-list"');
+        expect(response.text).toContain('Cancel');
       });
 
     });

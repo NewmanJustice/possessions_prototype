@@ -622,60 +622,16 @@ describe('Screen 14: Grounds for Possession (Additional Grounds)', () => {
     });
 
     describe('AC-8: Previous navigation uses dynamic contract', () => {
-      
-      it('should redirect to session.claim.navigation.screen14.previous route', async () => {
+
+      it('should display Previous link to grounds-for-possession-assured-selection', async () => {
         await navigateToAssuredAdditionalGrounds(testSession);
-        
-        // Access the page to set navigation contract
-        await testSession
-          .get('/claims/grounds-for-possession')
-          .expect(200);
-        
-        // Click Previous
-        const response = await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ action: 'previous' })
-          .expect(302);
 
-        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-selection');
-      });
-
-      it('should navigate to assured selection screen for assured path', async () => {
-        await navigateToAssuredAdditionalGrounds(testSession);
-        
-        const response = await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ action: 'previous' })
-          .expect(302);
-
-        expect(response.headers.location).toBe('/claims/grounds-for-possession-assured-selection');
-      });
-
-      it('should preserve selections when clicking Previous', async () => {
-        await navigateToAssuredAdditionalGrounds(testSession);
-        
-        // Select some grounds
-        await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ 
-            grounds: ['mandatoryGround1', 'discretionaryGround9'],
-            action: 'continue'
-          })
-          .expect(302);
-        
-        // Navigate forward then back
-        await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ action: 'previous' })
-          .expect(302);
-        
-        // Return to page and verify selections preserved
         const response = await testSession
           .get('/claims/grounds-for-possession')
           .expect(200);
 
-        expect(response.text).toMatch(/value="mandatoryGround1"[^>]*checked/);
-        expect(response.text).toMatch(/value="discretionaryGround9"[^>]*checked/);
+        expect(response.text).toContain('href="/claims/grounds-for-possession-assured-selection"');
+        expect(response.text).toContain('Previous');
       });
 
     });
@@ -724,64 +680,16 @@ describe('Screen 14: Grounds for Possession (Additional Grounds)', () => {
     });
 
     describe('AC-10: Cancel behaviour', () => {
-      
-      it('should redirect to /case-list when Cancel clicked', async () => {
-        await navigateToAssuredAdditionalGrounds(testSession);
-        
-        const response = await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ action: 'cancel' })
-          .expect(302);
 
-        expect(response.headers.location).toBe('/case-list');
-      });
-
-      it('should preserve draft claim in session after Cancel', async () => {
+      it('should display Cancel link to case-list', async () => {
         await navigateToAssuredAdditionalGrounds(testSession);
-        
-        // Select grounds
-        await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ grounds: ['mandatoryGround1'] })
-          .expect(302);
-        
-        // Navigate somewhere and then cancel
-        await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ action: 'cancel' })
-          .expect(302);
-        
-        // Return to page and verify data preserved
+
         const response = await testSession
           .get('/claims/grounds-for-possession')
           .expect(200);
 
-        expect(response.status).toBe(200);
-        // Session preserved (validated by successful page load)
-      });
-
-      it('should preserve selected grounds in session after Cancel', async () => {
-        await navigateToAssuredAdditionalGrounds(testSession);
-        
-        // Select grounds and submit
-        await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ grounds: ['mandatoryGround1', 'discretionaryGround9'] })
-          .expect(302);
-        
-        // Cancel action
-        await testSession
-          .post('/claims/grounds-for-possession')
-          .send({ action: 'cancel' })
-          .expect(302);
-        
-        // Verify selections still present
-        const response = await testSession
-          .get('/claims/grounds-for-possession')
-          .expect(200);
-
-        expect(response.text).toMatch(/value="mandatoryGround1"[^>]*checked/);
-        expect(response.text).toMatch(/value="discretionaryGround9"[^>]*checked/);
+        expect(response.text).toContain('href="/case-list"');
+        expect(response.text).toContain('Cancel');
       });
 
     });
@@ -839,9 +747,9 @@ describe('Screen 14: Grounds for Possession (Additional Grounds)', () => {
         expect(response.text).toContain('govuk-checkboxes');
       });
 
-      it('should have keyboard accessible Continue, Previous, and Cancel buttons', async () => {
+      it('should have keyboard accessible Continue button and Previous/Cancel links', async () => {
         await navigateToAssuredAdditionalGrounds(testSession);
-        
+
         const response = await testSession
           .get('/claims/grounds-for-possession')
           .expect(200);
@@ -849,10 +757,13 @@ describe('Screen 14: Grounds for Possession (Additional Grounds)', () => {
         expect(response.text).toContain('Continue');
         expect(response.text).toContain('Previous');
         expect(response.text).toContain('Cancel');
-        
-        // Verify button elements (keyboard accessible by default)
-        const buttonMatches = response.text.match(/<button/g);
-        expect(buttonMatches.length).toBeGreaterThanOrEqual(3);
+
+        // Verify Continue button exists
+        expect(response.text).toMatch(/<button[^>]*>.*Continue.*<\/button>/s);
+
+        // Verify Previous and Cancel are links (keyboard accessible by default)
+        expect(response.text).toContain('href="/claims/grounds-for-possession-assured-selection"');
+        expect(response.text).toContain('href="/case-list"');
       });
 
     });
