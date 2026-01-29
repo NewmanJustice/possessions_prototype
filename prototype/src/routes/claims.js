@@ -2070,7 +2070,8 @@ router.post('/select-housing-act-suspension', (req, res) => {
 // GET /claims/claiming-costs - Screen 28: Claiming costs
 router.get('/claiming-costs', (req, res) => {
   const claim = claimService.getClaim(req.session) || {};
-  const claimingCosts = claim.claimingCosts || null;
+  const claimingCostsData = claim.claimingCosts || {};
+  const claimingCosts = claimingCostsData.value || null;
 
   res.render('pages/claims/claiming-costs', {
     pageTitle: 'Claiming costs',
@@ -2113,8 +2114,8 @@ router.post('/claiming-costs', (req, res) => {
     });
   }
 
-  // Store in session
-  claimService.updateClaim(req.session, 'claimingCosts', claimingCosts);
+  // Store in session as object
+  claimService.updateClaim(req.session, 'claimingCosts', { value: claimingCosts });
 
   // Redirect to next screen
   res.redirect('/claims/additional-reasons-for-possession');
