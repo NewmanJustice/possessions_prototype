@@ -2114,16 +2114,73 @@ router.post('/select-housing-act-demotion', (req, res) => {
 });
 
 // ============================================================================
-// Screen 26d: Statement of Express Terms (PLACEHOLDER)
+// Screen 26d: Statement of Express Terms
 // ============================================================================
-// GET /claims/statement-of-express-terms - Screen 26d placeholder
+// GET /claims/statement-of-express-terms - Screen 26d: Statement of express terms
 router.get('/statement-of-express-terms', (req, res) => {
-  res.send('Screen 26d: Statement of Express Terms - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const demotionOrder = claim.demotionOrder || {};
+
+  res.render('pages/claims/statement-of-express-terms', {
+    pageTitle: 'Statement of express terms',
+    selectedExpressTerms: demotionOrder.statementOfExpressTerms || null,
+    expressTermsDetails: demotionOrder.statementOfExpressTermsDetails || '',
+    errorList: [],
+    errors: {}
+  });
 });
 
-// POST /claims/statement-of-express-terms - Screen 26d placeholder
+// POST /claims/statement-of-express-terms - Screen 26d: Statement of express terms
 router.post('/statement-of-express-terms', (req, res) => {
-  res.redirect('/claims/check-answers');
+  const { action, statementOfExpressTerms, statementOfExpressTermsDetails } = req.body;
+
+  // Handle Previous navigation (no validation required)
+  if (action === 'previous') {
+    return res.redirect('/claims/select-housing-act-demotion');
+  }
+
+  // Handle Cancel navigation
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Validate required field
+  const errors = [];
+  if (!statementOfExpressTerms) {
+    errors.push({
+      text: 'Select yes if you have served the statement of express terms',
+      href: '#statementOfExpressTerms',
+      field: 'statementOfExpressTerms'
+    });
+  }
+
+  if (errors.length > 0) {
+    // Build field-specific error messages
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = { text: error.text };
+    });
+
+    return res.render('pages/claims/statement-of-express-terms', {
+      pageTitle: 'Statement of express terms',
+      selectedExpressTerms: statementOfExpressTerms || null,
+      expressTermsDetails: statementOfExpressTermsDetails || '',
+      errorList: errors,
+      errors: fieldErrors
+    });
+  }
+
+  // Save selection to session
+  const claim = claimService.getClaim(req.session) || {};
+  const demotionOrder = claim.demotionOrder || {};
+
+  demotionOrder.statementOfExpressTerms = statementOfExpressTerms;
+  demotionOrder.statementOfExpressTermsDetails = statementOfExpressTerms === 'yes' ? (statementOfExpressTermsDetails || null) : null;
+
+  claimService.updateClaim(req.session, 'demotionOrder', demotionOrder);
+
+  // Navigate to next screen (Screen 28: Claiming costs)
+  res.redirect('/claims/claiming-costs');
 });
 
 // GET /claims/preaction-protocol - Screen 16: Pre-action protocol

@@ -466,6 +466,26 @@ async function navigateToSelectHousingActSuspension(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Statement of Express Terms (Screen 26d)
+ * Entry: Screen 26c (select housing act demotion) → Screen 26d
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToStatementOfExpressTerms(agent) {
+  await navigateToSelectHousingActDemotion(agent);
+
+  // Screen 26c: Submit housing act selection
+  await agent
+    .post('/claims/select-housing-act-demotion')
+    .send({
+      demotionHousingAct: 'housing-act-1985-section-82a'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -489,5 +509,6 @@ module.exports = {
   navigateToClaimantsCircumstances,
   navigateToDefendantsCircumstances,
   navigateToSelectHousingActDemotion,
-  navigateToSelectHousingActSuspension
+  navigateToSelectHousingActSuspension,
+  navigateToStatementOfExpressTerms
 };
