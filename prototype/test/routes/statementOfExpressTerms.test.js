@@ -240,22 +240,13 @@ describe('Screen 26d: Statement of Express Terms', () => {
 
     describe('AC-9: Previous navigation', () => {
 
-      it('should redirect to select-housing-act-demotion when Previous clicked', async () => {
+      it('should display Previous link to select-housing-act-demotion', async () => {
         await navigateToStatementOfExpressTerms(testSession);
         const response = await testSession
-          .post('/claims/statement-of-express-terms')
-          .send({ action: 'previous' })
-          .expect(302);
-        expect(response.headers.location).toBe('/claims/select-housing-act-demotion');
-      });
-
-      it('should not require validation when Previous clicked', async () => {
-        await navigateToStatementOfExpressTerms(testSession);
-        const response = await testSession
-          .post('/claims/statement-of-express-terms')
-          .send({ action: 'previous' })
-          .expect(302);
-        expect(response.headers.location).toBe('/claims/select-housing-act-demotion');
+          .get('/claims/statement-of-express-terms')
+          .expect(200);
+        expect(response.text).toContain('href="/claims/select-housing-act-demotion"');
+        expect(response.text).toContain('Previous');
       });
 
     });
@@ -296,13 +287,13 @@ describe('Screen 26d: Statement of Express Terms', () => {
 
     describe('AC-11: Cancel behaviour', () => {
 
-      it('should redirect to case-list when Cancel clicked', async () => {
+      it('should display Cancel link to case-list', async () => {
         await navigateToStatementOfExpressTerms(testSession);
         const response = await testSession
-          .post('/claims/statement-of-express-terms')
-          .send({ action: 'cancel' })
-          .expect(302);
-        expect(response.headers.location).toBe('/case-list');
+          .get('/claims/statement-of-express-terms')
+          .expect(200);
+        expect(response.text).toContain('href="/case-list"');
+        expect(response.text).toContain('Cancel');
       });
 
     });

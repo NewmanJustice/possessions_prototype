@@ -2132,17 +2132,7 @@ router.get('/statement-of-express-terms', (req, res) => {
 
 // POST /claims/statement-of-express-terms - Screen 26d: Statement of express terms
 router.post('/statement-of-express-terms', (req, res) => {
-  const { action, statementOfExpressTerms, statementOfExpressTermsDetails } = req.body;
-
-  // Handle Previous navigation (no validation required)
-  if (action === 'previous') {
-    return res.redirect('/claims/select-housing-act-demotion');
-  }
-
-  // Handle Cancel navigation
-  if (action === 'cancel') {
-    return res.redirect('/case-list');
-  }
+  const { statementOfExpressTerms, statementOfExpressTermsDetails } = req.body;
 
   // Validate required field
   const errors = [];
