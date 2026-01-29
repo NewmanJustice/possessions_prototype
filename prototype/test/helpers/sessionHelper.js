@@ -411,6 +411,26 @@ async function navigateToDefendantsCircumstances(agent) {
 }
 
 /**
+ * Navigate to Alternatives to Possession (Screen 26)
+ * Entry: Screen 25 (Defendant's circumstances) → Screen 26
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToAlternativeToPossession(agent) {
+  await navigateToDefendantsCircumstances(agent);
+
+  // Screen 25: Submit defendant's circumstances
+  await agent
+    .post('/claims/defendants-circumstances')
+    .send({
+      provideDefendantCircumstances: 'no'
+    })
+    .expect(302);
+
+  return agent;
+}
+
+/**
  * Navigate to Select Housing Act Demotion (Screen 26c)
  * Entry: Screen 25 (Defendant's circumstances) → Screen 26 (select demotion) → Screen 26c
  * @param {Object} agent - Supertest-session agent
@@ -508,6 +528,7 @@ module.exports = {
   navigateToMoneyJudgement,
   navigateToClaimantsCircumstances,
   navigateToDefendantsCircumstances,
+  navigateToAlternativeToPossession,
   navigateToSelectHousingActDemotion,
   navigateToSelectHousingActSuspension,
   navigateToStatementOfExpressTerms

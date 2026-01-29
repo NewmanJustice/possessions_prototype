@@ -1986,22 +1986,94 @@ router.post('/defendants-circumstances', (req, res) => {
 });
 
 // ============================================================================
-// Screen 26: Alternative to Possession (PLACEHOLDER)
+// Screen 26: Alternative to Possession
 // ============================================================================
 // GET /claims/alternative-to-possession - Screen 26: Alternative to possession
 router.get('/alternative-to-possession', (req, res) => {
-  res.send('Screen 26: Alternative to Possession - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const alternativesToPossession = claim.alternativesToPossession || {};
+
+  let selectedOption = null;
+  if (alternativesToPossession.suspensionOfRightToBuy) {
+    selectedOption = 'suspensionOfRightToBuy';
+  } else if (alternativesToPossession.demotionOfTenancy) {
+    selectedOption = 'demotionOfTenancy';
+  } else {
+    selectedOption = 'neither';
+  }
+
+  res.render('pages/claims/alternative-to-possession', {
+    pageTitle: 'Alternatives to possession',
+    selectedOption: selectedOption,
+    errors: {},
+    errorList: []
+  });
 });
 
 // POST /claims/alternative-to-possession
 router.post('/alternative-to-possession', (req, res) => {
-  const { demotionOfTenancy } = req.body;
+  const { alternativesToPossession, action } = req.body;
 
-  // If demotion of tenancy selected, redirect to Screen 26c
-  if (demotionOfTenancy === 'true') {
-    return res.redirect('/claims/select-housing-act-demotion');
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
   }
 
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/defendants-circumstances');
+  }
+
+  // Determine selection and update session
+  let suspensionOfRightToBuy = false;
+  let demotionOfTenancy = false;
+
+  if (alternativesToPossession === 'suspensionOfRightToBuy') {
+    suspensionOfRightToBuy = true;
+  } else if (alternativesToPossession === 'demotionOfTenancy') {
+    demotionOfTenancy = true;
+  }
+
+  // Store in session
+  const alternativesToPossessionData = {
+    suspensionOfRightToBuy,
+    demotionOfTenancy
+  };
+  claimService.updateClaim(req.session, 'alternativesToPossession', alternativesToPossessionData);
+
+  // Route based on selection
+  if (suspensionOfRightToBuy) {
+    return res.redirect('/claims/select-housing-act-suspension');
+  } else if (demotionOfTenancy) {
+    return res.redirect('/claims/select-housing-act-demotion');
+  } else {
+    return res.redirect('/claims/claiming-costs');
+  }
+});
+
+// ============================================================================
+// Screen 26a: Housing Act (Suspension) (PLACEHOLDER)
+// ============================================================================
+// GET /claims/select-housing-act-suspension - Screen 26a placeholder
+router.get('/select-housing-act-suspension', (req, res) => {
+  res.send('Screen 26a: Housing Act (Suspension) - Placeholder');
+});
+
+// POST /claims/select-housing-act-suspension - Screen 26a placeholder
+router.post('/select-housing-act-suspension', (req, res) => {
+  res.redirect('/claims/check-answers');
+});
+
+// ============================================================================
+// Screen 28: Claiming Costs (PLACEHOLDER)
+// ============================================================================
+// GET /claims/claiming-costs - Screen 28 placeholder
+router.get('/claiming-costs', (req, res) => {
+  res.send('Screen 28: Claiming Costs - Placeholder');
+});
+
+// POST /claims/claiming-costs - Screen 28 placeholder
+router.post('/claiming-costs', (req, res) => {
   res.redirect('/claims/check-answers');
 });
 

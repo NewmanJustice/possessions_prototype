@@ -1,0 +1,95 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Alternatives to possession - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Alternatives to possession</h1>
+
+    <p class="govuk-body">
+      You can request the court to consider alternatives to making a possession order. These are:
+    </p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>suspension of the defendant's right to buy</li>
+      <li>demotion of tenancy</li>
+    </ul>
+    <p class="govuk-body">
+      These are optional. If you do not select either option, the claim will proceed to claiming costs.
+    </p>
+
+    <form method="post" action="/claims/alternative-to-possession" novalidate>
+
+      {{ govukRadios({
+        name: "alternativesToPossession",
+        idPrefix: "alternativesToPossession",
+        fieldset: {
+          legend: {
+            text: "In the alternative to possession, would you like to claim suspension of right to buy or demotion of tenancy? (Optional)",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.alternativesToPossession if errors.alternativesToPossession,
+        items: [
+          {
+            value: "suspensionOfRightToBuy",
+            text: "Suspension of right to buy",
+            checked: selectedOption == 'suspensionOfRightToBuy'
+          },
+          {
+            value: "demotionOfTenancy",
+            text: "Demotion of tenancy",
+            checked: selectedOption == 'demotionOfTenancy'
+          },
+          {
+            value: "neither",
+            text: "Neither",
+            checked: selectedOption == 'neither' or selectedOption == null
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}
