@@ -1,0 +1,88 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Statement of express terms - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <h1 class="govuk-heading-xl">Statement of express terms</h1>
+
+    <p class="govuk-body">
+      This is a statutory requirement under the Housing Act.
+    </p>
+
+    <form method="post" action="/claims/statement-of-express-terms" novalidate>
+
+      {{ govukRadios({
+        name: "statementOfExpressTerms",
+        idPrefix: "statementOfExpressTerms",
+        fieldset: {
+          legend: {
+            text: "Have you served the defendants with a statement of the express terms which will apply to the demoted tenancy?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.statementOfExpressTerms if errors.statementOfExpressTerms,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: selectedExpressTerms == 'yes',
+            conditional: {
+              html: govukTextarea({
+                name: "statementOfExpressTermsDetails",
+                id: "statementOfExpressTermsDetails",
+                label: {
+                  text: "Provide details of how you served the statement"
+                },
+                hint: {
+                  text: "This is optional"
+                },
+                value: expressTermsDetails,
+                rows: 5,
+                attributes: {
+                  maxlength: 2000
+                }
+              })
+            }
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: selectedExpressTerms == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+
+        <a class="govuk-link" href="/claims/select-housing-act-demotion">Previous</a>
+        <a class="govuk-link" href="/case-list">Cancel</a>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

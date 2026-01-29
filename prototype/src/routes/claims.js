@@ -1718,7 +1718,7 @@ router.get('/grounds-for-possession', (req, res) => {
 router.post('/grounds-for-possession', (req, res) => {
   const claim = claimService.getClaim(req.session) || {};
   const navigation = claim.navigation?.screen14 || {};
-  const { grounds, action } = req.body;
+  const { grounds } = req.body;
 
   // Convert grounds array to object with boolean values
   const groundsArray = Array.isArray(grounds) ? grounds : (grounds ? [grounds] : []);
@@ -1740,20 +1740,7 @@ router.post('/grounds-for-possession', (req, res) => {
     discretionaryGround16: groundsArray.includes('discretionaryGround16')
   };
 
-  // Handle Cancel action
-  if (action === 'cancel') {
-    // Don't overwrite selections - preserve what's in session
-    return res.redirect('/case-list');
-  }
-
-  // Handle Previous action
-  if (action === 'previous') {
-    // Don't overwrite selections - preserve what's in session
-    const previousRoute = navigation.previous || '/claims/grounds-for-possession-assured-selection';
-    return res.redirect(previousRoute);
-  }
-
-  // Handle Continue action (default)
+  // Handle Continue action
   // Validation: at least one ground required
   const hasAnyGround = Object.values(additional).some(v => v === true);
 
@@ -1827,18 +1814,8 @@ router.get('/money-judgement', (req, res) => {
 
 // POST /claims/money-judgement - Screen 23: Money judgement
 router.post('/money-judgement', (req, res) => {
-  const { moneyJudgementRequested, action } = req.body;
+  const { moneyJudgementRequested } = req.body;
   const claim = claimService.getClaim(req.session) || {};
-
-  // Handle Cancel action
-  if (action === 'cancel') {
-    return res.redirect('/case-list');
-  }
-
-  // Handle Previous action
-  if (action === 'previous') {
-    return res.redirect('/claims/details-of-rent-arrears');
-  }
 
   // Validation for Continue action
   const errors = {};
@@ -1898,19 +1875,9 @@ router.get('/claimants-circumstances', (req, res) => {
 
 // POST /claims/claimants-circumstances - Screen 24: Claimant's circumstances
 router.post('/claimants-circumstances', (req, res) => {
-  const { provideCircumstances, circumstancesDetails, action } = req.body;
+  const { provideCircumstances, circumstancesDetails } = req.body;
   const claim = claimService.getClaim(req.session) || {};
   const claimantName = claim.claimantName || 'the claimant';
-
-  // Handle Cancel action
-  if (action === 'cancel') {
-    return res.redirect('/case-list');
-  }
-
-  // Handle Previous action
-  if (action === 'previous') {
-    return res.redirect('/claims/money-judgement');
-  }
 
   // Validation for Continue action
   const errors = {};
@@ -1978,17 +1945,7 @@ router.get('/defendants-circumstances', (req, res) => {
 
 // POST /claims/defendants-circumstances - Screen 25: Defendant's circumstances
 router.post('/defendants-circumstances', (req, res) => {
-  const { provideDefendantCircumstances, defendantDetails, action } = req.body;
-
-  // Handle Cancel action
-  if (action === 'cancel') {
-    return res.redirect('/case-list');
-  }
-
-  // Handle Previous action
-  if (action === 'previous') {
-    return res.redirect('/claims/claimants-circumstances');
-  }
+  const { provideDefendantCircumstances, defendantDetails } = req.body;
 
   // Validation for Continue action
   const errors = {};
@@ -2066,17 +2023,7 @@ router.get('/select-housing-act-demotion', (req, res) => {
 
 // POST /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion
 router.post('/select-housing-act-demotion', (req, res) => {
-  const { action, demotionHousingAct } = req.body;
-
-  // Handle Previous navigation (no validation required)
-  if (action === 'previous') {
-    return res.redirect('/claims/alternative-to-possession');
-  }
-
-  // Handle Cancel navigation
-  if (action === 'cancel') {
-    return res.redirect('/case-list');
-  }
+  const { demotionHousingAct } = req.body;
 
   // Validate Housing Act selection
   const errors = [];
@@ -2114,16 +2061,63 @@ router.post('/select-housing-act-demotion', (req, res) => {
 });
 
 // ============================================================================
-// Screen 26d: Statement of Express Terms (PLACEHOLDER)
+// Screen 26d: Statement of Express Terms
 // ============================================================================
-// GET /claims/statement-of-express-terms - Screen 26d placeholder
+// GET /claims/statement-of-express-terms - Screen 26d: Statement of express terms
 router.get('/statement-of-express-terms', (req, res) => {
-  res.send('Screen 26d: Statement of Express Terms - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const demotionOrder = claim.demotionOrder || {};
+
+  res.render('pages/claims/statement-of-express-terms', {
+    pageTitle: 'Statement of express terms',
+    selectedExpressTerms: demotionOrder.statementOfExpressTerms || null,
+    expressTermsDetails: demotionOrder.statementOfExpressTermsDetails || '',
+    errorList: [],
+    errors: {}
+  });
 });
 
-// POST /claims/statement-of-express-terms - Screen 26d placeholder
+// POST /claims/statement-of-express-terms - Screen 26d: Statement of express terms
 router.post('/statement-of-express-terms', (req, res) => {
-  res.redirect('/claims/check-answers');
+  const { statementOfExpressTerms, statementOfExpressTermsDetails } = req.body;
+
+  // Validate required field
+  const errors = [];
+  if (!statementOfExpressTerms) {
+    errors.push({
+      text: 'Select yes if you have served the statement of express terms',
+      href: '#statementOfExpressTerms',
+      field: 'statementOfExpressTerms'
+    });
+  }
+
+  if (errors.length > 0) {
+    // Build field-specific error messages
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = { text: error.text };
+    });
+
+    return res.render('pages/claims/statement-of-express-terms', {
+      pageTitle: 'Statement of express terms',
+      selectedExpressTerms: statementOfExpressTerms || null,
+      expressTermsDetails: statementOfExpressTermsDetails || '',
+      errorList: errors,
+      errors: fieldErrors
+    });
+  }
+
+  // Save selection to session
+  const claim = claimService.getClaim(req.session) || {};
+  const demotionOrder = claim.demotionOrder || {};
+
+  demotionOrder.statementOfExpressTerms = statementOfExpressTerms;
+  demotionOrder.statementOfExpressTermsDetails = statementOfExpressTerms === 'yes' ? (statementOfExpressTermsDetails || null) : null;
+
+  claimService.updateClaim(req.session, 'demotionOrder', demotionOrder);
+
+  // Navigate to next screen (Screen 28: Claiming costs)
+  res.redirect('/claims/claiming-costs');
 });
 
 // GET /claims/preaction-protocol - Screen 16: Pre-action protocol
@@ -2888,16 +2882,6 @@ router.post('/details-of-rent-arrears', (req, res) => {
     thirdPartyPayments: thirdPartyPayments === 'yes' ? true : (thirdPartyPayments === 'no' ? false : null),
     paymentSources: paymentSourcesObj
   };
-
-  // Handle Cancel action
-  if (action === 'cancel') {
-    return res.redirect('/case-list');
-  }
-
-  // Handle Previous action
-  if (action === 'previous') {
-    return res.redirect('/claims/daily-rent-amount');
-  }
 
   // Validation for Continue action
   const errors = {};

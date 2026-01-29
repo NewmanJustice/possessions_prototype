@@ -242,22 +242,13 @@ describe('Screen 26c: Housing Act (Demotion of tenancy)', () => {
 
     describe('AC-6: Previous navigation', () => {
 
-      it('should redirect to alternative-to-possession when Previous clicked', async () => {
+      it('should display Previous link to alternative-to-possession', async () => {
         await navigateToSelectHousingActDemotion(testSession);
         const response = await testSession
-          .post('/claims/select-housing-act-demotion')
-          .send({ action: 'previous' })
-          .expect(302);
-        expect(response.headers.location).toBe('/claims/alternative-to-possession');
-      });
-
-      it('should not require validation when Previous clicked', async () => {
-        await navigateToSelectHousingActDemotion(testSession);
-        const response = await testSession
-          .post('/claims/select-housing-act-demotion')
-          .send({ action: 'previous' })
-          .expect(302);
-        expect(response.headers.location).toBe('/claims/alternative-to-possession');
+          .get('/claims/select-housing-act-demotion')
+          .expect(200);
+        expect(response.text).toContain('href="/claims/alternative-to-possession"');
+        expect(response.text).toContain('Previous');
       });
 
     });
@@ -286,13 +277,13 @@ describe('Screen 26c: Housing Act (Demotion of tenancy)', () => {
 
     describe('AC-8: Cancel behaviour', () => {
 
-      it('should redirect to case-list when Cancel clicked', async () => {
+      it('should display Cancel link to case-list', async () => {
         await navigateToSelectHousingActDemotion(testSession);
         const response = await testSession
-          .post('/claims/select-housing-act-demotion')
-          .send({ action: 'cancel' })
-          .expect(302);
-        expect(response.headers.location).toBe('/case-list');
+          .get('/claims/select-housing-act-demotion')
+          .expect(200);
+        expect(response.text).toContain('href="/case-list"');
+        expect(response.text).toContain('Cancel');
       });
 
     });

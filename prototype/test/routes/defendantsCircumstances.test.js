@@ -271,13 +271,13 @@ describe('Screen 25: Defendant\'s Circumstances', () => {
 
     describe('AC-8: Previous navigation', () => {
 
-      it('should redirect to claimants-circumstances when Previous clicked', async () => {
+      it('should display Previous link to claimants-circumstances', async () => {
         await navigateToDefendantsCircumstances(testSession);
         const response = await testSession
-          .post('/claims/defendants-circumstances')
-          .send({ action: 'previous' })
-          .expect(302);
-        expect(response.headers.location).toBe('/claims/claimants-circumstances');
+          .get('/claims/defendants-circumstances')
+          .expect(200);
+        expect(response.text).toContain('href="/claims/claimants-circumstances"');
+        expect(response.text).toContain('Previous');
       });
 
     });
@@ -306,13 +306,13 @@ describe('Screen 25: Defendant\'s Circumstances', () => {
 
     describe('AC-10: Cancel behaviour', () => {
 
-      it('should redirect to case-list when Cancel clicked', async () => {
+      it('should display Cancel link to case-list', async () => {
         await navigateToDefendantsCircumstances(testSession);
         const response = await testSession
-          .post('/claims/defendants-circumstances')
-          .send({ action: 'cancel' })
-          .expect(302);
-        expect(response.headers.location).toBe('/case-list');
+          .get('/claims/defendants-circumstances')
+          .expect(200);
+        expect(response.text).toContain('href="/case-list"');
+        expect(response.text).toContain('Cancel');
       });
 
     });

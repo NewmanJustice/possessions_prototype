@@ -56,24 +56,11 @@
 
       <div class="govuk-button-group">
         {{ govukButton({
-          text: "Continue",
-          name: "action",
-          value: "continue"
+          text: "Continue"
         }) }}
 
-        {{ govukButton({
-          text: "Previous",
-          name: "action",
-          value: "previous",
-          classes: "govuk-button--secondary"
-        }) }}
-
-        {{ govukButton({
-          text: "Cancel",
-          name: "action",
-          value: "cancel",
-          classes: "govuk-button--secondary"
-        }) }}
+        <a class="govuk-link" href="/claims/alternative-to-possession">Previous</a>
+        <a class="govuk-link" href="/case-list">Cancel</a>
       </div>
 
     </form>
