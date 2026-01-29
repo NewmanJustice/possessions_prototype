@@ -506,6 +506,46 @@ async function navigateToStatementOfExpressTerms(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Claiming Costs (Screen 28)
+ * Entry: Screen 26d (statement of express terms) → Screen 28
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToClaimingCosts(agent) {
+  await navigateToStatementOfExpressTerms(agent);
+
+  // Screen 26d: Submit statement of express terms
+  await agent
+    .post('/claims/statement-of-express-terms')
+    .send({
+      statementOfExpressTerms: 'yes'
+    })
+    .expect(302);
+
+  return agent;
+}
+
+/**
+ * Navigate to Additional Reasons for Possession (Screen 29)
+ * Entry: Screen 28 (claiming costs) → Screen 29
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToAdditionalReasonsForPossession(agent) {
+  await navigateToClaimingCosts(agent);
+
+  // Screen 28: Submit claiming costs
+  await agent
+    .post('/claims/claiming-costs')
+    .send({
+      claimingCosts: 'yes'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -531,5 +571,7 @@ module.exports = {
   navigateToAlternativeToPossession,
   navigateToSelectHousingActDemotion,
   navigateToSelectHousingActSuspension,
-  navigateToStatementOfExpressTerms
+  navigateToStatementOfExpressTerms,
+  navigateToClaimingCosts,
+  navigateToAdditionalReasonsForPossession
 };
