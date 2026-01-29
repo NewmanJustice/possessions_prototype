@@ -2065,15 +2065,128 @@ router.post('/select-housing-act-suspension', (req, res) => {
 });
 
 // ============================================================================
-// Screen 28: Claiming Costs (PLACEHOLDER)
+// Screen 28: Claiming Costs
 // ============================================================================
-// GET /claims/claiming-costs - Screen 28 placeholder
+// GET /claims/claiming-costs - Screen 28: Claiming costs
 router.get('/claiming-costs', (req, res) => {
-  res.send('Screen 28: Claiming Costs - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const claimingCosts = claim.claimingCosts || null;
+
+  res.render('pages/claims/claiming-costs', {
+    pageTitle: 'Claiming costs',
+    claimingCosts,
+    errors: {},
+    errorList: []
+  });
 });
 
-// POST /claims/claiming-costs - Screen 28 placeholder
+// POST /claims/claiming-costs - Screen 28: Claiming costs
 router.post('/claiming-costs', (req, res) => {
+  const { claimingCosts, action } = req.body;
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/statement-of-express-terms');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  if (!claimingCosts) {
+    errors.claimingCosts = { text: 'Select yes if you want to ask for your costs back' };
+    errorList.push({ text: 'Select yes if you want to ask for your costs back', href: '#claimingCosts' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    return res.status(200).render('pages/claims/claiming-costs', {
+      pageTitle: 'Claiming costs',
+      claimingCosts: claimingCosts || null,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  claimService.updateClaim(req.session, 'claimingCosts', claimingCosts);
+
+  // Redirect to next screen
+  res.redirect('/claims/additional-reasons-for-possession');
+});
+
+// ============================================================================
+// Screen 29: Additional Reasons for Possession
+// ============================================================================
+// GET /claims/additional-reasons-for-possession - Screen 29: Additional reasons for possession
+router.get('/additional-reasons-for-possession', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const additionalReasons = claim.additionalReasons || {};
+  const hasAdditionalReasons = additionalReasons.hasAdditionalReasons || null;
+  const additionalReasonsText = additionalReasons.additionalReasonsText || null;
+
+  res.render('pages/claims/additional-reasons-for-possession', {
+    pageTitle: 'Additional reasons for possession',
+    hasAdditionalReasons,
+    additionalReasonsText,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/additional-reasons-for-possession - Screen 29: Additional reasons for possession
+router.post('/additional-reasons-for-possession', (req, res) => {
+  const { hasAdditionalReasons, additionalReasonsText, action } = req.body;
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/claiming-costs');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  if (!hasAdditionalReasons) {
+    errors.hasAdditionalReasons = { text: 'Select yes if you have additional reasons for possession' };
+    errorList.push({ text: 'Select yes if you have additional reasons for possession', href: '#hasAdditionalReasons' });
+  }
+
+  // Character limit validation
+  if (additionalReasonsText && additionalReasonsText.length > 6400) {
+    errors.additionalReasonsText = { text: 'Additional reasons must be 6400 characters or fewer' };
+    errorList.push({ text: 'Additional reasons must be 6400 characters or fewer', href: '#additionalReasonsText' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    return res.status(200).render('pages/claims/additional-reasons-for-possession', {
+      pageTitle: 'Additional reasons for possession',
+      hasAdditionalReasons: hasAdditionalReasons || null,
+      additionalReasonsText: additionalReasonsText || null,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  const additionalReasonsData = {
+    hasAdditionalReasons,
+    additionalReasonsText: additionalReasonsText || null
+  };
+  claimService.updateClaim(req.session, 'additionalReasons', additionalReasonsData);
+
+  // Redirect to next screen
   res.redirect('/claims/check-answers');
 });
 
@@ -2184,7 +2297,7 @@ router.post('/statement-of-express-terms', (req, res) => {
   const demotionOrder = claim.demotionOrder || {};
 
   demotionOrder.statementOfExpressTerms = statementOfExpressTerms;
-  demotionOrder.statementOfExpressTermsDetails = statementOfExpressTerms === 'yes' ? (statementOfExpressTermsDetails || null) : null;
+  demotionOrder.statementOfExpressTerms = statementOfExpressTerms === 'yes' ? (statementOfExpressTermsDetails || null) : null;
 
   claimService.updateClaim(req.session, 'demotionOrder', demotionOrder);
 
