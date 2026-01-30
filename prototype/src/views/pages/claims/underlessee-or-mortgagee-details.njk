@@ -1,0 +1,257 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Underlessee or mortgagee details - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Underlessee or mortgagee details</h1>
+
+    <p class="govuk-body">Case number: <strong>{{ caseNumber or '1234-5678-9101-1213' }}</strong></p>
+
+    <form method="post" action="/claims/underlessee-or-mortgagee-details" novalidate>
+
+      {# Section 1: Name #}
+      <h2 class="govuk-heading-m">Underlessee or mortgagee name</h2>
+
+      {% set nameHtml %}
+        {{ govukInput({
+          name: "name",
+          id: "name",
+          label: {
+            text: "What is their name?"
+          },
+          hint: {
+            text: "Enter their first and last name, or the company or organisation name"
+          },
+          value: underlesseeName,
+          errorMessage: errors.name if errors.name
+        }) }}
+      {% endset %}
+
+      {{ govukRadios({
+        name: "knowsName",
+        idPrefix: "knowsName",
+        fieldset: {
+          legend: {
+            text: "Do you know the underlessee or mortgagee's name?",
+            classes: "govuk-fieldset__legend--s"
+          }
+        },
+        errorMessage: errors.knowsName if errors.knowsName,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: knowsName == 'yes',
+            conditional: {
+              html: nameHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: knowsName == 'no'
+          }
+        ]
+      }) }}
+
+      {# Section 2: Address #}
+      <h2 class="govuk-heading-m">Underlessee or mortgagee correspondence address</h2>
+
+      {% set addressHtml %}
+        <div class="govuk-form-group">
+          <h3 class="govuk-heading-s">Enter address details</h3>
+
+          {{ govukInput({
+            name: "buildingAndStreet",
+            id: "buildingAndStreet",
+            label: {
+              text: "Building and Street"
+            },
+            value: address.buildingAndStreet if address else buildingAndStreet,
+            errorMessage: errors.buildingAndStreet if errors.buildingAndStreet,
+            autocomplete: "address-line1"
+          }) }}
+
+          {{ govukInput({
+            name: "addressLine2",
+            id: "addressLine2",
+            label: {
+              text: "Address line 2 (Optional)"
+            },
+            value: address.addressLine2 if address else addressLine2,
+            autocomplete: "address-line2"
+          }) }}
+
+          {{ govukInput({
+            name: "addressLine3",
+            id: "addressLine3",
+            label: {
+              text: "Address line 3 (Optional)"
+            },
+            value: address.addressLine3 if address else addressLine3
+          }) }}
+
+          {{ govukInput({
+            name: "townOrCity",
+            id: "townOrCity",
+            label: {
+              text: "Town or City"
+            },
+            value: address.townOrCity if address else townOrCity,
+            errorMessage: errors.townOrCity if errors.townOrCity,
+            classes: "govuk-!-width-two-thirds",
+            autocomplete: "address-level2"
+          }) }}
+
+          {{ govukInput({
+            name: "county",
+            id: "county",
+            label: {
+              text: "County (Optional)"
+            },
+            value: address.county if address else county,
+            classes: "govuk-!-width-two-thirds"
+          }) }}
+
+          {{ govukInput({
+            name: "country",
+            id: "country",
+            label: {
+              text: "Country (Optional)"
+            },
+            value: address.country if address else country,
+            classes: "govuk-!-width-two-thirds"
+          }) }}
+
+          {{ govukInput({
+            name: "postcode",
+            id: "postcode",
+            label: {
+              text: "Postcode"
+            },
+            value: address.postcode if address else postcode,
+            errorMessage: errors.postcode if errors.postcode,
+            classes: "govuk-input--width-10",
+            autocomplete: "postal-code"
+          }) }}
+        </div>
+      {% endset %}
+
+      {{ govukRadios({
+        name: "knowsAddress",
+        idPrefix: "knowsAddress",
+        fieldset: {
+          legend: {
+            text: "Do you know the underlessee or mortgagee's correspondence address?",
+            classes: "govuk-fieldset__legend--s"
+          }
+        },
+        errorMessage: errors.knowsAddress if errors.knowsAddress,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: knowsAddress == 'yes',
+            conditional: {
+              html: addressHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: knowsAddress == 'no'
+          }
+        ]
+      }) }}
+
+      {# Section 3: Additional #}
+      <h2 class="govuk-heading-m">Additional underlessees or mortgagees</h2>
+
+      {% set additionalHtml %}
+        <div class="govuk-form-group">
+          <h3 class="govuk-heading-s">Add underlessee or mortgagee</h3>
+          <p class="govuk-body">Add an underlessee or mortgagee to the case</p>
+          {{ govukButton({
+            text: "Add new",
+            name: "action",
+            value: "addNew",
+            classes: "govuk-button--secondary"
+          }) }}
+        </div>
+      {% endset %}
+
+      {{ govukRadios({
+        name: "hasAdditional",
+        idPrefix: "hasAdditional",
+        fieldset: {
+          legend: {
+            text: "Do you need to add another underlessee or mortgagee?",
+            classes: "govuk-fieldset__legend--s"
+          }
+        },
+        errorMessage: errors.hasAdditional if errors.hasAdditional,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: hasAdditional == 'yes',
+            conditional: {
+              html: additionalHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: hasAdditional == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

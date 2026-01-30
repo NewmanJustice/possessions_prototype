@@ -2325,7 +2325,10 @@ router.post('/underlessee-or-mortgagee-details', (req, res) => {
     }
     details.push({}); // Add new empty entry
 
-    claimService.updateClaim(req.session, 'underlesseeOrMortgageeDetails', details);
+    // Store array directly on claim
+    const claimData = claimService.getClaim(req.session) || {};
+    claimData.underlesseeOrMortgageeDetails = details;
+    req.session.claimDraft = claimData;
     return res.redirect('/claims/underlessee-or-mortgagee-details');
   }
 
@@ -2432,7 +2435,10 @@ router.post('/underlessee-or-mortgagee-details', (req, res) => {
     details.push(currentEntry);
   }
 
-  claimService.updateClaim(req.session, 'underlesseeOrMortgageeDetails', details);
+  // Store array directly on claim (updateClaim uses spread which doesn't work for arrays)
+  const claimData = claimService.getClaim(req.session) || {};
+  claimData.underlesseeOrMortgageeDetails = details;
+  req.session.claimDraft = claimData;
 
   // Redirect to next screen
   res.redirect('/claims/check-answers');
