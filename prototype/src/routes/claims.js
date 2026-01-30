@@ -2188,6 +2188,253 @@ router.post('/additional-reasons-for-possession', (req, res) => {
   claimService.updateClaim(req.session, 'additionalReasons', additionalReasonsData);
 
   // Redirect to next screen
+  res.redirect('/claims/underlessee-or-mortgagee');
+});
+
+// ============================================================================
+// Screen 30: Underlessee or Mortgagee
+// ============================================================================
+// GET /claims/underlessee-or-mortgagee - Screen 30: Underlessee or mortgagee
+router.get('/underlessee-or-mortgagee', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const underlesseeOrMortgageeData = claim.underlesseeOrMortgagee || {};
+  const hasUnderlesseeOrMortgagee = underlesseeOrMortgageeData.hasUnderlesseeOrMortgagee || null;
+  const caseNumber = claim.caseNumber || null;
+
+  res.render('pages/claims/underlessee-or-mortgagee', {
+    pageTitle: 'Underlessee or mortgagee entitled to claim relief against forfeiture',
+    hasUnderlesseeOrMortgagee,
+    caseNumber,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/underlessee-or-mortgagee - Screen 30: Underlessee or mortgagee
+router.post('/underlessee-or-mortgagee', (req, res) => {
+  const { hasUnderlesseeOrMortgagee, action } = req.body;
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/additional-reasons-for-possession');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  if (!hasUnderlesseeOrMortgagee) {
+    errors.hasUnderlesseeOrMortgagee = { text: 'Select yes if there is an underlessee or mortgagee entitled to claim relief against forfeiture' };
+    errorList.push({ text: 'Select yes if there is an underlessee or mortgagee entitled to claim relief against forfeiture', href: '#hasUnderlesseeOrMortgagee' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    const claim = claimService.getClaim(req.session) || {};
+    const caseNumber = claim.caseNumber || null;
+
+    return res.status(200).render('pages/claims/underlessee-or-mortgagee', {
+      pageTitle: 'Underlessee or mortgagee entitled to claim relief against forfeiture',
+      hasUnderlesseeOrMortgagee: hasUnderlesseeOrMortgagee || null,
+      caseNumber,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session as object
+  claimService.updateClaim(req.session, 'underlesseeOrMortgagee', { hasUnderlesseeOrMortgagee });
+
+  // Redirect based on selection
+  if (hasUnderlesseeOrMortgagee === 'yes') {
+    res.redirect('/claims/underlessee-or-mortgagee-details');
+  } else {
+    res.redirect('/claims/check-answers');
+  }
+});
+
+// ============================================================================
+// Screen 31: Underlessee or Mortgagee Details
+// ============================================================================
+// GET /claims/underlessee-or-mortgagee-details - Screen 31
+router.get('/underlessee-or-mortgagee-details', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const details = claim.underlesseeOrMortgageeDetails || [];
+  const currentEntry = details.length > 0 ? details[details.length - 1] : {};
+  const caseNumber = claim.caseNumber || null;
+
+  res.render('pages/claims/underlessee-or-mortgagee-details', {
+    pageTitle: 'Underlessee or mortgagee details',
+    knowsName: currentEntry.knowsName || null,
+    underlesseeName: currentEntry.name || null,
+    knowsAddress: currentEntry.knowsAddress || null,
+    address: currentEntry.address || {},
+    hasAdditional: currentEntry.hasAdditional || null,
+    caseNumber,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/underlessee-or-mortgagee-details - Screen 31
+router.post('/underlessee-or-mortgagee-details', (req, res) => {
+  const { knowsName, name, knowsAddress, buildingAndStreet, addressLine2, addressLine3,
+          townOrCity, county, country, postcode, hasAdditional, action } = req.body;
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/underlessee-or-mortgagee');
+  }
+
+  // Handle Add New action
+  if (action === 'addNew') {
+    // Save current entry and add new empty entry
+    const claim = claimService.getClaim(req.session) || {};
+    const details = claim.underlesseeOrMortgageeDetails || [];
+
+    const currentEntry = {
+      knowsName: knowsName || null,
+      name: knowsName === 'yes' ? name : null,
+      knowsAddress: knowsAddress || null,
+      address: knowsAddress === 'yes' ? {
+        buildingAndStreet: buildingAndStreet || null,
+        addressLine2: addressLine2 || null,
+        addressLine3: addressLine3 || null,
+        townOrCity: townOrCity || null,
+        county: county || null,
+        country: country || null,
+        postcode: postcode || null
+      } : null,
+      hasAdditional: 'yes'
+    };
+
+    if (details.length > 0) {
+      details[details.length - 1] = currentEntry;
+    } else {
+      details.push(currentEntry);
+    }
+    details.push({}); // Add new empty entry
+
+    claimService.updateClaim(req.session, 'underlesseeOrMortgageeDetails', details);
+    return res.redirect('/claims/underlessee-or-mortgagee-details');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  // Validate knowsName
+  if (!knowsName) {
+    errors.knowsName = { text: 'Select yes if you know the underlessee or mortgagee\'s name' };
+    errorList.push({ text: 'Select yes if you know the underlessee or mortgagee\'s name', href: '#knowsName' });
+  }
+
+  // Validate name when knowsName is yes
+  if (knowsName === 'yes' && (!name || name.trim() === '')) {
+    errors.name = { text: 'Enter the underlessee or mortgagee\'s name' };
+    errorList.push({ text: 'Enter the underlessee or mortgagee\'s name', href: '#name' });
+  }
+
+  // Validate knowsAddress
+  if (!knowsAddress) {
+    errors.knowsAddress = { text: 'Select yes if you know the underlessee or mortgagee\'s correspondence address' };
+    errorList.push({ text: 'Select yes if you know the underlessee or mortgagee\'s correspondence address', href: '#knowsAddress' });
+  }
+
+  // Validate address fields when knowsAddress is yes
+  if (knowsAddress === 'yes') {
+    if (!buildingAndStreet || buildingAndStreet.trim() === '') {
+      errors.buildingAndStreet = { text: 'Enter the building and street' };
+      errorList.push({ text: 'Enter the building and street', href: '#buildingAndStreet' });
+    }
+    if (!townOrCity || townOrCity.trim() === '') {
+      errors.townOrCity = { text: 'Enter the town or city' };
+      errorList.push({ text: 'Enter the town or city', href: '#townOrCity' });
+    }
+    if (!postcode || postcode.trim() === '') {
+      errors.postcode = { text: 'Enter the postcode' };
+      errorList.push({ text: 'Enter the postcode', href: '#postcode' });
+    }
+  }
+
+  // Validate hasAdditional
+  if (!hasAdditional) {
+    errors.hasAdditional = { text: 'Select yes if you need to add another underlessee or mortgagee' };
+    errorList.push({ text: 'Select yes if you need to add another underlessee or mortgagee', href: '#hasAdditional' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    const claim = claimService.getClaim(req.session) || {};
+    const caseNumber = claim.caseNumber || null;
+
+    return res.status(200).render('pages/claims/underlessee-or-mortgagee-details', {
+      pageTitle: 'Underlessee or mortgagee details',
+      knowsName,
+      underlesseeName: name,
+      knowsAddress,
+      address: {
+        buildingAndStreet,
+        addressLine2,
+        addressLine3,
+        townOrCity,
+        county,
+        country,
+        postcode
+      },
+      buildingAndStreet,
+      addressLine2,
+      addressLine3,
+      townOrCity,
+      county,
+      country,
+      postcode,
+      hasAdditional,
+      caseNumber,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  const claim = claimService.getClaim(req.session) || {};
+  const details = claim.underlesseeOrMortgageeDetails || [];
+
+  const currentEntry = {
+    knowsName: knowsName,
+    name: knowsName === 'yes' ? name : null,
+    knowsAddress: knowsAddress,
+    address: knowsAddress === 'yes' ? {
+      buildingAndStreet: buildingAndStreet || null,
+      addressLine2: addressLine2 || null,
+      addressLine3: addressLine3 || null,
+      townOrCity: townOrCity || null,
+      county: county || null,
+      country: country || null,
+      postcode: postcode || null
+    } : null,
+    hasAdditional: hasAdditional
+  };
+
+  if (details.length > 0) {
+    details[details.length - 1] = currentEntry;
+  } else {
+    details.push(currentEntry);
+  }
+
+  claimService.updateClaim(req.session, 'underlesseeOrMortgageeDetails', details);
+
+  // Redirect to next screen
   res.redirect('/claims/check-answers');
 });
 

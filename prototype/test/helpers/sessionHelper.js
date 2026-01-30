@@ -546,6 +546,46 @@ async function navigateToAdditionalReasonsForPossession(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Underlessee or Mortgagee (Screen 30)
+ * Entry: Screen 29 (additional reasons for possession) → Screen 30
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToUnderlesseeOrMortgagee(agent) {
+  await navigateToAdditionalReasonsForPossession(agent);
+
+  // Screen 29: Submit additional reasons for possession
+  await agent
+    .post('/claims/additional-reasons-for-possession')
+    .send({
+      hasAdditionalReasons: 'no'
+    })
+    .expect(302);
+
+  return agent;
+}
+
+/**
+ * Navigate to Underlessee or Mortgagee Details (Screen 31)
+ * Entry: Screen 30 (underlessee or mortgagee) → Screen 31 (when Yes selected)
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToUnderlesseeOrMortgageeDetails(agent) {
+  await navigateToUnderlesseeOrMortgagee(agent);
+
+  // Screen 30: Select Yes (there is an underlessee or mortgagee)
+  await agent
+    .post('/claims/underlessee-or-mortgagee')
+    .send({
+      hasUnderlesseeOrMortgagee: 'yes'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -573,5 +613,7 @@ module.exports = {
   navigateToSelectHousingActSuspension,
   navigateToStatementOfExpressTerms,
   navigateToClaimingCosts,
-  navigateToAdditionalReasonsForPossession
+  navigateToAdditionalReasonsForPossession,
+  navigateToUnderlesseeOrMortgagee,
+  navigateToUnderlesseeOrMortgageeDetails
 };

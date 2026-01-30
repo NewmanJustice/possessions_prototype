@@ -259,22 +259,22 @@ describe('Screen 29: Additional Reasons for Possession', () => {
 
     describe('AC-8: Continue navigation', () => {
 
-      it('should redirect to check-answers when Continue with Yes', async () => {
+      it('should redirect to underlessee-or-mortgagee when Continue with Yes', async () => {
         await navigateToAdditionalReasonsForPossession(testSession);
         const response = await testSession
           .post('/claims/additional-reasons-for-possession')
           .send({ hasAdditionalReasons: 'yes', additionalReasonsText: 'Reasons text' })
           .expect(302);
-        expect(response.headers.location).toBe('/claims/check-answers');
+        expect(response.headers.location).toBe('/claims/underlessee-or-mortgagee');
       });
 
-      it('should redirect to check-answers when Continue with No', async () => {
+      it('should redirect to underlessee-or-mortgagee when Continue with No', async () => {
         await navigateToAdditionalReasonsForPossession(testSession);
         const response = await testSession
           .post('/claims/additional-reasons-for-possession')
           .send({ hasAdditionalReasons: 'no' })
           .expect(302);
-        expect(response.headers.location).toBe('/claims/check-answers');
+        expect(response.headers.location).toBe('/claims/underlessee-or-mortgagee');
       });
 
     });
