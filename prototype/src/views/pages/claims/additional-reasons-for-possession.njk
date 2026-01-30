@@ -1,0 +1,101 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/textarea/macro.njk" import govukTextarea %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Additional reasons for possession - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Additional reasons for possession</h1>
+
+    <form method="post" action="/claims/additional-reasons-for-possession" novalidate>
+
+      {% set additionalReasonsHtml %}
+        {{ govukTextarea({
+          name: "additionalReasonsText",
+          id: "additionalReasonsText",
+          label: {
+            text: "Additional reasons for possession"
+          },
+          hint: {
+            text: "This can be any information that you have not had the chance to share yet"
+          },
+          value: additionalReasonsText,
+          attributes: {
+            maxlength: 6400
+          }
+        }) }}
+      {% endset %}
+
+      {{ govukRadios({
+        name: "hasAdditionalReasons",
+        idPrefix: "hasAdditionalReasons",
+        fieldset: {
+          legend: {
+            text: "Is there any other information you'd like to provide about your reasons for possession?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.hasAdditionalReasons if errors.hasAdditionalReasons,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: hasAdditionalReasons == 'yes',
+            conditional: {
+              html: additionalReasonsHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: hasAdditionalReasons == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}
