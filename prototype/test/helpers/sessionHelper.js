@@ -649,6 +649,26 @@ async function navigateToUnderlesseeMortgageeForfeitureReliefViaDetails(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Upload Additional Document (Screen 33)
+ * Entry: Screen 32 → "Yes" → Screen 33
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToUploadAdditionalDocument(agent) {
+  await navigateToUnderlesseeMortgageeForfeitureRelief(agent);
+
+  // Screen 32: Select Yes (upload documents required)
+  await agent
+    .post('/claims/underlessee-mortgagee-forfeiture-relief')
+    .send({
+      hasUnderlesseeOrMortgageeForRelief: 'yes'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -681,5 +701,6 @@ module.exports = {
   navigateToUnderlesseeOrMortgagee,
   navigateToUnderlesseeOrMortgageeDetails,
   navigateToUnderlesseeMortgageeForfeitureRelief,
-  navigateToUnderlesseeMortgageeForfeitureReliefViaDetails
+  navigateToUnderlesseeMortgageeForfeitureReliefViaDetails,
+  navigateToUploadAdditionalDocument
 };

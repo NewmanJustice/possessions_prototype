@@ -1,0 +1,155 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/file-upload/macro.njk" import govukFileUpload %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Upload additional documents - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Upload additional documents</h1>
+
+    <p class="govuk-body">Case number: <strong>{{ caseNumber or '1234-5678-9101-1213' }}</strong></p>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <p class="govuk-body">You must select the type of document you're uploading and give it a short description.</p>
+
+    <h2 class="govuk-heading-m">Before you upload your documents</h2>
+    <p class="govuk-body">Give your document a name that explains what it is.</p>
+
+    <form method="post" action="/claims/upload-additional-document" enctype="multipart/form-data" novalidate>
+
+      <div class="govuk-inset-text">
+        <h3 class="govuk-heading-s">Add document</h3>
+        <p class="govuk-body">Upload a document to the system</p>
+        {{ govukButton({
+          text: "Add new",
+          name: "action",
+          value: "addNew",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+      {% if documents and documents.length > 0 %}
+        {% for doc in documents %}
+          <div class="govuk-!-margin-bottom-6" style="border-left: 4px solid #b1b4b6; padding-left: 15px;">
+            <div class="govuk-!-margin-bottom-4">
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-1" style="display: inline-block;">Document {{ loop.index }}</h3>
+              {{ govukButton({
+                text: "Remove",
+                name: "action",
+                value: "remove-" + loop.index0,
+                classes: "govuk-button--secondary",
+                attributes: {
+                  style: "float: right; margin-top: -5px;"
+                }
+              }) }}
+            </div>
+            <div style="clear: both;"></div>
+
+            {{ govukSelect({
+              id: "documents[" + loop.index0 + "][documentType]",
+              name: "documents[" + loop.index0 + "][documentType]",
+              label: {
+                text: "Type of document"
+              },
+              errorMessage: errors['documents[' + loop.index0 + '][documentType]'] if errors['documents[' + loop.index0 + '][documentType]'],
+              items: [
+                { value: "", text: "Select a document type", selected: not doc.documentType },
+                { value: "contact-log", text: "Contact log", selected: doc.documentType == 'contact-log' },
+                { value: "tenancy-agreement", text: "Tenancy agreement", selected: doc.documentType == 'tenancy-agreement' },
+                { value: "correspondence", text: "Correspondence", selected: doc.documentType == 'correspondence' },
+                { value: "court-order", text: "Court order", selected: doc.documentType == 'court-order' },
+                { value: "notice-to-tenant", text: "Notice to tenant", selected: doc.documentType == 'notice-to-tenant' },
+                { value: "proof-of-service", text: "Proof of service", selected: doc.documentType == 'proof-of-service' },
+                { value: "other", text: "Other supporting document", selected: doc.documentType == 'other' }
+              ]
+            }) }}
+
+            {{ govukFileUpload({
+              id: "documents[" + loop.index0 + "][file]",
+              name: "documents[" + loop.index0 + "][file]",
+              label: {
+                text: "Document"
+              },
+              hint: {
+                text: doc.fileName if doc.fileName else "No file selected"
+              }
+            }) }}
+
+            {{ govukButton({
+              text: "Cancel upload",
+              name: "action",
+              value: "cancelUpload-" + loop.index0,
+              classes: "govuk-button--secondary govuk-!-margin-bottom-4"
+            }) }}
+
+            {{ govukInput({
+              id: "documents[" + loop.index0 + "][description]",
+              name: "documents[" + loop.index0 + "][description]",
+              label: {
+                text: "Short description"
+              },
+              hint: {
+                text: "Optional"
+              },
+              value: doc.description
+            }) }}
+
+          </div>
+        {% endfor %}
+
+        {{ govukButton({
+          text: "Add new",
+          name: "action",
+          value: "addNew",
+          classes: "govuk-button--secondary govuk-!-margin-bottom-6"
+        }) }}
+      {% endif %}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

@@ -2606,6 +2606,187 @@ router.post('/underlessee-mortgagee-forfeiture-relief', (req, res) => {
 });
 
 // ============================================================================
+// Screen 33: Upload Additional Documents
+// ============================================================================
+// GET /claims/upload-additional-document - Screen 33
+router.get('/upload-additional-document', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const documents = claim.uploadedDocuments || [];
+  const caseNumber = claim.caseNumber || null;
+
+  res.render('pages/claims/upload-additional-document', {
+    pageTitle: 'Upload additional documents',
+    documents,
+    caseNumber,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/upload-additional-document - Screen 33
+router.post('/upload-additional-document', (req, res) => {
+  const { action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  // Parse documents from form data
+  let documents = [];
+  if (req.body.documents) {
+    if (Array.isArray(req.body.documents)) {
+      documents = req.body.documents.map((doc, index) => ({
+        id: `doc-${index}`,
+        documentType: doc.documentType || null,
+        fileName: doc.fileName || null,
+        description: doc.description || null
+      }));
+    } else {
+      // Single document case
+      documents = [{
+        id: 'doc-0',
+        documentType: req.body.documents.documentType || req.body['documents[0][documentType]'] || null,
+        fileName: null,
+        description: req.body.documents.description || req.body['documents[0][description]'] || null
+      }];
+    }
+  }
+
+  // Handle indexed document fields (documents[0][documentType] format)
+  const indexedDocs = {};
+  for (const key of Object.keys(req.body)) {
+    const match = key.match(/^documents\[(\d+)\]\[(\w+)\]$/);
+    if (match) {
+      const index = parseInt(match[1], 10);
+      const field = match[2];
+      if (!indexedDocs[index]) {
+        indexedDocs[index] = { id: `doc-${index}` };
+      }
+      indexedDocs[index][field] = req.body[key] || null;
+    }
+  }
+
+  if (Object.keys(indexedDocs).length > 0) {
+    documents = Object.values(indexedDocs);
+  }
+
+  const caseNumber = claim.caseNumber || null;
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Helper function to save documents to session (arrays need direct assignment)
+  const saveDocumentsToSession = (docs) => {
+    const claimData = claimService.getClaim(req.session) || {};
+    claimData.uploadedDocuments = docs;
+    req.session.claimDraft = claimData;
+  };
+
+  // Handle Previous action
+  if (action === 'previous') {
+    // Save current documents before navigating
+    saveDocumentsToSession(documents);
+    return res.redirect('/claims/underlessee-mortgagee-forfeiture-relief');
+  }
+
+  // Handle Add New action
+  if (action === 'addNew') {
+    documents.push({
+      id: `doc-${documents.length}`,
+      documentType: null,
+      fileName: null,
+      description: null
+    });
+    saveDocumentsToSession(documents);
+    return res.status(200).render('pages/claims/upload-additional-document', {
+      pageTitle: 'Upload additional documents',
+      documents,
+      caseNumber,
+      errors: {},
+      errorList: []
+    });
+  }
+
+  // Handle Remove action
+  if (action && action.startsWith('remove-')) {
+    const indexToRemove = parseInt(action.replace('remove-', ''), 10);
+    documents = documents.filter((_, index) => index !== indexToRemove);
+    // Re-index documents
+    documents = documents.map((doc, index) => ({
+      ...doc,
+      id: `doc-${index}`
+    }));
+    saveDocumentsToSession(documents);
+    return res.status(200).render('pages/claims/upload-additional-document', {
+      pageTitle: 'Upload additional documents',
+      documents,
+      caseNumber,
+      errors: {},
+      errorList: []
+    });
+  }
+
+  // Handle Cancel Upload action
+  if (action && action.startsWith('cancelUpload-')) {
+    const indexToClear = parseInt(action.replace('cancelUpload-', ''), 10);
+    if (documents[indexToClear]) {
+      documents[indexToClear].fileName = null;
+    }
+    saveDocumentsToSession(documents);
+    return res.status(200).render('pages/claims/upload-additional-document', {
+      pageTitle: 'Upload additional documents',
+      documents,
+      caseNumber,
+      errors: {},
+      errorList: []
+    });
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  // Check if at least one document is required
+  const forfeitureRelief = claim.forfeitureRelief || {};
+  const documentsRequired = forfeitureRelief.hasUnderlesseeOrMortgageeForRelief === 'yes';
+
+  if (documentsRequired && documents.length === 0) {
+    errorList.push({
+      text: 'You must upload at least one document',
+      href: '#documents'
+    });
+  }
+
+  // Validate each document has a type
+  documents.forEach((doc, index) => {
+    if (!doc.documentType || doc.documentType === '') {
+      const fieldKey = `documents[${index}][documentType]`;
+      errors[fieldKey] = { text: 'Select the type of document' };
+      errorList.push({
+        text: 'Select the type of document',
+        href: `#documents\\[${index}\\]\\[documentType\\]`
+      });
+    }
+  });
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    return res.status(200).render('pages/claims/upload-additional-document', {
+      pageTitle: 'Upload additional documents',
+      documents,
+      caseNumber,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session (arrays need direct assignment)
+  saveDocumentsToSession(documents);
+
+  // Redirect to Screen 34
+  res.redirect('/claims/applications');
+});
+
+// ============================================================================
 // Screen 26c: Housing Act (Demotion of tenancy)
 // ============================================================================
 // GET /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion

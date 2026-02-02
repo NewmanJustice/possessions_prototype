@@ -1,9 +1,15 @@
 {
-  "lastUpdated": "2026-02-02T13:00:00Z",
+  "lastUpdated": "2026-02-02T14:30:00Z",
   "cassQueue": [],
   "nigelQueue": [],
   "claudeQueue": [],
   "completed": [
+    {
+      "screenNumber": "33",
+      "title": "Upload additional documents",
+      "testCount": 22,
+      "completedAt": "2026-02-02T14:30:00Z"
+    },
     {
       "screenNumber": "32",
       "title": "Indicate if there is an underlessee or mortgagee entitled to claim relief against forfeiture",
