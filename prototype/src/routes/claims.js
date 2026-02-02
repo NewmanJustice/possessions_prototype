@@ -2061,7 +2061,92 @@ router.get('/select-housing-act-suspension', (req, res) => {
 
 // POST /claims/select-housing-act-suspension - Screen 26a placeholder
 router.post('/select-housing-act-suspension', (req, res) => {
-  res.redirect('/claims/check-answers');
+  res.redirect('/claims/reasons-for-suspension');
+});
+
+// ============================================================================
+// Screen 26b: Reasons for requesting a suspension order
+// ============================================================================
+
+/**
+ * Validates reasons for suspension form submission
+ * @param {Object} body - Request body
+ * @returns {Array} Array of error objects
+ */
+function validateReasonsForSuspension(body) {
+  const errors = [];
+
+  // Check max length (only if text is provided)
+  if (body.reasons && body.reasons.length > 950) {
+    errors.push({
+      field: 'reasons',
+      href: '#reasons',
+      text: 'Enter 950 characters or fewer'
+    });
+  }
+
+  return errors;
+}
+
+// GET /claims/reasons-for-suspension - Screen 26b: Reasons for suspension
+router.get('/reasons-for-suspension', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const suspensionOrder = claim.suspensionOrder || {};
+  const reasons = suspensionOrder.reasons || '';
+
+  res.render('pages/claims/reasons-for-suspension', {
+    pageTitle: 'Reasons for requesting a suspension order',
+    reasons,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/reasons-for-suspension - Screen 26b: Reasons for suspension
+router.post('/reasons-for-suspension', (req, res) => {
+  const { reasons, action } = req.body;
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/alternative-to-possession');
+  }
+
+  // Validation for Continue action
+  const validationErrors = validateReasonsForSuspension(req.body);
+
+  if (validationErrors.length > 0) {
+    // Build errors object for template
+    const errors = {};
+    validationErrors.forEach(error => {
+      errors[error.field] = { text: error.text };
+    });
+
+    return res.status(200).render('pages/claims/reasons-for-suspension', {
+      pageTitle: 'Reasons for requesting a suspension order',
+      reasons: reasons || '',
+      errors,
+      errorList: validationErrors
+    });
+  }
+
+  // Ensure suspensionOrder object exists in session
+  const claim = claimService.getClaim(req.session) || {};
+  const suspensionOrder = claim.suspensionOrder || {};
+
+  // Store reasons (null if empty, string otherwise)
+  const trimmedReasons = reasons?.trim() || null;
+  suspensionOrder.reasons = trimmedReasons;
+
+  // Update session preserving existing suspensionOrder data
+  claimService.updateClaim(req.session, 'suspensionOrder', suspensionOrder);
+
+  // Redirect to next screen
+  res.redirect('/claims/claiming-costs');
 });
 
 // ============================================================================

@@ -586,6 +586,27 @@ async function navigateToUnderlesseeOrMortgageeDetails(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Reasons for Suspension (Screen 26b)
+ * Entry: Screen 26a (select housing act suspension) → Screen 26b
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToReasonsForSuspension(agent) {
+  await navigateToSelectHousingActSuspension(agent);
+
+  // Screen 26a: Submit housing act selection for suspension
+  await agent
+    .post('/claims/select-housing-act-suspension')
+    .send({
+      suspensionHousingAct: 'housing-act-1985',
+      section: 'section 121A'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -611,6 +632,7 @@ module.exports = {
   navigateToAlternativeToPossession,
   navigateToSelectHousingActDemotion,
   navigateToSelectHousingActSuspension,
+  navigateToReasonsForSuspension,
   navigateToStatementOfExpressTerms,
   navigateToClaimingCosts,
   navigateToAdditionalReasonsForPossession,
