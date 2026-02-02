@@ -2339,7 +2339,8 @@ router.post('/underlessee-or-mortgagee', (req, res) => {
   if (hasUnderlesseeOrMortgagee === 'yes') {
     res.redirect('/claims/underlessee-or-mortgagee-details');
   } else {
-    res.redirect('/claims/check-answers');
+    // If No selected, skip Screen 31 and go to Screen 32
+    res.redirect('/claims/underlessee-mortgagee-forfeiture-relief');
   }
 });
 
@@ -2525,8 +2526,83 @@ router.post('/underlessee-or-mortgagee-details', (req, res) => {
   claimData.underlesseeOrMortgageeDetails = details;
   req.session.claimDraft = claimData;
 
-  // Redirect to next screen
-  res.redirect('/claims/check-answers');
+  // Redirect to Screen 32
+  res.redirect('/claims/underlessee-mortgagee-forfeiture-relief');
+});
+
+// ============================================================================
+// Screen 32: Underlessee Mortgagee Forfeiture Relief
+// ============================================================================
+// GET /claims/underlessee-mortgagee-forfeiture-relief - Screen 32
+router.get('/underlessee-mortgagee-forfeiture-relief', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const forfeitureReliefData = claim.forfeitureRelief || {};
+  const hasUnderlesseeOrMortgageeForRelief = forfeitureReliefData.hasUnderlesseeOrMortgageeForRelief || null;
+  const caseNumber = claim.caseNumber || null;
+
+  res.render('pages/claims/underlessee-mortgagee-forfeiture-relief', {
+    pageTitle: 'Indicate if there is an underlessee or mortgagee entitled to claim relief against forfeiture',
+    hasUnderlesseeOrMortgageeForRelief,
+    caseNumber,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/underlessee-mortgagee-forfeiture-relief - Screen 32
+router.post('/underlessee-mortgagee-forfeiture-relief', (req, res) => {
+  const { hasUnderlesseeOrMortgageeForRelief, action } = req.body;
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action (dynamic based on journey path)
+  if (action === 'previous') {
+    const claim = claimService.getClaim(req.session) || {};
+    const underlesseeOrMortgagee = claim.underlesseeOrMortgagee || {};
+
+    // If user came via Screen 31 (selected Yes on Screen 30), go back to Screen 31
+    if (underlesseeOrMortgagee.hasUnderlesseeOrMortgagee === 'yes') {
+      return res.redirect('/claims/underlessee-or-mortgagee-details');
+    }
+    // Otherwise go back to Screen 30
+    return res.redirect('/claims/underlessee-or-mortgagee');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  if (!hasUnderlesseeOrMortgageeForRelief) {
+    errors.hasUnderlesseeOrMortgageeForRelief = { text: 'Select yes if there is an underlessee or mortgagee entitled to claim relief against forfeiture' };
+    errorList.push({ text: 'Select yes if there is an underlessee or mortgagee entitled to claim relief against forfeiture', href: '#hasUnderlesseeOrMortgageeForRelief' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    const claim = claimService.getClaim(req.session) || {};
+    const caseNumber = claim.caseNumber || null;
+
+    return res.status(200).render('pages/claims/underlessee-mortgagee-forfeiture-relief', {
+      pageTitle: 'Indicate if there is an underlessee or mortgagee entitled to claim relief against forfeiture',
+      hasUnderlesseeOrMortgageeForRelief: hasUnderlesseeOrMortgageeForRelief || null,
+      caseNumber,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  claimService.updateClaim(req.session, 'forfeitureRelief', { hasUnderlesseeOrMortgageeForRelief });
+
+  // Redirect based on selection
+  if (hasUnderlesseeOrMortgageeForRelief === 'yes') {
+    res.redirect('/claims/upload-additional-document');
+  } else {
+    res.redirect('/claims/applications');
+  }
 });
 
 // ============================================================================

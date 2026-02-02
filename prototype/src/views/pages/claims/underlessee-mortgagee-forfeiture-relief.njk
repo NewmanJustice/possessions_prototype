@@ -1,0 +1,82 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Indicate if there is an underlessee or mortgagee entitled to claim relief against forfeiture - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Indicate if there is an underlessee or mortgagee entitled to claim relief against forfeiture</h1>
+
+    <p class="govuk-body">Case number: <strong>{{ caseNumber or '1234-5678-9101-1213' }}</strong></p>
+
+    <form method="post" action="/claims/underlessee-mortgagee-forfeiture-relief" novalidate>
+
+      {{ govukRadios({
+        name: "hasUnderlesseeOrMortgageeForRelief",
+        idPrefix: "hasUnderlesseeOrMortgageeForRelief",
+        fieldset: {
+          legend: {
+            text: "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.hasUnderlesseeOrMortgageeForRelief if errors.hasUnderlesseeOrMortgageeForRelief,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: hasUnderlesseeOrMortgageeForRelief == 'yes'
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: hasUnderlesseeOrMortgageeForRelief == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

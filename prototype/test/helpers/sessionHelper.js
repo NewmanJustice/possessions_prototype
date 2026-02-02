@@ -607,6 +607,48 @@ async function navigateToReasonsForSuspension(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Underlessee Mortgagee Forfeiture Relief (Screen 32) via "No" path
+ * Entry: Screen 30 (underlessee or mortgagee) → "No" → Screen 32
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToUnderlesseeMortgageeForfeitureRelief(agent) {
+  await navigateToUnderlesseeOrMortgagee(agent);
+
+  // Screen 30: Select No (no underlessee or mortgagee) - skips Screen 31
+  await agent
+    .post('/claims/underlessee-or-mortgagee')
+    .send({
+      hasUnderlesseeOrMortgagee: 'no'
+    })
+    .expect(302);
+
+  return agent;
+}
+
+/**
+ * Navigate to Underlessee Mortgagee Forfeiture Relief (Screen 32) via "Yes" path
+ * Entry: Screen 30 → "Yes" → Screen 31 → Screen 32
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToUnderlesseeMortgageeForfeitureReliefViaDetails(agent) {
+  await navigateToUnderlesseeOrMortgageeDetails(agent);
+
+  // Screen 31: Submit underlessee/mortgagee details
+  await agent
+    .post('/claims/underlessee-or-mortgagee-details')
+    .send({
+      knowsName: 'no',
+      knowsAddress: 'no',
+      hasAdditional: 'no'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -637,5 +679,7 @@ module.exports = {
   navigateToClaimingCosts,
   navigateToAdditionalReasonsForPossession,
   navigateToUnderlesseeOrMortgagee,
-  navigateToUnderlesseeOrMortgageeDetails
+  navigateToUnderlesseeOrMortgageeDetails,
+  navigateToUnderlesseeMortgageeForfeitureRelief,
+  navigateToUnderlesseeMortgageeForfeitureReliefViaDetails
 };
