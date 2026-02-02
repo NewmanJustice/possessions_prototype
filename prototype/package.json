@@ -31,7 +31,7 @@
     "govuk-frontend": "^5.0.0",
     "helmet": "^7.1.0",
     "nunjucks": "^3.2.4",
-    "prototype-annotator": "^0.2.0"
+    "prototype-annotator": "^0.2.2"
   },
   "devDependencies": {
     "eslint": "^8.55.0",
