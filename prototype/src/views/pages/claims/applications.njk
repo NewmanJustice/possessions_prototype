@@ -1,0 +1,101 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Applications - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Applications</h1>
+
+    <p class="govuk-body">Case number: <strong>{{ caseNumber or '1234-5678-9101-1213' }}</strong></p>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <p class="govuk-body">If you need to ask the court for something before your case can be given a hearing date or sent to the defendants, you'll need to make an application.</p>
+
+    <p class="govuk-body">Applications could include:</p>
+
+    <ul class="govuk-list govuk-list--bullet">
+      <li>permission to make your claim</li>
+      <li>permission to send papers to a defendant outside England or Wales</li>
+      <li>a request for a hearing without notifying the defendants</li>
+    </ul>
+
+    <p class="govuk-body">After you submit and pay for your claim, you'll have until the end of the next working day to make your application. If you do it any later, your application will not be considered and a hearing will be scheduled as normal.</p>
+
+    <p class="govuk-body">If you're not sure whether you need to make an application as part of your claim, you should get legal advice.</p>
+
+    <form method="post" action="/claims/applications" novalidate>
+
+      {{ govukRadios({
+        name: "planningApplication",
+        idPrefix: "planningApplication",
+        fieldset: {
+          legend: {
+            text: "Are you planning to make an application at the same time as your claim?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        hint: {
+          text: "After you've submitted your claim, there will be instructions on how to make an application"
+        },
+        errorMessage: errors.planningApplication if errors.planningApplication,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: planningApplication == 'yes'
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: planningApplication == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

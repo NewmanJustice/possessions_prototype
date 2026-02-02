@@ -669,6 +669,47 @@ async function navigateToUploadAdditionalDocument(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Applications (Screen 34) via no documents path
+ * Entry: Screen 32 → "No" → Screen 34
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToApplicationsViaNoDocuments(agent) {
+  await navigateToUnderlesseeMortgageeForfeitureRelief(agent);
+
+  // Screen 32: Select No (skip documents)
+  await agent
+    .post('/claims/underlessee-mortgagee-forfeiture-relief')
+    .send({
+      hasUnderlesseeOrMortgageeForRelief: 'no'
+    })
+    .expect(302);
+
+  return agent;
+}
+
+/**
+ * Navigate to Applications (Screen 34) via documents path
+ * Entry: Screen 33 → Continue → Screen 34
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToApplicationsViaDocuments(agent) {
+  await navigateToUploadAdditionalDocument(agent);
+
+  // Screen 33: Upload a document and continue
+  await agent
+    .post('/claims/upload-additional-document')
+    .send({
+      'documents[0][documentType]': 'contact-log',
+      'documents[0][description]': 'Test document'
+    })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -702,5 +743,7 @@ module.exports = {
   navigateToUnderlesseeOrMortgageeDetails,
   navigateToUnderlesseeMortgageeForfeitureRelief,
   navigateToUnderlesseeMortgageeForfeitureReliefViaDetails,
-  navigateToUploadAdditionalDocument
+  navigateToUploadAdditionalDocument,
+  navigateToApplicationsViaNoDocuments,
+  navigateToApplicationsViaDocuments
 };

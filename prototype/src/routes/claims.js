@@ -2787,6 +2787,76 @@ router.post('/upload-additional-document', (req, res) => {
 });
 
 // ============================================================================
+// Screen 34: Applications
+// ============================================================================
+// GET /claims/applications - Screen 34
+router.get('/applications', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const applicationsData = claim.applications || {};
+  const planningApplication = applicationsData.planningApplication || null;
+  const caseNumber = claim.caseNumber || null;
+
+  res.render('pages/claims/applications', {
+    pageTitle: 'Applications',
+    planningApplication,
+    caseNumber,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/applications - Screen 34
+router.post('/applications', (req, res) => {
+  const { planningApplication, action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action (dynamic based on whether documents were uploaded)
+  if (action === 'previous') {
+    const uploadedDocuments = claim.uploadedDocuments || [];
+    if (uploadedDocuments.length > 0) {
+      // User uploaded documents - go back to Screen 33
+      return res.redirect('/claims/upload-additional-document');
+    } else {
+      // User did not upload documents - go back to Screen 32
+      return res.redirect('/claims/underlessee-mortgagee-forfeiture-relief');
+    }
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  if (!planningApplication) {
+    errors.planningApplication = { text: 'Select yes if you are planning to make an application at the same time as your claim' };
+    errorList.push({ text: 'Select yes if you are planning to make an application at the same time as your claim', href: '#planningApplication' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    const caseNumber = claim.caseNumber || null;
+
+    return res.status(200).render('pages/claims/applications', {
+      pageTitle: 'Applications',
+      planningApplication: planningApplication || null,
+      caseNumber,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  claimService.updateClaim(req.session, 'applications', { planningApplication });
+
+  // Redirect to Screen 35
+  res.redirect('/claims/language-used');
+});
+
+// ============================================================================
 // Screen 26c: Housing Act (Demotion of tenancy)
 // ============================================================================
 // GET /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion
