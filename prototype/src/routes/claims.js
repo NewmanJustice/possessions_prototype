@@ -2857,6 +2857,69 @@ router.post('/applications', (req, res) => {
 });
 
 // ============================================================================
+// Screen 35: Language Used
+// ============================================================================
+// GET /claims/language-used - Screen 35
+router.get('/language-used', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const languageUsedData = claim.languageUsed || {};
+  const language = languageUsedData.language || null;
+  const caseNumber = claim.caseNumber || null;
+
+  res.render('pages/claims/language-used', {
+    pageTitle: 'Language used',
+    language,
+    caseNumber,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/language-used - Screen 35
+router.post('/language-used', (req, res) => {
+  const { language, action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/applications');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  if (!language) {
+    errors.language = { text: 'Select which language you used to complete this service' };
+    errorList.push({ text: 'Select which language you used to complete this service', href: '#language' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    const caseNumber = claim.caseNumber || null;
+
+    return res.status(200).render('pages/claims/language-used', {
+      pageTitle: 'Language used',
+      language: language || null,
+      caseNumber,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  claimService.updateClaim(req.session, 'languageUsed', { language });
+
+  // Redirect to Screen 36
+  res.redirect('/claims/completing-your-claim');
+});
+
+// ============================================================================
 // Screen 26c: Housing Act (Demotion of tenancy)
 // ============================================================================
 // GET /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion

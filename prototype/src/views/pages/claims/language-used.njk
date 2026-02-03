@@ -1,0 +1,90 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle -%}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Language used - {{ serviceName }} - GOV.UK
+{%- endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Language used</h1>
+
+    <p class="govuk-body">Case number: <strong>{{ caseNumber or '1234-5678-9101-1213' }}</strong></p>
+
+    <form method="post" action="/claims/language-used" novalidate>
+
+      {{ govukRadios({
+        name: "language",
+        idPrefix: "language",
+        fieldset: {
+          legend: {
+            text: "Which language did you use to complete this service?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        hint: {
+          text: "If someone else helped you to answer a question in this service, ask them if they answered any questions in Welsh. We'll use this to make sure your claim is processed correctly"
+        },
+        errorMessage: errors.language if errors.language,
+        items: [
+          {
+            value: "english",
+            text: "English",
+            checked: language == 'english'
+          },
+          {
+            value: "welsh",
+            text: "Welsh",
+            checked: language == 'welsh'
+          },
+          {
+            value: "english-and-welsh",
+            text: "English and Welsh",
+            checked: language == 'english-and-welsh'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

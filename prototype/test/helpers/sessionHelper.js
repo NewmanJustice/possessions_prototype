@@ -710,6 +710,24 @@ async function navigateToApplicationsViaDocuments(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Language Used (Screen 35)
+ * Entry: Screen 34 (Applications) → Continue → Screen 35
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToLanguageUsed(agent) {
+  await navigateToApplicationsViaNoDocuments(agent);
+
+  // Screen 34: Submit applications question
+  await agent
+    .post('/claims/applications')
+    .send({ planningApplication: 'no' })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -745,5 +763,6 @@ module.exports = {
   navigateToUnderlesseeMortgageeForfeitureReliefViaDetails,
   navigateToUploadAdditionalDocument,
   navigateToApplicationsViaNoDocuments,
-  navigateToApplicationsViaDocuments
+  navigateToApplicationsViaDocuments,
+  navigateToLanguageUsed
 };
