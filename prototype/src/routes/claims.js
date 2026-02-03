@@ -3066,6 +3066,37 @@ router.post('/statement-of-truth', (req, res) => {
 });
 
 // ============================================================================
+// Screen 38: Check Your Answers
+// ============================================================================
+// GET /claims/check-your-answers
+router.get('/check-your-answers', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+
+  res.render('pages/claims/check-your-answers', {
+    pageTitle: 'Check your answers',
+    caseNumber: claim.caseNumber || '1234-5678-9101-1213'
+  });
+});
+
+// POST /claims/check-your-answers
+router.post('/check-your-answers', (req, res) => {
+  const { action } = req.body;
+
+  // Handle Previous
+  if (action === 'previous') {
+    return res.redirect('/claims/statement-of-truth');
+  }
+
+  // Handle Cancel
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Default: Submit and pay - redirect to payment
+  res.redirect('/claims/pay-claim-fee');
+});
+
+// ============================================================================
 // Screen 26c: Housing Act (Demotion of tenancy)
 // ============================================================================
 // GET /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion

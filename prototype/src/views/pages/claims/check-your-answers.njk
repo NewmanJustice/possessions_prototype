@@ -1,0 +1,462 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle -%}
+  Check your answers - {{ serviceName }} - GOV.UK
+{%- endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    <h1 class="govuk-heading-l">Check your answers</h1>
+
+    <p class="govuk-body">Case number: <strong>{{ caseNumber or '1234-5678-9101-1213' }}</strong></p>
+
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: { text: "What is the address of the property you're claiming possession of?" },
+          value: { html: "10 Garden Drive<br>Luton<br>Bedfordshire<br>LU1 1AB" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "property address"
+            }]
+          }
+        },
+        {
+          key: { text: "Who is the claimant in this case?" },
+          value: { text: "A neighbourhood social housing" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "claimant"
+            }]
+          }
+        },
+        {
+          key: { text: "Who are you making a possession claim against?" },
+          value: { text: "Tenant" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "who you are claiming against"
+            }]
+          }
+        },
+        {
+          key: { text: "Is this the correct claimant name?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "correct claimant name"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you want to use this email address for notifications?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "email address for notifications"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you want documents to be sent to this address?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "documents address"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you want to provide a contact phone number?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "contact phone number"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you know the defendant's name?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "defendant name known"
+            }]
+          }
+        },
+        {
+          key: { text: "Defendant's first name" },
+          value: { text: "Billy" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "defendant's first name"
+            }]
+          }
+        },
+        {
+          key: { text: "Is the defendant's correspondence address the same as the address of the property you're claiming possession of?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "defendant correspondence address"
+            }]
+          }
+        },
+        {
+          key: { text: "What type of tenancy or licence is in place?" },
+          value: { text: "Secure tenancy" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "tenancy type"
+            }]
+          }
+        },
+        {
+          key: { text: "What date did the tenancy or licence start?" },
+          value: { text: "04/03/2015" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "tenancy start date"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you want to upload a copy of the tenancy or licence agreement? (Optional)" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "tenancy agreement upload"
+            }]
+          }
+        },
+        {
+          key: { text: "What are your grounds for possession?" },
+          value: { text: "Serious rent arrears (ground 10), Rent arrears (ground 11), Persistent delay in paying rent (ground 12)" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "grounds for possession"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you have any other grounds for possession?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "other grounds for possession"
+            }]
+          }
+        },
+        {
+          key: { text: "Have you followed the pre-action protocol?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "pre-action protocol"
+            }]
+          }
+        },
+        {
+          key: { text: "Have you attempted mediation with the defendant?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "mediation attempted"
+            }]
+          }
+        },
+        {
+          key: { text: "Have you tried to reach a settlement with the defendant/s?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "settlement attempted"
+            }]
+          }
+        },
+        {
+          key: { text: "Have you served notice to the defendant/s?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "notice served"
+            }]
+          }
+        },
+        {
+          key: { text: "How did you serve the notice?" },
+          value: { text: "First class post" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "notice service method"
+            }]
+          }
+        },
+        {
+          key: { text: "Date the document was posted" },
+          value: { text: "01/01/2024" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "document posted date"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you want to upload documents relating to the notice you served or the certificate of service? (Optional)" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "notice documents upload"
+            }]
+          }
+        },
+        {
+          key: { text: "How much is the rent?" },
+          value: { text: "625" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "rent amount"
+            }]
+          }
+        },
+        {
+          key: { text: "How frequently should rent be paid?" },
+          value: { text: "Weekly" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "rent frequency"
+            }]
+          }
+        },
+        {
+          key: { text: "Is the amount per day that unpaid rent should be charged at correct?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "daily rent amount"
+            }]
+          }
+        },
+        {
+          key: { text: "Upload the rent statement" },
+          value: { text: "rent-statement.pdf" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "rent statement"
+            }]
+          }
+        },
+        {
+          key: { text: "How much are the total rent arrears as shown on the rent statement?" },
+          value: { text: "3,000" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "total rent arrears"
+            }]
+          }
+        },
+        {
+          key: { text: "For the period shown on the rent statement, have any rent payments been paid by someone other than the defendant/s?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "third party payments"
+            }]
+          }
+        },
+        {
+          key: { text: "Where have the payments come from?" },
+          value: { text: "Housing benefit" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "payment source"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you want the court to make a judgment for the outstanding arrears?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "money judgement"
+            }]
+          }
+        },
+        {
+          key: { text: "Is there an underlessee or mortgagee entitled to claim relief to a forfeiture against the defendant?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "underlessee or mortgagee"
+            }]
+          }
+        },
+        {
+          key: { text: "Is there any information you'd like to provide about Tenancy Housing's Resilience?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "tenancy housing resilience"
+            }]
+          }
+        },
+        {
+          key: { text: "Is there any information you'd like to provide about your reasons for possession?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "reasons for possession"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you want to ask for your costs back?" },
+          value: { text: "Yes" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "claiming costs"
+            }]
+          }
+        },
+        {
+          key: { text: "Is there any other information you'd like to provide about your reasons for possession?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "additional reasons for possession"
+            }]
+          }
+        },
+        {
+          key: { text: "Do you want to upload any additional documents?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "additional documents"
+            }]
+          }
+        },
+        {
+          key: { text: "Are you claiming to expedite a warrant and/or seizure of the same time as your claim?" },
+          value: { text: "No" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "expedite warrant"
+            }]
+          }
+        },
+        {
+          key: { text: "Statement of truth completed by" },
+          value: { text: "Claimant" },
+          actions: {
+            items: [{
+              href: "#",
+              text: "Change",
+              visuallyHiddenText: "statement of truth"
+            }]
+          }
+        }
+      ]
+    }) }}
+
+    <form method="post" action="/claims/check-your-answers" novalidate>
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Submit and pay"
+        }) }}
+      </div>
+
+      <p class="govuk-body">
+        <a href="/case-list" class="govuk-link">Cancel</a>
+      </p>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

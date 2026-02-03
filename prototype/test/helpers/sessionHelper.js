@@ -764,6 +764,24 @@ async function navigateToStatementOfTruth(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Check Your Answers (Screen 38)
+ * Entry: Screen 37 (Statement of Truth) → Continue → Screen 38
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToCheckYourAnswers(agent) {
+  await navigateToStatementOfTruth(agent);
+
+  // Screen 37: Submit statement of truth
+  await agent
+    .post('/claims/statement-of-truth')
+    .send({ completedBy: 'claimant' })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -802,5 +820,6 @@ module.exports = {
   navigateToApplicationsViaDocuments,
   navigateToLanguageUsed,
   navigateToCompletingYourClaim,
-  navigateToStatementOfTruth
+  navigateToStatementOfTruth,
+  navigateToCheckYourAnswers
 };
