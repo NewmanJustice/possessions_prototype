@@ -2920,6 +2920,69 @@ router.post('/language-used', (req, res) => {
 });
 
 // ============================================================================
+// Screen 36: Completing Your Claim
+// ============================================================================
+// GET /claims/completing-your-claim - Screen 36
+router.get('/completing-your-claim', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const completionPreferenceData = claim.completionPreference || {};
+  const completionPreference = completionPreferenceData.preference || null;
+  const caseNumber = claim.caseNumber || null;
+
+  res.render('pages/claims/completing-your-claim', {
+    pageTitle: 'Completing your claim',
+    completionPreference,
+    caseNumber,
+    errors: {},
+    errorList: []
+  });
+});
+
+// POST /claims/completing-your-claim - Screen 36
+router.post('/completing-your-claim', (req, res) => {
+  const { completionPreference, action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/language-used');
+  }
+
+  // Validation for Continue action
+  const errors = {};
+  const errorList = [];
+
+  if (!completionPreference) {
+    errors.completionPreference = { text: 'Select what you would like to do next' };
+    errorList.push({ text: 'Select what you would like to do next', href: '#completionPreference' });
+  }
+
+  // If validation errors, re-render with errors
+  if (errorList.length > 0) {
+    const caseNumber = claim.caseNumber || null;
+
+    return res.status(200).render('pages/claims/completing-your-claim', {
+      pageTitle: 'Completing your claim',
+      completionPreference: completionPreference || null,
+      caseNumber,
+      errors,
+      errorList
+    });
+  }
+
+  // Store in session
+  claimService.updateClaim(req.session, 'completionPreference', { preference: completionPreference });
+
+  // Redirect to Screen 37
+  res.redirect('/claims/statement-of-truth');
+});
+
+// ============================================================================
 // Screen 26c: Housing Act (Demotion of tenancy)
 // ============================================================================
 // GET /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion

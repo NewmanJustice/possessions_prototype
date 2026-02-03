@@ -728,6 +728,24 @@ async function navigateToLanguageUsed(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Completing Your Claim (Screen 36)
+ * Entry: Screen 35 (Language Used) → Continue → Screen 36
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToCompletingYourClaim(agent) {
+  await navigateToLanguageUsed(agent);
+
+  // Screen 35: Submit language selection
+  await agent
+    .post('/claims/language-used')
+    .send({ language: 'english' })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -764,5 +782,6 @@ module.exports = {
   navigateToUploadAdditionalDocument,
   navigateToApplicationsViaNoDocuments,
   navigateToApplicationsViaDocuments,
-  navigateToLanguageUsed
+  navigateToLanguageUsed,
+  navigateToCompletingYourClaim
 };
