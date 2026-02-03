@@ -222,6 +222,17 @@ function validateStep(step, data) {
       }
       break;
 
+    case 'statement-of-truth': {
+      if (!data.completedBy) {
+        errors.push({
+          field: 'completedBy',
+          message: 'Select who completed this statement',
+          href: '#completedBy'
+        });
+      }
+      break;
+    }
+
     default:
       break;
   }

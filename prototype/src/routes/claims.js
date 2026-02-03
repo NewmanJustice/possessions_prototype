@@ -2983,6 +2983,89 @@ router.post('/completing-your-claim', (req, res) => {
 });
 
 // ============================================================================
+// Screen 37: Statement of Truth
+// ============================================================================
+// GET /claims/statement-of-truth - Screen 37
+router.get('/statement-of-truth', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const statementOfTruth = claim.statementOfTruth || {};
+  const errors = req.session.errors || [];
+  const values = req.session.values || {};
+
+  // Clear flash data
+  delete req.session.errors;
+  delete req.session.values;
+
+  // Transform errors to have 'text' property for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific errors
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = { text: error.message };
+  });
+
+  res.render('pages/claims/statement-of-truth', {
+    pageTitle: 'Statement of truth',
+    caseNumber: claim.caseNumber || '1234-5678-9101-1213',
+    completedBy: statementOfTruth.completedBy || values.completedBy || null,
+    errorList,
+    errors: fieldErrors
+  });
+});
+
+// POST /claims/statement-of-truth - Screen 37
+router.post('/statement-of-truth', (req, res) => {
+  const { completedBy, action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+
+  // Handle Cancel action
+  if (action === 'cancel') {
+    return res.redirect('/case-list');
+  }
+
+  // Handle Previous action
+  if (action === 'previous') {
+    return res.redirect('/claims/completing-your-claim');
+  }
+
+  // Validation for Continue action
+  const errors = claimService.validateStep('statement-of-truth', { completedBy });
+
+  // If validation errors, re-render with errors
+  if (errors.length > 0) {
+    // Transform errors to have 'text' property for error summary
+    const errorList = errors.map(error => ({
+      text: error.message,
+      href: error.href
+    }));
+
+    // Build field-specific errors
+    const fieldErrors = {};
+    errors.forEach(error => {
+      fieldErrors[error.field] = { text: error.message };
+    });
+
+    return res.status(200).render('pages/claims/statement-of-truth', {
+      pageTitle: 'Statement of truth',
+      caseNumber: claim.caseNumber || '1234-5678-9101-1213',
+      completedBy: completedBy || null,
+      errorList,
+      errors: fieldErrors
+    });
+  }
+
+  // Store in session
+  claimService.updateClaim(req.session, 'statementOfTruth', { completedBy });
+
+  // Redirect to Screen 38
+  res.redirect('/claims/check-your-answers');
+});
+
+// ============================================================================
 // Screen 26c: Housing Act (Demotion of tenancy)
 // ============================================================================
 // GET /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion

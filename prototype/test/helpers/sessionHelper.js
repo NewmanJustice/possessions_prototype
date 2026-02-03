@@ -746,6 +746,24 @@ async function navigateToCompletingYourClaim(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Statement of Truth (Screen 37)
+ * Entry: Screen 36 (Completing Your Claim) → Continue → Screen 37
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToStatementOfTruth(agent) {
+  await navigateToCompletingYourClaim(agent);
+
+  // Screen 36: Submit completion preference
+  await agent
+    .post('/claims/completing-your-claim')
+    .send({ completionPreference: 'submit-now' })
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -783,5 +801,6 @@ module.exports = {
   navigateToApplicationsViaNoDocuments,
   navigateToApplicationsViaDocuments,
   navigateToLanguageUsed,
-  navigateToCompletingYourClaim
+  navigateToCompletingYourClaim,
+  navigateToStatementOfTruth
 };
