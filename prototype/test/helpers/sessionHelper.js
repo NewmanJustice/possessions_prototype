@@ -782,6 +782,25 @@ async function navigateToCheckYourAnswers(agent) {
   return agent;
 }
 
+/**
+ * Navigate to Pay Claim Fee (Screen 39)
+ * Entry: Screen 38 (Check Your Answers) → Submit and pay → Screen 39
+ * This is the FINAL screen in the claims journey.
+ * @param {Object} agent - Supertest-session agent
+ * @returns {Object} Agent with session state
+ */
+async function navigateToPayClaimFee(agent) {
+  await navigateToCheckYourAnswers(agent);
+
+  // Screen 38: Submit and pay
+  await agent
+    .post('/claims/check-your-answers')
+    .send({})
+    .expect(302);
+
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
   createPartialAuthSession,
@@ -821,5 +840,6 @@ module.exports = {
   navigateToLanguageUsed,
   navigateToCompletingYourClaim,
   navigateToStatementOfTruth,
-  navigateToCheckYourAnswers
+  navigateToCheckYourAnswers,
+  navigateToPayClaimFee
 };

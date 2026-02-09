@@ -3097,6 +3097,19 @@ router.post('/check-your-answers', (req, res) => {
 });
 
 // ============================================================================
+// Screen 39: Pay Claim Fee
+// ============================================================================
+// GET /claims/pay-claim-fee - Final screen: payment confirmation page
+router.get('/pay-claim-fee', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+
+  res.render('pages/claims/pay-claim-fee', {
+    pageTitle: 'Pay claim fee',
+    caseNumber: claim.caseNumber || '1234-5678-9101-1213'
+  });
+});
+
+// ============================================================================
 // Screen 26c: Housing Act (Demotion of tenancy)
 // ============================================================================
 // GET /claims/select-housing-act-demotion - Screen 26c: Housing Act selection for demotion
