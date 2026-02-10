@@ -241,40 +241,89 @@ async function initializeAnnotator() {
     <script>
       // Inject Analytics link into sidebar navigation
       (function() {
+        let attempts = 0;
+        const maxAttempts = 20;
+
         function addAnalyticsLink() {
-          // Look for the sidebar navigation
-          const nav = document.querySelector('nav, [class*="sidebar"], [class*="nav"]');
-          if (!nav) {
-            setTimeout(addAnalyticsLink, 500);
-            return;
-          }
           // Check if already added
           if (document.getElementById('analytics-nav-link')) return;
-          // Find the last link in navigation
-          const links = nav.querySelectorAll('a');
-          if (links.length === 0) {
-            setTimeout(addAnalyticsLink, 500);
+
+          attempts++;
+          if (attempts > maxAttempts) {
+            console.log('Analytics link injection: max attempts reached');
             return;
           }
+
+          // Try multiple selectors to find the navigation
+          const selectors = [
+            'aside a',
+            'nav a',
+            '[class*="sidebar"] a',
+            '[class*="Sidebar"] a',
+            '[class*="menu"] a',
+            '[class*="Menu"] a',
+            '[class*="nav"] a:not([class*="analytics"])'
+          ];
+
+          let navLinks = null;
+          let container = null;
+
+          for (const selector of selectors) {
+            const links = document.querySelectorAll(selector);
+            if (links.length > 0) {
+              navLinks = links;
+              container = links[0].parentElement;
+              break;
+            }
+          }
+
+          if (!navLinks || navLinks.length === 0) {
+            setTimeout(addAnalyticsLink, 300);
+            return;
+          }
+
           // Create analytics link
           const analyticsLink = document.createElement('a');
           analyticsLink.id = 'analytics-nav-link';
           analyticsLink.href = '/__prototype-annotator/analytics';
           analyticsLink.textContent = 'Analytics';
-          analyticsLink.style.cssText = links[0].style.cssText || '';
-          analyticsLink.className = links[0].className || '';
-          // Insert after last link
-          const lastLink = links[links.length - 1];
-          lastLink.parentNode.insertBefore(analyticsLink, lastLink.nextSibling);
+
+          // Copy styles from existing link
+          const existingLink = navLinks[0];
+          analyticsLink.className = existingLink.className || '';
+
+          // Copy computed styles if className didn't work
+          const computedStyle = window.getComputedStyle(existingLink);
+          if (!analyticsLink.className) {
+            analyticsLink.style.display = computedStyle.display;
+            analyticsLink.style.padding = computedStyle.padding;
+            analyticsLink.style.color = computedStyle.color;
+            analyticsLink.style.textDecoration = computedStyle.textDecoration;
+            analyticsLink.style.fontSize = computedStyle.fontSize;
+          }
+
+          // Insert at the end of the container
+          const lastLink = navLinks[navLinks.length - 1];
+          if (lastLink.parentNode) {
+            lastLink.parentNode.appendChild(analyticsLink);
+            console.log('Analytics link added to annotator dashboard');
+          }
         }
+
         // Run when DOM is ready and after SPA renders
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', () => setTimeout(addAnalyticsLink, 500));
         } else {
           setTimeout(addAnalyticsLink, 500);
         }
+
         // Also observe for SPA navigation changes
-        const observer = new MutationObserver(() => addAnalyticsLink());
+        const observer = new MutationObserver(() => {
+          if (!document.getElementById('analytics-nav-link')) {
+            attempts = 0;
+            addAnalyticsLink();
+          }
+        });
         observer.observe(document.body, { childList: true, subtree: true });
       })();
     </script>
