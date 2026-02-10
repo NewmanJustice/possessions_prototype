@@ -1,288 +1,129 @@
-{% extends "layouts/main.njk" %}
+{% extends "layouts/analytics.njk" %}
 
-{% block pageTitle %}Behaviour - {{ serviceName }}{% endblock %}
-
-{% block head %}
-{{ super() }}
-<style>
-  .analytics-layout {
-    display: flex;
-    min-height: calc(100vh - 200px);
-    margin: -30px -15px;
-    font-family: "GDS Transport", arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  .analytics-sidebar {
-    width: 220px;
-    background: #f3f2f1;
-    border-right: 1px solid #b1b4b6;
-    padding: 20px 0;
-    flex-shrink: 0;
-  }
-  .analytics-sidebar a {
-    display: block;
-    padding: 10px 20px;
-    color: #0b0c0c;
-    text-decoration: none;
-    font-size: 16px;
-    border-left: 4px solid transparent;
-  }
-  .analytics-sidebar a:hover {
-    background: #e8e8e8;
-  }
-  .analytics-sidebar a.active {
-    background: #fff;
-    border-left-color: #1d70b8;
-    font-weight: bold;
-  }
-  .analytics-sidebar .nav-section {
-    padding: 15px 20px 5px;
-    font-size: 12px;
-    text-transform: uppercase;
-    color: #505a5f;
-    font-weight: bold;
-  }
-  .analytics-content {
-    flex: 1;
-    padding: 30px;
-    background: #fff;
-  }
-  .time-filter {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .time-filter a {
-    padding: 8px 16px;
-    border: 1px solid #b1b4b6;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #0b0c0c;
-    font-size: 14px;
-  }
-  .time-filter a.active {
-    background: #1d70b8;
-    color: #fff;
-    border-color: #1d70b8;
-  }
-  .time-filter a:hover:not(.active) {
-    background: #f3f2f1;
-  }
-  .chart-container {
-    background: #fff;
-    border: 1px solid #b1b4b6;
-    border-radius: 4px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  .chart-container h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 18px;
-  }
-  .chart-bar {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .chart-bar .label {
-    width: 250px;
-    font-size: 14px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .chart-bar .bar-container {
-    flex: 1;
-    height: 24px;
-    background: #f3f2f1;
-    margin: 0 10px;
-    border-radius: 2px;
-  }
-  .chart-bar .bar {
-    height: 100%;
-    border-radius: 2px;
-    min-width: 2px;
-  }
-  .chart-bar .count {
-    width: 60px;
-    text-align: right;
-    font-size: 14px;
-    font-weight: bold;
-  }
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .data-table th, .data-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #b1b4b6;
-  }
-  .data-table th {
-    font-weight: bold;
-    background: #f3f2f1;
-  }
-  .data-table tr:hover {
-    background: #f8f8f8;
-  }
-  .error-field {
-    display: inline-block;
-    padding: 2px 8px;
-    background: #f6d7d2;
-    color: #d4351c;
-    border-radius: 3px;
-    font-size: 12px;
-    margin: 2px;
-  }
-  .metric-card {
-    background: #f3f2f1;
-    border-radius: 4px;
-    padding: 15px 20px;
-    display: inline-block;
-    margin-right: 15px;
-    margin-bottom: 15px;
-  }
-  .metric-card .label {
-    font-size: 12px;
-    color: #505a5f;
-    text-transform: uppercase;
-  }
-  .metric-card .value {
-    font-size: 28px;
-    font-weight: bold;
-    color: #0b0c0c;
-  }
-</style>
-{% endblock %}
+{% set activePage = 'behaviour' %}
 
 {% block content %}
-<div class="analytics-layout">
-  <nav class="analytics-sidebar">
-    <div class="nav-section">Reports</div>
-    <a href="{{ basePath }}">Overview</a>
-    <a href="{{ basePath }}/realtime">Real-time</a>
-    <div class="nav-section">Engagement</div>
-    <a href="{{ basePath }}/pages">Pages</a>
-    <a href="{{ basePath }}/behaviour" class="active">Behaviour</a>
-    <div class="nav-section">Tools</div>
-    <a href="/__prototype-annotator/dashboard">Annotations</a>
-    <a href="/case-list">← Back to prototype</a>
-  </nav>
+<div class="page-header">
+  <h1 class="page-title">User Behaviour</h1>
+  <p class="page-subtitle">Navigation patterns and validation errors</p>
+</div>
 
-  <main class="analytics-content">
-    <h1 class="govuk-heading-xl" style="margin-bottom: 10px;">User Behaviour</h1>
-    <p class="govuk-body" style="color: #505a5f; margin-bottom: 20px;">Navigation patterns and validation errors</p>
+<div class="time-filter">
+  <a href="?days=1" {% if days == 1 %}class="active"{% endif %}>Today</a>
+  <a href="?days=7" {% if days == 7 %}class="active"{% endif %}>Last 7 days</a>
+  <a href="?days=30" {% if days == 30 %}class="active"{% endif %}>Last 30 days</a>
+  <a href="?days=90" {% if days == 90 %}class="active"{% endif %}>Last 90 days</a>
+</div>
 
-    <div class="time-filter">
-      <a href="?days=1" {% if days == 1 %}class="active"{% endif %}>Today</a>
-      <a href="?days=7" {% if days == 7 %}class="active"{% endif %}>Last 7 days</a>
-      <a href="?days=30" {% if days == 30 %}class="active"{% endif %}>Last 30 days</a>
-      <a href="?days=90" {% if days == 90 %}class="active"{% endif %}>Last 90 days</a>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Navigation Actions</h3>
     </div>
-
-    <div class="govuk-grid-row">
-      <div class="govuk-grid-column-one-half">
-        <div class="chart-container">
-          <h3>Navigation Actions</h3>
-          {% if navigation %}
-            {% set totalNav = (navigation.continue or 0) + (navigation.previous or 0) + (navigation.cancel or 0) %}
-            {% if totalNav > 0 %}
-            <div class="metric-card">
-              <div class="label">Continue</div>
-              <div class="value" style="color: #00703c;">{{ navigation.continue or 0 }}</div>
-            </div>
-            <div class="metric-card">
-              <div class="label">Previous</div>
-              <div class="value" style="color: #f47738;">{{ navigation.previous or 0 }}</div>
-            </div>
-            <div class="metric-card">
-              <div class="label">Cancel</div>
-              <div class="value" style="color: #d4351c;">{{ navigation.cancel or 0 }}</div>
-            </div>
-
-            <div style="margin-top: 20px;">
-              <div class="chart-bar">
-                <div class="label">Continue</div>
-                <div class="bar-container">
-                  <div class="bar" style="width: {{ ((navigation.continue or 0) / totalNav * 100) }}%; background: #00703c;"></div>
-                </div>
-                <div class="count">{{ ((navigation.continue or 0) / totalNav * 100) | round }}%</div>
-              </div>
-              <div class="chart-bar">
-                <div class="label">Previous</div>
-                <div class="bar-container">
-                  <div class="bar" style="width: {{ ((navigation.previous or 0) / totalNav * 100) }}%; background: #f47738;"></div>
-                </div>
-                <div class="count">{{ ((navigation.previous or 0) / totalNav * 100) | round }}%</div>
-              </div>
-              <div class="chart-bar">
-                <div class="label">Cancel</div>
-                <div class="bar-container">
-                  <div class="bar" style="width: {{ ((navigation.cancel or 0) / totalNav * 100) }}%; background: #d4351c;"></div>
-                </div>
-                <div class="count">{{ ((navigation.cancel or 0) / totalNav * 100) | round }}%</div>
-              </div>
-            </div>
-            {% else %}
-            <p class="govuk-body">No navigation data yet</p>
-            {% endif %}
-          {% else %}
-            <p class="govuk-body">No navigation data yet</p>
-          {% endif %}
+    <div class="card-body">
+      {% if navigation %}
+        {% set totalNav = (navigation.continue or 0) + (navigation.previous or 0) + (navigation.cancel or 0) %}
+        {% if totalNav > 0 %}
+        <div class="stats-grid" style="margin-bottom: 20px;">
+          <div class="stat-card">
+            <div class="stat-label">Continue</div>
+            <div class="stat-value" style="color: var(--color-success);">{{ navigation.continue or 0 }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Previous</div>
+            <div class="stat-value" style="color: var(--color-warning);">{{ navigation.previous or 0 }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cancel</div>
+            <div class="stat-value" style="color: var(--color-danger);">{{ navigation.cancel or 0 }}</div>
+          </div>
         </div>
-      </div>
 
-      <div class="govuk-grid-column-one-half">
-        <div class="chart-container">
-          <h3>Drop-off Points</h3>
-          {% if dropOffs and dropOffs.length > 0 %}
-            {% set maxDropOffs = dropOffs[0].count %}
-            {% for drop in dropOffs.slice(0, 5) %}
-            <div class="chart-bar">
-              <div class="label" title="{{ drop.url }}">{{ drop.url }}</div>
-              <div class="bar-container">
-                <div class="bar" style="width: {{ (drop.count / maxDropOffs * 100) }}%; background: #d4351c;"></div>
-              </div>
-              <div class="count">{{ drop.count }}</div>
-            </div>
-            {% endfor %}
-          {% else %}
-            <p class="govuk-body">No drop-off data yet</p>
-          {% endif %}
+        <div class="chart-bar">
+          <div class="label">Continue</div>
+          <div class="bar-container">
+            <div class="bar" style="width: {{ ((navigation.continue or 0) / totalNav * 100) }}%; background: var(--color-success);"></div>
+          </div>
+          <div class="count">{{ ((navigation.continue or 0) / totalNav * 100) | round }}%</div>
         </div>
-      </div>
-    </div>
-
-    <div class="chart-container">
-      <h3>Validation Errors</h3>
-      <p class="govuk-body" style="color: #505a5f; margin-bottom: 15px;">
-        Fields that users most frequently get wrong
-      </p>
-      {% if validationErrors and validationErrors.length > 0 %}
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Page</th>
-            <th>Field</th>
-            <th style="text-align: right;">Error Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for error in validationErrors %}
-          <tr>
-            <td><a href="{{ error.url }}" class="govuk-link">{{ error.url }}</a></td>
-            <td><span class="error-field">{{ error.field }}</span></td>
-            <td style="text-align: right; font-weight: bold;">{{ error.count }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+        <div class="chart-bar">
+          <div class="label">Previous</div>
+          <div class="bar-container">
+            <div class="bar" style="width: {{ ((navigation.previous or 0) / totalNav * 100) }}%; background: var(--color-warning);"></div>
+          </div>
+          <div class="count">{{ ((navigation.previous or 0) / totalNav * 100) | round }}%</div>
+        </div>
+        <div class="chart-bar">
+          <div class="label">Cancel</div>
+          <div class="bar-container">
+            <div class="bar" style="width: {{ ((navigation.cancel or 0) / totalNav * 100) }}%; background: var(--color-danger);"></div>
+          </div>
+          <div class="count">{{ ((navigation.cancel or 0) / totalNav * 100) | round }}%</div>
+        </div>
+        {% else %}
+          <div class="empty-state">No navigation data yet</div>
+        {% endif %}
       {% else %}
-      <p class="govuk-body">No validation errors recorded yet. This is good - users are finding it easy to complete forms correctly.</p>
+        <div class="empty-state">No navigation data yet</div>
       {% endif %}
     </div>
-  </main>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Drop-off Points</h3>
+    </div>
+    <div class="card-body">
+      {% if dropOffs and dropOffs.length > 0 %}
+        {% set maxDropOffs = dropOffs[0].count %}
+        {% for drop in dropOffs.slice(0, 5) %}
+        <div class="chart-bar">
+          <div class="label" title="{{ drop.url }}">{{ drop.url }}</div>
+          <div class="bar-container">
+            <div class="bar" style="width: {{ (drop.count / maxDropOffs * 100) }}%; background: var(--color-danger);"></div>
+          </div>
+          <div class="count">{{ drop.count }}</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">No drop-off data yet</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Validation Errors</h3>
+  </div>
+  <div class="card-body">
+    <p style="color: var(--color-gray-500); font-size: 13px; margin-bottom: 16px;">
+      Fields that users most frequently get wrong
+    </p>
+    {% if validationErrors and validationErrors.length > 0 %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Page</th>
+          <th>Field</th>
+          <th style="text-align: right;">Error Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for error in validationErrors %}
+        <tr>
+          <td><a href="{{ error.url }}">{{ error.url }}</a></td>
+          <td><span class="badge badge-red">{{ error.field }}</span></td>
+          <td style="text-align: right; font-weight: 600;">{{ error.count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty-state">
+        No validation errors recorded yet. This is good - users are finding it easy to complete forms correctly.
+      </div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
