@@ -196,38 +196,61 @@ async function initializeAnnotator() {
 
     // Workaround: Serve annotator client files manually (package has path bugs)
     const annotatorClientPath = path.join(__dirname, '../node_modules/prototype-annotator/client/dist');
+    const overlayJsPath = path.join(annotatorClientPath, 'overlay.js');
+    const overlayExists = fs.existsSync(overlayJsPath);
 
-    // Serve overlay.js (only if user has access)
+    if (!overlayExists) {
+      console.warn('Prototype Annotator: overlay.js not found, overlay features disabled');
+    }
+
+    // Serve overlay.js (only if user has access and file exists)
     app.get('/__prototype-annotator/overlay.js', (req, res, next) => {
-      if (req.session?.accessGranted) {
-        return res.sendFile(path.join(annotatorClientPath, 'overlay.js'));
+      if (req.session?.accessGranted && overlayExists) {
+        return res.sendFile(overlayJsPath);
+      }
+      // Return 204 No Content instead of 500 error when file doesn't exist
+      if (!overlayExists) {
+        return res.status(204).end();
       }
       next();
     });
 
     // Serve dashboard static assets (CSS, JS) - only if user has access
-    const dashboardStatic = express.static(path.join(annotatorClientPath, 'dashboard'));
+    const dashboardPath = path.join(annotatorClientPath, 'dashboard');
+    const dashboardExists = fs.existsSync(dashboardPath);
+    const dashboardStatic = dashboardExists ? express.static(dashboardPath) : null;
+
+    if (!dashboardExists) {
+      console.warn('Prototype Annotator: dashboard not found, dashboard features disabled');
+    }
+
     app.use('/__prototype-annotator/dashboard', (req, res, next) => {
-      if (!req.session?.accessGranted) {
+      if (!req.session?.accessGranted || !dashboardStatic) {
         return next('route');
       }
       dashboardStatic(req, res, next);
     });
 
-    // Serve dashboard index.html for SPA routes - only if user has access
+    // Serve dashboard index.html for SPA routes - only if user has access and files exist
     app.get('/__prototype-annotator/dashboard', (req, res, next) => {
-      if (req.session?.accessGranted) {
-        return res.sendFile(path.join(annotatorClientPath, 'dashboard', 'index.html'));
+      if (req.session?.accessGranted && dashboardExists) {
+        return res.sendFile(path.join(dashboardPath, 'index.html'));
+      }
+      if (!dashboardExists) {
+        return res.status(404).send('Dashboard not available');
       }
       next();
     });
     app.get('/__prototype-annotator/dashboard/*', (req, res, next) => {
-      if (req.session?.accessGranted) {
+      if (req.session?.accessGranted && dashboardExists) {
         // Check if this is an asset request (has file extension)
         if (req.path.includes('/assets/')) {
           return next(); // Let static middleware handle it
         }
-        return res.sendFile(path.join(annotatorClientPath, 'dashboard', 'index.html'));
+        return res.sendFile(path.join(dashboardPath, 'index.html'));
+      }
+      if (!dashboardExists) {
+        return res.status(404).send('Dashboard not available');
       }
       next();
     });
