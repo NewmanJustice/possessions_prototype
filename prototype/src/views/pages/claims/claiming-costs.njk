@@ -1,0 +1,87 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Claiming costs - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Claiming costs</h1>
+
+    <p class="govuk-body">Case number: <strong>1234-5678-9101-1213</strong></p>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <form method="post" action="/claims/claiming-costs" novalidate>
+
+      {{ govukRadios({
+        name: "claimingCosts",
+        idPrefix: "claimingCosts",
+        fieldset: {
+          legend: {
+            text: "Do you want to ask for your costs back?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        hint: {
+          text: "You do not need to provide the exact amount at this stage, but a judge will request a schedule of costs at the hearing"
+        },
+        errorMessage: errors.claimingCosts if errors.claimingCosts,
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            checked: claimingCosts == 'yes'
+          },
+          {
+            value: "no",
+            text: "No",
+            checked: claimingCosts == 'no'
+          }
+        ]
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Cancel",
+          name: "action",
+          value: "cancel",
+          classes: "govuk-button--secondary"
+        }) }}
+      </div>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}
