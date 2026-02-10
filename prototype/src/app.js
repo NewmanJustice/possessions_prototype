@@ -86,6 +86,22 @@ app.use((req, res, next) => {
   next();
 });
 
+// Journey map middleware - inject data for claims pages
+const journeyMapService = require('./services/journeyMapService');
+app.use((req, res, next) => {
+  // Check if this is a claims page
+  const isClaimsPage = req.originalUrl.startsWith('/claims/');
+  res.locals.isClaimsPage = isClaimsPage;
+
+  if (isClaimsPage) {
+    const journeyMapData = journeyMapService.getJourneyMapData(req.session, req.originalUrl);
+    res.locals.journeyZones = journeyMapData.zones;
+    res.locals.currentStationId = journeyMapData.currentStationId;
+    res.locals.selectedBranch = journeyMapData.selectedBranch;
+  }
+  next();
+});
+
 // Serve static assets from GOV.UK Frontend
 app.use(
   '/govuk',

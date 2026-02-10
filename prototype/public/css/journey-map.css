@@ -1,0 +1,277 @@
+/**
+ * Journey Map Styles
+ * Tube-map inspired visualisation for the claims journey.
+ */
+
+/* Overlay and Backdrop */
+.journey-map-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.journey-map-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Panel */
+.journey-map-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  max-width: 100%;
+  background-color: #ffffff;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-out;
+  font-family: "GDS Transport", arial, sans-serif;
+}
+
+.journey-map-overlay:not([hidden]) .journey-map-panel {
+  transform: translateX(0);
+}
+
+/* Header */
+.journey-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #b1b4b6;
+  flex-shrink: 0;
+}
+
+.journey-map-header h2 {
+  margin: 0;
+}
+
+.journey-map-close {
+  background: none;
+  border: none;
+  color: #1d70b8;
+  cursor: pointer;
+  font-size: 19px;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.journey-map-close:hover {
+  color: #003078;
+}
+
+.journey-map-close:focus {
+  outline: 3px solid #ffdd00;
+  outline-offset: 0;
+  background-color: #ffdd00;
+  color: #0b0c0c;
+  text-decoration: none;
+}
+
+/* Content */
+.journey-map-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Zone */
+.journey-map-zone {
+  margin-bottom: 30px;
+}
+
+.journey-map-zone:last-child {
+  margin-bottom: 0;
+}
+
+.journey-map-zone-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b0c0c;
+  margin: 0 0 15px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Line container */
+.journey-map-line {
+  position: relative;
+  padding-left: 30px;
+}
+
+.journey-map-line::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  background-color: #b1b4b6;
+}
+
+/* Zone colour modifiers for lines */
+.journey-map-line--green::before { background-color: #00703c; }
+.journey-map-line--blue::before { background-color: #1d70b8; }
+.journey-map-line--purple::before { background-color: #4c2c92; }
+.journey-map-line--orange::before { background-color: #f47738; }
+.journey-map-line--red::before { background-color: #d4351c; }
+.journey-map-line--yellow::before { background-color: #ffdd00; }
+.journey-map-line--grey::before { background-color: #505a5f; }
+.journey-map-line--black::before { background-color: #0b0c0c; }
+
+/* Station */
+.journey-map-station {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.journey-map-station:last-child {
+  margin-bottom: 0;
+}
+
+/* Station Marker */
+.journey-map-station-marker {
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 3px solid #b1b4b6;
+  box-sizing: border-box;
+}
+
+/* Marker colours by zone */
+.journey-map-line--green .journey-map-station-marker { border-color: #00703c; }
+.journey-map-line--blue .journey-map-station-marker { border-color: #1d70b8; }
+.journey-map-line--purple .journey-map-station-marker { border-color: #4c2c92; }
+.journey-map-line--orange .journey-map-station-marker { border-color: #f47738; }
+.journey-map-line--red .journey-map-station-marker { border-color: #d4351c; }
+.journey-map-line--yellow .journey-map-station-marker { border-color: #ffdd00; }
+.journey-map-line--grey .journey-map-station-marker { border-color: #505a5f; }
+.journey-map-line--black .journey-map-station-marker { border-color: #0b0c0c; }
+
+/* Station states */
+/* Completed - grey out */
+[data-status="completed"] .journey-map-station-marker {
+  background-color: #b1b4b6;
+  border-color: #b1b4b6;
+}
+
+[data-status="completed"] .journey-map-station-title {
+  color: #505a5f;
+}
+
+/* Current - highlighted */
+[data-status="current"] .journey-map-station-marker {
+  background-color: #1d70b8;
+  border-color: #1d70b8;
+  box-shadow: 0 0 0 3px #ffdd00;
+}
+
+[data-status="current"] .journey-map-station-title {
+  font-weight: 700;
+  color: #0b0c0c;
+}
+
+/* Upcoming - full colour */
+[data-status="upcoming"] .journey-map-station-marker {
+  background-color: #ffffff;
+}
+
+/* Station Title Button */
+.journey-map-station-title {
+  background: none;
+  border: none;
+  color: #1d70b8;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+  display: block;
+  width: 100%;
+}
+
+.journey-map-station-title:hover {
+  color: #003078;
+}
+
+.journey-map-station-title:focus {
+  outline: 3px solid #ffdd00;
+  outline-offset: 0;
+  background-color: #ffdd00;
+  color: #0b0c0c;
+  text-decoration: none;
+}
+
+/* Station Detail */
+.journey-map-station-detail {
+  margin-top: 10px;
+  padding: 15px;
+  background-color: #f3f2f1;
+  border-left: 4px solid #1d70b8;
+}
+
+.journey-map-station-question {
+  font-size: 16px;
+  color: #0b0c0c;
+  margin: 0 0 10px 0;
+}
+
+.journey-map-station-requirements-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0b0c0c;
+  margin: 0 0 5px 0;
+}
+
+.journey-map-station-requirements {
+  font-size: 14px;
+  color: #0b0c0c;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.journey-map-station-requirements li {
+  margin-bottom: 5px;
+}
+
+.journey-map-station-requirements li:last-child {
+  margin-bottom: 0;
+}
+
+/* Trigger link container */
+.journey-map-trigger {
+  margin-bottom: 0;
+  padding-top: 10px;
+  text-align: right;
+}
+
+.journey-map-trigger a {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .journey-map-panel {
+    width: 100%;
+  }
+}
+
+/* Body overflow when panel is open */
+body.journey-map-open {
+  overflow: hidden;
+}

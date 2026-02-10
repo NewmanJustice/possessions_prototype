@@ -12,6 +12,9 @@
 {% block head %}
   <link href="/govuk/govuk-frontend.min.css" rel="stylesheet">
   <link href="/public/css/custom.css" rel="stylesheet">
+  {% if isClaimsPage %}
+  <link href="/public/css/journey-map.css" rel="stylesheet">
+  {% endif %}
   {% if errors and errors.length > 0 %}
   <script>
     window.addEventListener('DOMContentLoaded', function() {
@@ -29,6 +32,7 @@
     homepageUrl: "/case-list",
     serviceName: serviceName,
     serviceUrl: "/case-list",
+    containerClasses: "govuk-width-container",
     navigation: [
       {
         href: "/case-list",
@@ -70,6 +74,12 @@
     </p>
   </div>
 
+  {% if isClaimsPage %}
+  <div class="journey-map-trigger">
+    <a href="#" class="govuk-link" id="open-journey-map">View journey map</a>
+  </div>
+  {% endif %}
+
   {% if showBackLink %}
     {{ govukBackLink({
       text: "Back",
@@ -101,4 +111,8 @@
   <script>
     window.GOVUKFrontend.initAll();
   </script>
+  {% if isClaimsPage %}
+    {% include "partials/journey-map-panel.njk" %}
+    <script src="/public/js/journey-map.js"></script>
+  {% endif %}
 {% endblock %}

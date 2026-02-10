@@ -1,0 +1,60 @@
+{#
+  Journey Map Panel
+  A slide-out panel showing the claim journey progress as a tube-map inspired visualisation.
+#}
+<div class="journey-map-overlay" id="journey-map-overlay" hidden>
+  <div class="journey-map-backdrop" id="journey-map-backdrop"></div>
+  <div class="journey-map-panel"
+       id="journey-map-panel"
+       role="dialog"
+       aria-modal="true"
+       aria-labelledby="journey-map-title"
+       tabindex="-1">
+
+    <div class="journey-map-header">
+      <h2 id="journey-map-title" class="govuk-heading-m">Your claim journey</h2>
+      <button type="button"
+              class="journey-map-close govuk-link"
+              id="close-journey-map"
+              aria-label="Close journey map">
+        Close
+      </button>
+    </div>
+
+    <div class="journey-map-content">
+      {% for zone in journeyZones %}
+        <div class="journey-map-zone" data-zone-id="{{ zone.id }}">
+          <h3 class="journey-map-zone-heading">{{ zone.name }}</h3>
+          <div class="journey-map-line journey-map-line--{{ zone.colour }}">
+            {% for station in zone.stations %}
+              <div class="journey-map-station"
+                   data-station-id="{{ station.id }}"
+                   data-status="{{ station.status }}">
+                <div class="journey-map-station-marker"></div>
+                <button type="button"
+                        class="journey-map-station-title"
+                        aria-expanded="{{ 'true' if station.status == 'current' else 'false' }}"
+                        aria-controls="station-detail-{{ station.id }}">
+                  {{ station.title }}
+                </button>
+                <div class="journey-map-station-detail"
+                     id="station-detail-{{ station.id }}"
+                     {% if station.status != 'current' %}hidden{% endif %}>
+                  <p class="journey-map-station-question">{{ station.question }}</p>
+                  {% if station.requirements and station.requirements.length %}
+                  <p class="journey-map-station-requirements-label">You will need:</p>
+                  <ul class="journey-map-station-requirements">
+                    {% for req in station.requirements %}
+                    <li>{{ req }}</li>
+                    {% endfor %}
+                  </ul>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
