@@ -2218,15 +2218,107 @@ router.post('/alternative-to-possession', (req, res) => {
 });
 
 // ============================================================================
-// Screen 26a: Housing Act (Suspension) (PLACEHOLDER)
+// Screen 26a: Housing Act (Suspension of right to buy)
 // ============================================================================
-// GET /claims/select-housing-act-suspension - Screen 26a placeholder
+
+/**
+ * Validates select housing act suspension form submission
+ * @param {Object} body - Request body
+ * @returns {Array} Array of error objects
+ */
+function validateSelectHousingActSuspension(body) {
+  const errors = [];
+
+  // Housing Act selection required
+  if (!body.suspensionHousingAct) {
+    errors.push({
+      field: 'suspensionHousingAct',
+      href: '#suspensionHousingAct',
+      text: 'Select the Housing Act'
+    });
+  }
+
+  // Other name required when Other selected
+  if (body.suspensionHousingAct === 'other' && !body.housingActOtherName?.trim()) {
+    errors.push({
+      field: 'housingActOtherName',
+      href: '#housingActOtherName',
+      text: 'Enter the name of the Housing Act'
+    });
+  }
+
+  // Section required
+  if (!body.section?.trim()) {
+    errors.push({
+      field: 'section',
+      href: '#section',
+      text: 'Enter the Housing Act section'
+    });
+  } else if (body.section.length > 50) {
+    // Section max length
+    errors.push({
+      field: 'section',
+      href: '#section',
+      text: 'Enter 50 characters or fewer'
+    });
+  }
+
+  return errors;
+}
+
+// GET /claims/select-housing-act-suspension - Screen 26a
 router.get('/select-housing-act-suspension', (req, res) => {
-  res.send('Screen 26a: Housing Act (Suspension) - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const suspensionOrder = claim.suspensionOrder || {};
+
+  res.render('pages/claims/select-housing-act-suspension', {
+    pageTitle: 'Housing Act',
+    selectedHousingAct: suspensionOrder.housingAct || null,
+    otherActName: suspensionOrder.housingActOtherName || '',
+    section: suspensionOrder.section || '',
+    errors: {},
+    errorList: []
+  });
 });
 
-// POST /claims/select-housing-act-suspension - Screen 26a placeholder
+// POST /claims/select-housing-act-suspension - Screen 26a
 router.post('/select-housing-act-suspension', (req, res) => {
+  const { suspensionHousingAct, housingActOtherName, section, action } = req.body;
+
+  // Handle Previous navigation
+  if (action === 'previous') {
+    return res.redirect('/claims/alternative-to-possession');
+  }
+
+  // Validate
+  const errorList = validateSelectHousingActSuspension(req.body);
+
+  if (errorList.length > 0) {
+    // Convert to errors object for template
+    const errors = {};
+    errorList.forEach(err => {
+      errors[err.field] = { text: err.text };
+    });
+
+    return res.render('pages/claims/select-housing-act-suspension', {
+      pageTitle: 'Housing Act',
+      selectedHousingAct: suspensionHousingAct || null,
+      otherActName: housingActOtherName || '',
+      section: section || '',
+      errors,
+      errorList
+    });
+  }
+
+  // Save to session
+  const suspensionOrder = {
+    housingAct: suspensionHousingAct,
+    housingActOtherName: suspensionHousingAct === 'other' ? housingActOtherName : null,
+    section: section.trim()
+  };
+  claimService.updateClaim(req.session, 'suspensionOrder', suspensionOrder);
+
+  // Navigate to next screen
   res.redirect('/claims/reasons-for-suspension');
 });
 

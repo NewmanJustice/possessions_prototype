@@ -1,0 +1,113 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Housing Act - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Housing Act</h1>
+
+    <p class="govuk-body">
+      Select the relevant Housing Act and provide the section reference for the suspension order request.
+    </p>
+
+    <form method="post" action="/claims/select-housing-act-suspension" novalidate>
+
+      {% set otherActNameHtml %}
+        {{ govukInput({
+          id: "housingActOtherName",
+          name: "housingActOtherName",
+          label: {
+            text: "Name of Housing Act"
+          },
+          value: otherActName,
+          errorMessage: errors.housingActOtherName if errors.housingActOtherName
+        }) }}
+      {% endset %}
+
+      {{ govukRadios({
+        name: "suspensionHousingAct",
+        idPrefix: "suspensionHousingAct",
+        fieldset: {
+          legend: {
+            text: "Which Housing Act does the suspension order relate to?",
+            classes: "govuk-fieldset__legend--m"
+          }
+        },
+        errorMessage: errors.suspensionHousingAct if errors.suspensionHousingAct,
+        items: [
+          {
+            value: "housing-act-1985",
+            text: "Housing Act 1985",
+            checked: selectedHousingAct === 'housing-act-1985'
+          },
+          {
+            value: "housing-act-1996",
+            text: "Housing Act 1996",
+            checked: selectedHousingAct === 'housing-act-1996'
+          },
+          {
+            value: "other",
+            text: "Other",
+            checked: selectedHousingAct === 'other',
+            conditional: {
+              html: otherActNameHtml
+            }
+          }
+        ]
+      }) }}
+
+      {{ govukInput({
+        label: {
+          text: "Section",
+          classes: "govuk-label--m"
+        },
+        hint: {
+          text: "For example, section 121A"
+        },
+        id: "section",
+        name: "section",
+        classes: "govuk-input--width-20",
+        value: section,
+        errorMessage: errors.section if errors.section
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/alternative-to-possession"
+        }) }}
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+
+      <p class="govuk-body">
+        <a href="/case-list" class="govuk-link">Cancel</a>
+      </p>
+
+    </form>
+
+  </div>
+</div>
+{% endblock %}

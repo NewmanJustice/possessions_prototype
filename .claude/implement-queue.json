@@ -1,9 +1,15 @@
 {
-  "lastUpdated": "2026-02-10T12:00:00Z",
+  "lastUpdated": "2026-02-10T16:45:00Z",
   "cassQueue": [],
   "nigelQueue": [],
   "claudeQueue": [],
   "completed": [
+    {
+      "screenNumber": "26a",
+      "title": "Housing Act (Suspension of right to buy)",
+      "testCount": 51,
+      "completedAt": "2026-02-10T16:45:00Z"
+    },
     {
       "featureId": "journey-map",
       "title": "Journey Map Panel",
