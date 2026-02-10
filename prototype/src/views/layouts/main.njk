@@ -42,7 +42,7 @@
       {
         href: "/claims/start",
         text: "Create case",
-        active: true if 'claim' in (pageTitle | lower) or 'property' in (pageTitle | lower) or 'claimant' in (pageTitle | lower) or 'defendant' in (pageTitle | lower) or 'ground' in (pageTitle | lower) or 'possession' in (pageTitle | lower)
+        active: isClaimsPage
       } if session.user,
       {
         href: "/sign-out",
