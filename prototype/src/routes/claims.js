@@ -1877,7 +1877,16 @@ router.get('/reasons-for-possession', (req, res) => {
 router.post('/reasons-for-possession', (req, res) => {
   const { reasons, action } = req.body;
   const claim = claimService.getClaim(req.session) || {};
-  const reasonsLoop = claim.reasonsLoop || { grounds: [], currentIndex: 0 };
+
+  // Initialize or get the loop controller (same logic as GET)
+  const selectedGrounds = getSelectedGrounds(claim);
+  let reasonsLoop = claim.reasonsLoop;
+
+  // Initialize loop if not present or grounds have changed
+  if (!reasonsLoop || JSON.stringify(reasonsLoop.grounds) !== JSON.stringify(selectedGrounds)) {
+    reasonsLoop = { grounds: selectedGrounds, currentIndex: 0 };
+    claimService.updateClaim(req.session, 'reasonsLoop', reasonsLoop);
+  }
 
   const currentGroundKey = reasonsLoop.grounds[reasonsLoop.currentIndex];
   const groundDef = groundDefinitions[currentGroundKey] || { name: 'Unknown ground', number: '' };

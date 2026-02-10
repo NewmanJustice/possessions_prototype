@@ -274,7 +274,8 @@ describe('Screen 15: Reasons for Possession', () => {
     describe('AC-8: Completion routes to pre-action protocol', () => {
 
       it('should redirect to preaction-protocol when single ground completed', async () => {
-        await setupSessionWithGrounds(testSession);
+        // Setup with only assured ground (no additional grounds)
+        await setupSessionWithGrounds(testSession, { additional: false });
         const response = await testSession
           .post('/claims/reasons-for-possession')
           .send({ action: 'continue', reasons: 'Test reasons' })
@@ -300,7 +301,7 @@ describe('Screen 15: Reasons for Possession', () => {
       it('should display different ground heading after submission', async () => {
         await setupSessionWithGrounds(testSession, { additional: true, multipleGrounds: true });
 
-        // Submit first ground
+        // Submit first ground (Ground 8 from assured tenancy)
         await testSession
           .post('/claims/reasons-for-possession')
           .send({ action: 'continue', reasons: 'First ground reasons' })
@@ -311,23 +312,29 @@ describe('Screen 15: Reasons for Possession', () => {
           .get('/claims/reasons-for-possession')
           .expect(200);
 
-        // Should show Ground 3 heading (second selected ground)
-        expect(response.text).toContain('Ground 3');
+        // Should show Ground 1 heading (first additional ground - mandatoryGround1)
+        expect(response.text).toContain('Ground 1');
       });
 
       it('should redirect to preaction-protocol after last ground', async () => {
         await setupSessionWithGrounds(testSession, { additional: true, multipleGrounds: true });
 
-        // Submit first ground
+        // Submit first ground (Ground 8)
         await testSession
           .post('/claims/reasons-for-possession')
           .send({ action: 'continue', reasons: 'First' })
           .expect(302);
 
-        // Submit second ground
-        const response = await testSession
+        // Submit second ground (Ground 1)
+        await testSession
           .post('/claims/reasons-for-possession')
           .send({ action: 'continue', reasons: 'Second' })
+          .expect(302);
+
+        // Submit third ground (Ground 3) - should redirect to preaction-protocol
+        const response = await testSession
+          .post('/claims/reasons-for-possession')
+          .send({ action: 'continue', reasons: 'Third' })
           .expect(302);
 
         expect(response.headers.location).toBe('/claims/preaction-protocol');
@@ -440,7 +447,7 @@ describe('Screen 15: Reasons for Possession', () => {
         .post('/claims/reasons-for-possession')
         .send({ action: 'continue', reasons: 'a'.repeat(501) })
         .expect(400);
-      expect(response.text).toMatch(/<title>Error:/);
+      expect(response.text).toMatch(/<title>\s*Error:/);
     });
 
     it('should have properly labelled textarea', async () => {
