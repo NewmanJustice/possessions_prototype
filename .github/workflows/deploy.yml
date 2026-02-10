@@ -5,6 +5,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_NAME: possessions-proto-code
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -22,14 +25,27 @@ jobs:
 
       - name: Install dependencies
         working-directory: prototype
-        run: npm ci
+        run: npm ci --production=false
 
       - name: Build (if present)
         working-directory: prototype
         run: npm run build --if-present
 
+      - name: Verify prototype-annotator client files
+        working-directory: prototype
+        run: |
+          echo "Checking for prototype-annotator client files..."
+          ls -la node_modules/prototype-annotator/client/dist/ || echo "WARNING: client/dist not found"
+
+      - name: Create deployment package
+        working-directory: prototype
+        run: |
+          # Create zip with all files including node_modules
+          zip -r ../deploy.zip . -x "*.git*" -x "test/*" -x "*.md"
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: prototype
+          package: deploy.zip
