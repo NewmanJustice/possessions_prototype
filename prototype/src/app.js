@@ -257,13 +257,18 @@ async function initializeAnnotator() {
 
     // Add annotator middleware (router + injector) - only after access screen
     // The package's router and middleware() both include the HTML injector
-    const annotatorMiddleware = annotator.middleware();
-    app.use((req, res, next) => {
-      if (req.session?.accessGranted) {
-        return annotatorMiddleware(req, res, next);
-      }
-      next();
-    });
+    // Only use middleware if client files exist, otherwise it will cause errors
+    if (overlayExists) {
+      const annotatorMiddleware = annotator.middleware();
+      app.use((req, res, next) => {
+        if (req.session?.accessGranted) {
+          return annotatorMiddleware(req, res, next);
+        }
+        next();
+      });
+    } else {
+      console.warn('Prototype Annotator: middleware disabled due to missing client files');
+    }
 
     console.log(`Prototype Annotator initialized`);
     console.log(`  Database: ${ANNOTATOR_DB_PATH}`);
