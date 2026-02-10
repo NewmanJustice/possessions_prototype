@@ -242,7 +242,7 @@ async function initializeAnnotator() {
       // Inject Analytics link into sidebar navigation
       (function() {
         let attempts = 0;
-        const maxAttempts = 20;
+        const maxAttempts = 30;
 
         function addAnalyticsLink() {
           // Check if already added
@@ -250,35 +250,36 @@ async function initializeAnnotator() {
 
           attempts++;
           if (attempts > maxAttempts) {
-            console.log('Analytics link injection: max attempts reached');
+            console.log('Analytics link injection: max attempts reached, nav not found');
             return;
           }
 
-          // Try multiple selectors to find the navigation
-          const selectors = [
-            'aside a',
-            'nav a',
-            '[class*="sidebar"] a',
-            '[class*="Sidebar"] a',
-            '[class*="menu"] a',
-            '[class*="Menu"] a',
-            '[class*="nav"] a:not([class*="analytics"])'
-          ];
+          // Look for the dashboard-nav container (specific to prototype-annotator)
+          let navContainer = document.querySelector('.dashboard-nav');
+          let navLinks = navContainer ? navContainer.querySelectorAll('a') : null;
 
-          let navLinks = null;
-          let container = null;
+          // Fallback: try other common patterns
+          if (!navLinks || navLinks.length === 0) {
+            const selectors = [
+              '.nav-link',
+              '[class*="sidebar"] a',
+              '[class*="Sidebar"] a',
+              'aside a',
+              'nav a'
+            ];
 
-          for (const selector of selectors) {
-            const links = document.querySelectorAll(selector);
-            if (links.length > 0) {
-              navLinks = links;
-              container = links[0].parentElement;
-              break;
+            for (const selector of selectors) {
+              const links = document.querySelectorAll(selector);
+              if (links.length > 0) {
+                navLinks = links;
+                navContainer = links[0].parentElement;
+                break;
+              }
             }
           }
 
           if (!navLinks || navLinks.length === 0) {
-            setTimeout(addAnalyticsLink, 300);
+            setTimeout(addAnalyticsLink, 200);
             return;
           }
 
@@ -288,33 +289,37 @@ async function initializeAnnotator() {
           analyticsLink.href = '/__prototype-annotator/analytics';
           analyticsLink.textContent = 'Analytics';
 
-          // Copy styles from existing link
+          // Copy class from existing nav link
           const existingLink = navLinks[0];
           analyticsLink.className = existingLink.className || '';
 
-          // Copy computed styles if className didn't work
-          const computedStyle = window.getComputedStyle(existingLink);
-          if (!analyticsLink.className) {
-            analyticsLink.style.display = computedStyle.display;
-            analyticsLink.style.padding = computedStyle.padding;
-            analyticsLink.style.color = computedStyle.color;
-            analyticsLink.style.textDecoration = computedStyle.textDecoration;
-            analyticsLink.style.fontSize = computedStyle.fontSize;
+          // Ensure it looks like other nav links
+          if (existingLink.classList.contains('nav-link')) {
+            analyticsLink.classList.add('nav-link');
           }
 
-          // Insert at the end of the container
-          const lastLink = navLinks[navLinks.length - 1];
-          if (lastLink.parentNode) {
-            lastLink.parentNode.appendChild(analyticsLink);
-            console.log('Analytics link added to annotator dashboard');
+          // Insert at the end of navigation
+          if (navContainer) {
+            navContainer.appendChild(analyticsLink);
+            console.log('Analytics link added to annotator dashboard nav');
+          } else {
+            const lastLink = navLinks[navLinks.length - 1];
+            if (lastLink.parentNode) {
+              lastLink.parentNode.appendChild(analyticsLink);
+              console.log('Analytics link added after last nav link');
+            }
           }
         }
 
-        // Run when DOM is ready and after SPA renders
+        // Run after SPA has time to render
+        function init() {
+          setTimeout(addAnalyticsLink, 800);
+        }
+
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', () => setTimeout(addAnalyticsLink, 500));
+          document.addEventListener('DOMContentLoaded', init);
         } else {
-          setTimeout(addAnalyticsLink, 500);
+          init();
         }
 
         // Also observe for SPA navigation changes
