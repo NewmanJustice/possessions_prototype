@@ -8,12 +8,18 @@
       :root {
         --color-primary: #2563eb;
         --color-primary-dark: #1d4ed8;
+        --color-danger: #dc2626;
+        --color-success: #16a34a;
+        --color-warning: #d97706;
         --color-gray-50: #f9fafb;
         --color-gray-100: #f3f4f6;
         --color-gray-200: #e5e7eb;
+        --color-gray-300: #d1d5db;
+        --color-gray-400: #9ca3af;
         --color-gray-500: #6b7280;
         --color-gray-600: #4b5563;
         --color-gray-700: #374151;
+        --color-gray-800: #1f2937;
         --color-gray-900: #111827;
       }
       * {
@@ -24,112 +30,166 @@
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         background: var(--color-gray-50);
-        color: var(--color-gray-900);
+        color: #1a1a1a;
         line-height: 1.5;
+      }
+      .dashboard {
+        display: flex;
         min-height: 100vh;
+      }
+      .dashboard-sidebar {
+        width: 240px;
+        background: #fff;
+        border-right: 1px solid var(--color-gray-200);
+        padding: 20px 0;
+        flex-shrink: 0;
+      }
+      .dashboard-logo {
+        padding: 0 20px 20px;
+        border-bottom: 1px solid var(--color-gray-200);
+        margin-bottom: 20px;
+      }
+      .dashboard-logo h1 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .dashboard-logo span {
+        display: block;
+        font-size: 12px;
+        color: var(--color-gray-500);
+      }
+      .dashboard-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 0 12px;
+      }
+      .nav-section {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--color-gray-400);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 16px 12px 8px;
+      }
+      .nav-link {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: var(--color-gray-600);
+        font-size: 14px;
+        transition: background 0.15s, color 0.15s;
       }
-      .container {
-        max-width: 600px;
-        padding: 40px;
+      .nav-link:hover {
+        background: var(--color-gray-100);
+        color: var(--color-gray-900);
       }
-      .header {
-        text-align: center;
-        margin-bottom: 40px;
+      .nav-link.active {
+        background: var(--color-primary);
+        color: #fff;
       }
-      .header h1 {
-        font-size: 28px;
+      .dashboard-main {
+        flex: 1;
+        padding: 24px 32px;
+        overflow-y: auto;
+      }
+      .page-header {
+        margin-bottom: 24px;
+      }
+      .page-title {
+        font-size: 24px;
         font-weight: 600;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
       }
-      .header p {
+      .page-subtitle {
         color: var(--color-gray-500);
-        font-size: 15px;
+        font-size: 14px;
       }
       .tools-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 20px;
+        max-width: 700px;
       }
       .tool-card {
         background: #fff;
-        border-radius: 12px;
+        border-radius: 8px;
         border: 1px solid var(--color-gray-200);
         padding: 24px;
         text-decoration: none;
         color: inherit;
-        transition: all 0.2s;
+        transition: all 0.15s;
         display: block;
       }
       .tool-card:hover {
         border-color: var(--color-primary);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       }
       .tool-icon {
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
         background: var(--color-gray-100);
-        border-radius: 10px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 16px;
-        font-size: 24px;
+        font-size: 22px;
       }
       .tool-card:hover .tool-icon {
         background: #dbeafe;
       }
       .tool-title {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
         margin-bottom: 4px;
+        color: var(--color-gray-900);
       }
       .tool-description {
         font-size: 13px;
         color: var(--color-gray-500);
         line-height: 1.4;
       }
-      .back-link {
-        text-align: center;
-        margin-top: 32px;
-      }
-      .back-link a {
-        color: var(--color-gray-500);
-        text-decoration: none;
-        font-size: 14px;
-      }
-      .back-link a:hover {
-        color: var(--color-primary);
-      }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="header">
-        <h1>Prototype Tools</h1>
-        <p>Annotation and analytics tools for the prototype</p>
-      </div>
+    <div class="dashboard">
+      <aside class="dashboard-sidebar">
+        <div class="dashboard-logo">
+          <h1>Prototype Tools</h1>
+          <span>Annotations & Analytics</span>
+        </div>
+        <nav class="dashboard-nav">
+          <div class="nav-section">Dashboards</div>
+          <a href="/__prototype-annotator/dashboard" class="nav-link">Annotations</a>
+          <a href="/__prototype-annotator/analytics" class="nav-link">Analytics</a>
+          <div class="nav-section">Prototype</div>
+          <a href="/case-list" class="nav-link">Back to Prototype</a>
+        </nav>
+      </aside>
+      <main class="dashboard-main">
+        <div class="page-header">
+          <h1 class="page-title">Prototype Tools</h1>
+          <p class="page-subtitle">Select a dashboard to get started</p>
+        </div>
 
-      <div class="tools-grid">
-        <a href="/__prototype-annotator/dashboard" class="tool-card">
-          <div class="tool-icon">📝</div>
-          <div class="tool-title">Annotations</div>
-          <div class="tool-description">Add notes and feedback to prototype screens</div>
-        </a>
+        <div class="tools-grid">
+          <a href="/__prototype-annotator/dashboard" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-title">Annotations Dashboard</div>
+            <div class="tool-description">Add notes and feedback to prototype screens. Review and export annotations.</div>
+          </a>
 
-        <a href="/__prototype-annotator/analytics" class="tool-card">
-          <div class="tool-icon">📊</div>
-          <div class="tool-title">Analytics</div>
-          <div class="tool-description">View usage statistics and user behaviour</div>
-        </a>
-      </div>
-
-      <div class="back-link">
-        <a href="/case-list">← Back to prototype</a>
-      </div>
+          <a href="/__prototype-annotator/analytics" class="tool-card">
+            <div class="tool-icon">📊</div>
+            <div class="tool-title">Analytics Dashboard</div>
+            <div class="tool-description">View usage statistics, page views, form submissions, and user behaviour.</div>
+          </a>
+        </div>
+      </main>
     </div>
   </body>
 </html>
