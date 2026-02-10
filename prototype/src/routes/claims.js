@@ -1776,16 +1776,173 @@ router.post('/grounds-for-possession', (req, res) => {
 });
 
 // ============================================================================
-// Screen 15: Reasons for Possession (PLACEHOLDER)
+// Screen 15: Reasons for Possession
 // ============================================================================
+
+// Ground definitions with display names
+const groundDefinitions = {
+  // Assured tenancy grounds (from screen 13.1.1)
+  'assured.ground8': { name: 'Persistent delay in paying rent', number: 'Ground 8' },
+  'assured.ground10': { name: 'Some rent arrears', number: 'Ground 10' },
+  'assured.ground11': { name: 'Persistent delay in paying rent', number: 'Ground 11' },
+  // Additional mandatory grounds (from screen 14)
+  'additional.mandatoryGround1': { name: 'Landlord requires property', number: 'Ground 1' },
+  'additional.mandatoryGround3': { name: 'Out of season holiday let', number: 'Ground 3' },
+  'additional.mandatoryGround4': { name: 'Student accommodation', number: 'Ground 4' },
+  'additional.mandatoryGround5': { name: 'Minister of religion', number: 'Ground 5' },
+  'additional.mandatoryGround7': { name: 'Death of tenant', number: 'Ground 7' },
+  'additional.mandatoryGround8': { name: 'Serious rent arrears', number: 'Ground 8' },
+  // Additional discretionary grounds (from screen 14)
+  'additional.discretionaryGround9': { name: 'Suitable alternative accommodation', number: 'Ground 9' },
+  'additional.discretionaryGround10': { name: 'Some rent arrears', number: 'Ground 10' },
+  'additional.discretionaryGround11': { name: 'Persistent delay in paying rent', number: 'Ground 11' },
+  'additional.discretionaryGround12': { name: 'Breach of tenancy obligation', number: 'Ground 12' },
+  'additional.discretionaryGround13': { name: 'Waste or neglect', number: 'Ground 13' },
+  'additional.discretionaryGround14': { name: 'Nuisance or annoyance', number: 'Ground 14' },
+  'additional.discretionaryGround15': { name: 'Deterioration of furniture', number: 'Ground 15' },
+  'additional.discretionaryGround16': { name: 'Employee letting', number: 'Ground 16' }
+};
+
+// Helper to collect all selected grounds from session
+function getSelectedGrounds(claim) {
+  const selectedGrounds = [];
+  const grounds = claim.grounds || {};
+
+  // Check assured tenancy grounds
+  const assured = grounds.assuredTenancy || {};
+  if (assured.ground8) selectedGrounds.push('assured.ground8');
+  if (assured.ground10) selectedGrounds.push('assured.ground10');
+  if (assured.ground11) selectedGrounds.push('assured.ground11');
+
+  // Check additional grounds
+  const additional = grounds.additional || {};
+  if (additional.mandatoryGround1) selectedGrounds.push('additional.mandatoryGround1');
+  if (additional.mandatoryGround3) selectedGrounds.push('additional.mandatoryGround3');
+  if (additional.mandatoryGround4) selectedGrounds.push('additional.mandatoryGround4');
+  if (additional.mandatoryGround5) selectedGrounds.push('additional.mandatoryGround5');
+  if (additional.mandatoryGround7) selectedGrounds.push('additional.mandatoryGround7');
+  if (additional.mandatoryGround8) selectedGrounds.push('additional.mandatoryGround8');
+  if (additional.discretionaryGround9) selectedGrounds.push('additional.discretionaryGround9');
+  if (additional.discretionaryGround10) selectedGrounds.push('additional.discretionaryGround10');
+  if (additional.discretionaryGround11) selectedGrounds.push('additional.discretionaryGround11');
+  if (additional.discretionaryGround12) selectedGrounds.push('additional.discretionaryGround12');
+  if (additional.discretionaryGround13) selectedGrounds.push('additional.discretionaryGround13');
+  if (additional.discretionaryGround14) selectedGrounds.push('additional.discretionaryGround14');
+  if (additional.discretionaryGround15) selectedGrounds.push('additional.discretionaryGround15');
+  if (additional.discretionaryGround16) selectedGrounds.push('additional.discretionaryGround16');
+
+  return selectedGrounds;
+}
+
 // GET /claims/reasons-for-possession - Screen 15: Reasons for possession
 router.get('/reasons-for-possession', (req, res) => {
-  res.send('Screen 15: Reasons for Possession - Placeholder');
+  const claim = claimService.getClaim(req.session) || {};
+  const selectedGrounds = getSelectedGrounds(claim);
+
+  // If no grounds selected, skip to next screen
+  if (selectedGrounds.length === 0) {
+    return res.redirect('/claims/preaction-protocol');
+  }
+
+  // Initialize or get the loop controller
+  let reasonsLoop = claim.reasonsLoop || { grounds: selectedGrounds, currentIndex: 0 };
+
+  // If loop not yet initialized with current grounds, reset it
+  if (!claim.reasonsLoop || JSON.stringify(claim.reasonsLoop.grounds) !== JSON.stringify(selectedGrounds)) {
+    reasonsLoop = { grounds: selectedGrounds, currentIndex: 0 };
+    claimService.updateClaim(req.session, 'reasonsLoop', reasonsLoop);
+  }
+
+  const currentGroundKey = reasonsLoop.grounds[reasonsLoop.currentIndex];
+  const groundDef = groundDefinitions[currentGroundKey] || { name: 'Unknown ground', number: '' };
+
+  // Get any previously saved reasons for this ground
+  const reasonsForPossession = claim.reasonsForPossession || {};
+  const savedReasons = reasonsForPossession[currentGroundKey] || '';
+
+  res.render('pages/claims/reasons-for-possession', {
+    pageTitle: 'Reasons for possession',
+    groundName: groundDef.name,
+    groundNumber: groundDef.number,
+    groundKey: currentGroundKey,
+    currentIndex: reasonsLoop.currentIndex,
+    totalGrounds: reasonsLoop.grounds.length,
+    reasons: savedReasons,
+    errors: {},
+    errorList: []
+  });
 });
 
-// POST /claims/reasons-for-possession
+// POST /claims/reasons-for-possession - Screen 15
 router.post('/reasons-for-possession', (req, res) => {
-  res.redirect('/claims/preaction-protocol');
+  const { reasons, action } = req.body;
+  const claim = claimService.getClaim(req.session) || {};
+  const reasonsLoop = claim.reasonsLoop || { grounds: [], currentIndex: 0 };
+
+  const currentGroundKey = reasonsLoop.grounds[reasonsLoop.currentIndex];
+  const groundDef = groundDefinitions[currentGroundKey] || { name: 'Unknown ground', number: '' };
+
+  // Handle Previous action
+  if (action === 'previous') {
+    // Save current input before navigating back
+    if (reasons && reasons.trim()) {
+      const reasonsForPossession = claim.reasonsForPossession || {};
+      reasonsForPossession[currentGroundKey] = reasons.trim();
+      claimService.updateClaim(req.session, 'reasonsForPossession', reasonsForPossession);
+    }
+
+    if (reasonsLoop.currentIndex > 0) {
+      // Go to previous ground
+      reasonsLoop.currentIndex--;
+      claimService.updateClaim(req.session, 'reasonsLoop', reasonsLoop);
+      return res.redirect('/claims/reasons-for-possession');
+    } else {
+      // First ground - go back to grounds selection
+      return res.redirect('/claims/grounds-for-possession');
+    }
+  }
+
+  // Handle Continue action
+  const errors = {};
+  const errorList = [];
+
+  // AC-4: Character limit enforced (500 characters)
+  if (reasons && reasons.length > 500) {
+    errors.reasons = { text: 'Enter 500 characters or fewer' };
+    errorList.push({ text: 'Enter 500 characters or fewer', href: '#reasons' });
+  }
+
+  // If validation errors, re-render
+  if (errorList.length > 0) {
+    return res.status(400).render('pages/claims/reasons-for-possession', {
+      pageTitle: 'Reasons for possession',
+      groundName: groundDef.name,
+      groundNumber: groundDef.number,
+      groundKey: currentGroundKey,
+      currentIndex: reasonsLoop.currentIndex,
+      totalGrounds: reasonsLoop.grounds.length,
+      reasons: reasons || '',
+      errors,
+      errorList
+    });
+  }
+
+  // AC-6: Persist reasons per ground
+  const reasonsForPossession = claim.reasonsForPossession || {};
+  reasonsForPossession[currentGroundKey] = (reasons || '').trim();
+  claimService.updateClaim(req.session, 'reasonsForPossession', reasonsForPossession);
+
+  // AC-7/AC-8: Move to next ground or complete
+  if (reasonsLoop.currentIndex < reasonsLoop.grounds.length - 1) {
+    // More grounds to process
+    reasonsLoop.currentIndex++;
+    claimService.updateClaim(req.session, 'reasonsLoop', reasonsLoop);
+    return res.redirect('/claims/reasons-for-possession');
+  } else {
+    // All grounds processed - clear loop and redirect
+    claimService.updateClaim(req.session, 'reasonsLoop', null);
+    return res.redirect('/claims/preaction-protocol');
+  }
 });
 
 // ============================================================================

@@ -1,0 +1,72 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block pageTitle %}
+  {% if errorList and errorList.length > 0 %}Error: {% endif %}Reasons for possession - {{ serviceName }} - GOV.UK
+{% endblock %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if errorList and errorList.length > 0 %}
+      {{ govukErrorSummary({
+        titleText: "There is a problem",
+        errorList: errorList,
+        attributes: {
+          tabindex: "-1"
+        }
+      }) }}
+    {% endif %}
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">{{ groundName }} ({{ groundNumber }})</h1>
+
+    <p class="govuk-body">
+      Why are you making a claim for possession under this ground?
+    </p>
+
+    <form method="post" action="/claims/reasons-for-possession" novalidate>
+
+      {{ govukCharacterCount({
+        id: "reasons",
+        name: "reasons",
+        maxlength: 500,
+        label: {
+          text: "Give details about your reasons for claiming possession",
+          classes: "govuk-label--m"
+        },
+        hint: {
+          text: "You can upload supporting documents later. You can enter up to 500 characters."
+        },
+        value: reasons,
+        errorMessage: errors.reasons if errors.reasons
+      }) }}
+
+      <div class="govuk-button-group">
+        {{ govukButton({
+          text: "Previous",
+          name: "action",
+          value: "previous",
+          classes: "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          text: "Continue",
+          name: "action",
+          value: "continue"
+        }) }}
+      </div>
+
+    </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}
