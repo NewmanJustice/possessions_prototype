@@ -41,10 +41,12 @@ function getClaim(session) {
 function updateClaim(session, section, data) {
   const claim = initializeClaim(session);
 
-  if (section === 'claimType') {
-    claim.claimType = data;
-  } else {
+  // Handle primitive values (strings, booleans, numbers) directly
+  // Only merge objects when data is a plain object
+  if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
     claim[section] = { ...claim[section], ...data };
+  } else {
+    claim[section] = data;
   }
 
   claim.updatedAt = new Date().toISOString();
