@@ -38,10 +38,31 @@ As a prototype owner, I want to view analytics about how users interact with the
 - When I try to access `/__prototype-annotator/analytics`,
 - Then I am redirected to `/access`.
 
-**AC-3a — Analytics link in annotator dashboard**
-- Given I am on the prototype-annotator dashboard (`/__prototype-annotator/dashboard`),
-- Then I see an "Analytics" link in the sidebar navigation
-- And clicking it navigates to `/__prototype-annotator/analytics`.
+### Prototype Tools Landing Page
+
+**AC-3a — Landing page at /__prototype-annotator/**
+- Given I have passed the access code gate,
+- When I navigate to `/__prototype-annotator/`,
+- Then I see the Prototype Tools landing page
+- And the page has the same styling as the analytics dashboard (sidebar, cards, fonts).
+
+**AC-3b — Landing page links to both dashboards**
+- Given I am on the Prototype Tools landing page,
+- Then I see two cards: "Annotations Dashboard" and "Analytics Dashboard"
+- And clicking "Annotations Dashboard" navigates to `/__prototype-annotator/dashboard`
+- And clicking "Analytics Dashboard" navigates to `/__prototype-annotator/analytics`.
+
+**AC-3c — Landing page sidebar navigation**
+- Given I am on the Prototype Tools landing page,
+- Then I see a sidebar with navigation links to:
+  - Annotations
+  - Analytics
+  - Back to Prototype
+
+**AC-3d — Landing page access protection**
+- Given I have NOT passed the access code gate,
+- When I try to access `/__prototype-annotator/`,
+- Then I am redirected to `/access`.
 
 ---
 
@@ -161,14 +182,18 @@ As a prototype owner, I want to view analytics about how users interact with the
 
 ### Styling
 
-**AC-23 — GA-inspired layout**
-- Given I am on any analytics page,
-- Then the layout has a left sidebar (220px) and main content area
-- And uses neutral colours (#f3f2f1 background, #1d70b8 accents).
+**AC-23 — Consistent styling with prototype-annotator**
+- Given I am on any analytics page or the landing page,
+- Then the layout matches the prototype-annotator dashboard styling:
+  - 240px sidebar with white background
+  - System fonts (-apple-system, BlinkMacSystemFont, 'Segoe UI', etc.)
+  - CSS variables for colours (--color-primary: #2563eb, --color-gray-* scale)
+  - Cards with 8px border-radius and subtle borders
+  - Same hover effects and transitions.
 
-**AC-24 — Consistent styling**
-- Given I navigate between analytics pages,
-- Then the sidebar, header, and time filters are consistent across all pages.
+**AC-24 — Consistent navigation**
+- Given I navigate between analytics pages and landing page,
+- Then the sidebar, header, and navigation structure are consistent across all pages.
 
 ---
 
@@ -181,6 +206,8 @@ As a prototype owner, I want to view analytics about how users interact with the
 | `src/services/analyticsService.js` | SQLite database, tracking functions, query functions |
 | `src/middleware/analytics.js` | Express middleware for auto-tracking |
 | `src/routes/analytics.js` | Dashboard route handlers |
+| `src/views/layouts/analytics.njk` | Standalone layout matching prototype-annotator styling |
+| `src/views/pages/annotator-home.njk` | Landing page at `/__prototype-annotator/` |
 | `src/views/pages/analytics/dashboard.njk` | Overview template |
 | `src/views/pages/analytics/realtime.njk` | Real-time events template |
 | `src/views/pages/analytics/pages.njk` | Pages analytics template |
@@ -190,11 +217,33 @@ As a prototype owner, I want to view analytics about how users interact with the
 
 | File | Changes |
 |------|---------|
-| `src/app.js` | Import analytics, initialize service, add routes and middleware, inject analytics link into annotator dashboard |
+| `src/app.js` | Import analytics, initialize service, add routes and middleware, add landing page route |
 
 ---
 
-## Annotator Dashboard Integration
+## Landing Page Implementation
+
+The landing page at `/__prototype-annotator/` provides a central entry point to both dashboards:
+
+```javascript
+// In app.js - Serve landing page
+app.get('/__prototype-annotator', (req, res, next) => {
+  if (!req.session?.accessGranted) {
+    return res.redirect('/access');
+  }
+  res.render('pages/annotator-home');
+});
+```
+
+The landing page uses the same styling as the analytics dashboard:
+- Same CSS variables and colour scheme
+- Same sidebar layout (240px width)
+- Same fonts (-apple-system, BlinkMacSystemFont, etc.)
+- Two cards linking to Annotations and Analytics dashboards
+
+---
+
+## Annotator Dashboard Integration (Optional)
 
 The prototype-annotator dashboard is a pre-built SPA from the npm package. To add an Analytics link to its navigation, inject a script when serving the dashboard HTML:
 
@@ -374,4 +423,4 @@ router.get('/behaviour', (req, res) => {
 
 ## Summary
 
-Feature — Analytics Dashboard | 25 ACs | Route: /__prototype-annotator/analytics | Auto-tracking via middleware | Integrated with prototype-annotator dashboard
+Feature — Analytics Dashboard | 28 ACs | Routes: /__prototype-annotator/, /__prototype-annotator/analytics | Auto-tracking via middleware | Landing page with links to both dashboards
