@@ -55,12 +55,6 @@
 
       <div class="govuk-button-group">
         {{ govukButton({
-          text: "Continue",
-          name: "action",
-          value: "continue"
-        }) }}
-
-        {{ govukButton({
           text: "Previous",
           name: "action",
           value: "previous",
@@ -68,12 +62,15 @@
         }) }}
 
         {{ govukButton({
-          text: "Cancel",
+          text: "Continue",
           name: "action",
-          value: "cancel",
-          classes: "govuk-button--secondary"
+          value: "continue"
         }) }}
       </div>
+
+      <p class="govuk-body">
+        <a href="/case-list" class="govuk-link">Cancel</a>
+      </p>
 
     </form>
 
