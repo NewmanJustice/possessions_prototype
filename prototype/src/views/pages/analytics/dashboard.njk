@@ -1,0 +1,299 @@
+{% extends "layouts/main.njk" %}
+
+{% block pageTitle %}Analytics - {{ serviceName }}{% endblock %}
+
+{% block head %}
+<style>
+  .analytics-layout {
+    display: flex;
+    min-height: calc(100vh - 200px);
+    margin: -30px -15px;
+  }
+  .analytics-sidebar {
+    width: 220px;
+    background: #f3f2f1;
+    border-right: 1px solid #b1b4b6;
+    padding: 20px 0;
+    flex-shrink: 0;
+  }
+  .analytics-sidebar a {
+    display: block;
+    padding: 10px 20px;
+    color: #0b0c0c;
+    text-decoration: none;
+    font-size: 16px;
+    border-left: 4px solid transparent;
+  }
+  .analytics-sidebar a:hover {
+    background: #e8e8e8;
+  }
+  .analytics-sidebar a.active {
+    background: #fff;
+    border-left-color: #1d70b8;
+    font-weight: bold;
+  }
+  .analytics-sidebar .nav-section {
+    padding: 15px 20px 5px;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #505a5f;
+    font-weight: bold;
+  }
+  .analytics-content {
+    flex: 1;
+    padding: 30px;
+    background: #fff;
+  }
+  .metric-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .metric-card {
+    background: #fff;
+    border: 1px solid #b1b4b6;
+    border-radius: 4px;
+    padding: 20px;
+  }
+  .metric-card .label {
+    font-size: 14px;
+    color: #505a5f;
+    margin-bottom: 5px;
+  }
+  .metric-card .value {
+    font-size: 36px;
+    font-weight: bold;
+    color: #0b0c0c;
+  }
+  .metric-card .change {
+    font-size: 14px;
+    margin-top: 5px;
+  }
+  .metric-card .change.positive { color: #00703c; }
+  .metric-card .change.negative { color: #d4351c; }
+  .chart-container {
+    background: #fff;
+    border: 1px solid #b1b4b6;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .chart-container h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+  }
+  .chart-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .chart-bar .label {
+    width: 250px;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chart-bar .bar-container {
+    flex: 1;
+    height: 24px;
+    background: #f3f2f1;
+    margin: 0 10px;
+    border-radius: 2px;
+  }
+  .chart-bar .bar {
+    height: 100%;
+    background: #1d70b8;
+    border-radius: 2px;
+    min-width: 2px;
+  }
+  .chart-bar .count {
+    width: 60px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .time-filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .time-filter a {
+    padding: 8px 16px;
+    border: 1px solid #b1b4b6;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #0b0c0c;
+    font-size: 14px;
+  }
+  .time-filter a.active {
+    background: #1d70b8;
+    color: #fff;
+    border-color: #1d70b8;
+  }
+  .time-filter a:hover:not(.active) {
+    background: #f3f2f1;
+  }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .data-table th, .data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #b1b4b6;
+  }
+  .data-table th {
+    font-weight: bold;
+    background: #f3f2f1;
+  }
+  .data-table tr:hover {
+    background: #f8f8f8;
+  }
+  .back-link {
+    margin-bottom: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-layout">
+  <nav class="analytics-sidebar">
+    <div class="nav-section">Reports</div>
+    <a href="{{ basePath }}" class="active">Overview</a>
+    <a href="{{ basePath }}/realtime">Real-time</a>
+    <div class="nav-section">Engagement</div>
+    <a href="{{ basePath }}/pages">Pages</a>
+    <a href="{{ basePath }}/behaviour">Behaviour</a>
+    <div class="nav-section">Tools</div>
+    <a href="/__prototype-annotator/dashboard">Annotations</a>
+    <a href="/case-list">← Back to prototype</a>
+  </nav>
+
+  <main class="analytics-content">
+    <h1 class="govuk-heading-xl" style="margin-bottom: 10px;">Analytics Overview</h1>
+    <p class="govuk-body" style="color: #505a5f; margin-bottom: 20px;">Prototype usage statistics</p>
+
+    <div class="time-filter">
+      <a href="?days=1" {% if days == 1 %}class="active"{% endif %}>Today</a>
+      <a href="?days=7" {% if days == 7 %}class="active"{% endif %}>Last 7 days</a>
+      <a href="?days=30" {% if days == 30 %}class="active"{% endif %}>Last 30 days</a>
+      <a href="?days=90" {% if days == 90 %}class="active"{% endif %}>Last 90 days</a>
+    </div>
+
+    {% if stats %}
+    <div class="metric-cards">
+      <div class="metric-card">
+        <div class="label">Users</div>
+        <div class="value">{{ stats.totalSessions }}</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Page Views</div>
+        <div class="value">{{ stats.totalPageViews }}</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Form Submissions</div>
+        <div class="value">{{ stats.totalFormSubmits }}</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Validation Pass Rate</div>
+        <div class="value">{{ stats.validationRate }}%</div>
+        <div class="change {% if stats.validationRate >= 80 %}positive{% elif stats.validationRate < 50 %}negative{% endif %}">
+          {{ stats.validSubmits }} valid / {{ stats.invalidSubmits }} invalid
+        </div>
+      </div>
+    </div>
+
+    {% if dailyActivity and dailyActivity.length > 0 %}
+    <div class="chart-container">
+      <h3>Daily Activity</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th style="text-align: right;">Sessions</th>
+            <th style="text-align: right;">Page Views</th>
+            <th style="text-align: right;">Form Submits</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for day in dailyActivity %}
+          <tr>
+            <td>{{ day.date }}</td>
+            <td style="text-align: right;">{{ day.sessions }}</td>
+            <td style="text-align: right;">{{ day.pageViews }}</td>
+            <td style="text-align: right;">{{ day.formSubmits }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-one-half">
+        <div class="chart-container">
+          <h3>Top Pages</h3>
+          {% if pageViews and pageViews.length > 0 %}
+            {% set maxViews = pageViews[0].views %}
+            {% for page in pageViews.slice(0, 8) %}
+            <div class="chart-bar">
+              <div class="label" title="{{ page.url }}">{{ page.url }}</div>
+              <div class="bar-container">
+                <div class="bar" style="width: {{ (page.views / maxViews * 100) }}%;"></div>
+              </div>
+              <div class="count">{{ page.views }}</div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p class="govuk-body">No data yet</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="govuk-grid-column-one-half">
+        <div class="chart-container">
+          <h3>Navigation Actions</h3>
+          {% if navigation %}
+            {% set totalNav = (navigation.continue or 0) + (navigation.previous or 0) + (navigation.cancel or 0) %}
+            {% if totalNav > 0 %}
+            <div class="chart-bar">
+              <div class="label">Continue</div>
+              <div class="bar-container">
+                <div class="bar" style="width: {{ ((navigation.continue or 0) / totalNav * 100) }}%; background: #00703c;"></div>
+              </div>
+              <div class="count">{{ navigation.continue or 0 }}</div>
+            </div>
+            <div class="chart-bar">
+              <div class="label">Previous</div>
+              <div class="bar-container">
+                <div class="bar" style="width: {{ ((navigation.previous or 0) / totalNav * 100) }}%; background: #f47738;"></div>
+              </div>
+              <div class="count">{{ navigation.previous or 0 }}</div>
+            </div>
+            <div class="chart-bar">
+              <div class="label">Cancel</div>
+              <div class="bar-container">
+                <div class="bar" style="width: {{ ((navigation.cancel or 0) / totalNav * 100) }}%; background: #d4351c;"></div>
+              </div>
+              <div class="count">{{ navigation.cancel or 0 }}</div>
+            </div>
+            {% else %}
+            <p class="govuk-body">No data yet</p>
+            {% endif %}
+          {% else %}
+            <p class="govuk-body">No data yet</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="govuk-inset-text">
+      No analytics data available yet. Start using the prototype to generate data.
+    </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}

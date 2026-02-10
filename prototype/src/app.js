@@ -14,6 +14,11 @@ const authRoutes = require('./routes/auth');
 const caseListRoutes = require('./routes/caseList');
 const possessionsRoutes = require('./routes/possessions');
 const claimsRoutes = require('./routes/claims');
+const analyticsRoutes = require('./routes/analytics');
+
+// Import analytics
+const analyticsService = require('./services/analyticsService');
+const { analyticsMiddleware } = require('./middleware/analytics');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -270,9 +275,24 @@ async function initializeAnnotator() {
       console.warn('Prototype Annotator: middleware disabled due to missing client files');
     }
 
+    // Initialize analytics service
+    await analyticsService.initialize();
+
+    // Add analytics routes under /__prototype-annotator/analytics
+    app.use('/__prototype-annotator/analytics', (req, res, next) => {
+      if (!req.session?.accessGranted) {
+        return res.redirect('/access');
+      }
+      next();
+    }, analyticsRoutes);
+
+    // Add analytics tracking middleware (after session is available)
+    app.use(analyticsMiddleware);
+
     console.log(`Prototype Annotator initialized`);
     console.log(`  Database: ${ANNOTATOR_DB_PATH}`);
     console.log(`  Dashboard: http://localhost:${PORT}/__prototype-annotator/dashboard`);
+    console.log(`  Analytics: http://localhost:${PORT}/__prototype-annotator/analytics`);
 
     return annotator;
   } catch (error) {
