@@ -1,0 +1,325 @@
+# Feature — Analytics Dashboard
+
+## User story
+
+As a prototype owner, I want to view analytics about how users interact with the prototype so that I can identify usability issues, track validation errors, understand navigation patterns, and measure overall engagement.
+
+---
+
+## Context / scope
+
+- Internal tool for prototype owners and UX researchers
+- Accessible at `/__prototype-annotator/analytics`
+- Google Analytics-inspired dashboard design
+- Uses SQLite for data persistence (via sql.js)
+- Auto-tracks user activity via Express middleware
+- Protected behind access code gate (same as prototype)
+
+---
+
+## Acceptance criteria
+
+### Dashboard access
+
+**AC-1 — Analytics accessible from annotator area**
+- Given I have passed the access code gate,
+- When I navigate to `/__prototype-annotator/analytics`,
+- Then I see the Analytics Overview dashboard.
+
+**AC-2 — Sidebar navigation**
+- Given I am on any analytics page,
+- Then I see a sidebar with navigation links:
+  - Reports: Overview, Real-time
+  - Engagement: Pages, Behaviour
+  - Tools: Annotations (link to annotator), Back to prototype
+
+**AC-3 — Access protection**
+- Given I have NOT passed the access code gate,
+- When I try to access `/__prototype-annotator/analytics`,
+- Then I am redirected to `/access`.
+
+---
+
+### Overview dashboard
+
+**AC-4 — Metric cards displayed**
+- Given I am on the Overview page,
+- Then I see metric cards showing:
+  - Users (unique sessions)
+  - Page Views (total)
+  - Form Submissions (total)
+  - Validation Pass Rate (percentage)
+
+**AC-5 — Time filter**
+- Given I am on the Overview page,
+- Then I see time filter options: Today, Last 7 days, Last 30 days, Last 90 days
+- And clicking a filter updates all metrics for that period.
+
+**AC-6 — Daily activity table**
+- Given there is activity data,
+- Then I see a table showing daily breakdown of sessions, page views, form submits.
+
+**AC-7 — Top pages chart**
+- Given there is page view data,
+- Then I see a horizontal bar chart of most viewed pages.
+
+**AC-8 — Navigation actions chart**
+- Given there is navigation data,
+- Then I see a breakdown of Continue/Previous/Cancel actions with coloured bars.
+
+---
+
+### Real-time page
+
+**AC-9 — Live event feed**
+- Given I navigate to Real-time,
+- Then I see a table of recent events with columns: Time, Session, Type, Page/Action, Details.
+
+**AC-10 — Event type tags**
+- Given I am viewing the event feed,
+- Then events are tagged with coloured labels:
+  - page view (blue)
+  - form valid (green)
+  - form invalid (red)
+  - navigation (grey)
+
+**AC-11 — Auto-refresh**
+- Given I am on the Real-time page,
+- Then the page auto-refreshes every 10 seconds
+- And a pulsing indicator shows "Auto-refreshing every 10 seconds".
+
+---
+
+### Pages analytics
+
+**AC-12 — All pages list**
+- Given I navigate to Pages,
+- Then I see all visited pages with view counts as horizontal bar chart.
+
+**AC-13 — Drop-off analysis**
+- Given there is session data,
+- Then I see pages where users stopped (last page in session)
+- And each shows drop-off count and rate percentage
+- And severity indicator (High >30%, Medium 15-30%, Low <15%).
+
+---
+
+### Behaviour analytics
+
+**AC-14 — Navigation patterns**
+- Given I navigate to Behaviour,
+- Then I see navigation action counts (Continue, Previous, Cancel)
+- And percentage breakdown with coloured bars.
+
+**AC-15 — Validation errors by field**
+- Given there are validation errors,
+- Then I see a table of errors grouped by page and field
+- And sorted by error count (most frequent first).
+
+**AC-16 — Drop-off points**
+- Given there is session data,
+- Then I see top 5 pages where users abandon the journey.
+
+---
+
+### Automatic tracking
+
+**AC-17 — Track page views**
+- Given a user visits any page (excluding static assets, API routes, /__* routes),
+- Then a page_view event is logged with session ID and URL.
+
+**AC-18 — Track form submissions**
+- Given a user submits a form (POST request),
+- When the form is valid (redirect response),
+- Then a form_submit event is logged with valid=true.
+
+**AC-19 — Track validation errors**
+- Given a user submits a form,
+- When validation fails (re-render with errors),
+- Then a form_submit event is logged with valid=false and error field names.
+
+**AC-20 — Track navigation actions**
+- Given a user clicks Previous or Cancel,
+- Then a navigation event is logged with the action type.
+
+**AC-21 — Track continue actions**
+- Given a user successfully continues to next page,
+- Then a navigation event is logged with action=continue and destination URL.
+
+**AC-22 — Session tracking**
+- Given a user accesses the prototype,
+- Then a unique analytics session ID is created
+- And stored in `req.session.analyticsId`
+- And persists across page loads.
+
+---
+
+### Styling
+
+**AC-23 — GA-inspired layout**
+- Given I am on any analytics page,
+- Then the layout has a left sidebar (220px) and main content area
+- And uses neutral colours (#f3f2f1 background, #1d70b8 accents).
+
+**AC-24 — Consistent styling**
+- Given I navigate between analytics pages,
+- Then the sidebar, header, and time filters are consistent across all pages.
+
+---
+
+## Technical implementation
+
+### Files to create
+
+| File | Purpose |
+|------|---------|
+| `src/services/analyticsService.js` | SQLite database, tracking functions, query functions |
+| `src/middleware/analytics.js` | Express middleware for auto-tracking |
+| `src/routes/analytics.js` | Dashboard route handlers |
+| `src/views/pages/analytics/dashboard.njk` | Overview template |
+| `src/views/pages/analytics/realtime.njk` | Real-time events template |
+| `src/views/pages/analytics/pages.njk` | Pages analytics template |
+| `src/views/pages/analytics/behaviour.njk` | Behaviour analytics template |
+
+### Files to modify
+
+| File | Changes |
+|------|---------|
+| `src/app.js` | Import analytics, initialize service, add routes and middleware |
+
+---
+
+## Analytics Service API
+
+```javascript
+// Initialization
+await analyticsService.initialize(customDbPath);
+
+// Tracking functions
+analyticsService.trackSession(sessionId, userAgent);
+analyticsService.logPageView(sessionId, pageUrl, pageTitle);
+analyticsService.logFormSubmit(sessionId, pageUrl, valid, errorFields);
+analyticsService.logNavigation(sessionId, pageUrl, action, destination);
+
+// Query functions (all accept days parameter)
+analyticsService.getSummaryStats(days);      // Returns {totalSessions, totalPageViews, totalFormSubmits, validSubmits, invalidSubmits, validationRate}
+analyticsService.getPageViewCounts(days);    // Returns [{url, views}]
+analyticsService.getDropOffAnalysis(days);   // Returns [{url, count, rate}]
+analyticsService.getValidationErrors(days);  // Returns [{url, field, count}]
+analyticsService.getNavigationPatterns(days);// Returns {continue, previous, cancel}
+analyticsService.getDailyActivity(days);     // Returns [{date, sessions, pageViews, formSubmits}]
+analyticsService.getRecentEvents(limit);     // Returns [{id, sessionId, eventType, eventName, pageUrl, metadata, createdAt}]
+```
+
+---
+
+## Database schema
+
+```sql
+CREATE TABLE events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL,
+  event_type TEXT NOT NULL,    -- 'page_view', 'form_submit', 'navigation'
+  event_name TEXT NOT NULL,    -- page title, 'valid'/'invalid', action name
+  page_url TEXT,
+  metadata TEXT,               -- JSON string with additional data
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sessions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT UNIQUE NOT NULL,
+  user_agent TEXT,
+  started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  last_activity DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## Middleware integration
+
+Add to `app.js` within `initializeAnnotator()`:
+
+```javascript
+// Initialize analytics service
+await analyticsService.initialize();
+
+// Add analytics routes
+app.use('/__prototype-annotator/analytics', (req, res, next) => {
+  if (!req.session?.accessGranted) {
+    return res.redirect('/access');
+  }
+  next();
+}, analyticsRoutes);
+
+// Add tracking middleware (after session middleware)
+app.use(analyticsMiddleware);
+```
+
+---
+
+## Route handlers
+
+```javascript
+// GET / - Overview dashboard
+router.get('/', (req, res) => {
+  const days = parseInt(req.query.days) || 7;
+  res.render('pages/analytics/dashboard', {
+    days,
+    stats: analyticsService.getSummaryStats(days),
+    pageViews: analyticsService.getPageViewCounts(days),
+    navigation: analyticsService.getNavigationPatterns(days),
+    dailyActivity: analyticsService.getDailyActivity(days),
+    basePath: '/__prototype-annotator/analytics'
+  });
+});
+
+// GET /realtime - Live event feed
+router.get('/realtime', (req, res) => {
+  res.render('pages/analytics/realtime', {
+    events: analyticsService.getRecentEvents(100),
+    basePath: '/__prototype-annotator/analytics'
+  });
+});
+
+// GET /pages - Page analytics
+router.get('/pages', (req, res) => {
+  const days = parseInt(req.query.days) || 7;
+  res.render('pages/analytics/pages', {
+    days,
+    pageViews: analyticsService.getPageViewCounts(days, 50),
+    dropOffs: analyticsService.getDropOffAnalysis(days),
+    basePath: '/__prototype-annotator/analytics'
+  });
+});
+
+// GET /behaviour - User behaviour
+router.get('/behaviour', (req, res) => {
+  const days = parseInt(req.query.days) || 7;
+  res.render('pages/analytics/behaviour', {
+    days,
+    validationErrors: analyticsService.getValidationErrors(days),
+    navigation: analyticsService.getNavigationPatterns(days),
+    dropOffs: analyticsService.getDropOffAnalysis(days),
+    basePath: '/__prototype-annotator/analytics'
+  });
+});
+```
+
+---
+
+## Assumptions
+
+1. Uses sql.js (same dependency as prototype-annotator) for SQLite in-memory/file database
+2. Database stored at `./data/analytics.sqlite` (dev) or `/home/data/analytics.sqlite` (production)
+3. Analytics session ID is separate from Express session ID to persist across session resets
+4. Only tracks after user passes access code gate
+5. Static assets, health check, and `/__*` routes are excluded from tracking
+6. Middleware intercepts `res.render` and `res.redirect` to detect validation success/failure
+
+---
+
+## Summary
+
+Feature — Analytics Dashboard | 24 ACs | Route: /__prototype-annotator/analytics | Auto-tracking via middleware
