@@ -14,7 +14,7 @@ function initializeClaim(session) {
       property: {},
       claimant: {},
       defendant: {},
-      grounds: [],
+      grounds: {},
       keyDates: {},
       status: 'draft',
       createdAt: new Date().toISOString(),
