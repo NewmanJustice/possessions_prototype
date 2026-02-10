@@ -74,14 +74,21 @@
 
       <div class="govuk-button-group">
         {{ govukButton({
-          text: "Continue"
+          text: "Previous",
+          classes: "govuk-button--secondary",
+          href: "/claims/select-housing-act-demotion"
         }) }}
 
-        <a class="govuk-link" href="/claims/select-housing-act-demotion">Previous</a>
-        <a class="govuk-link" href="/case-list">Cancel</a>
+        {{ govukButton({
+          text: "Continue"
+        }) }}
       </div>
 
     </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
 
   </div>
 </div>
