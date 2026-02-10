@@ -236,10 +236,67 @@ async function initializeAnnotator() {
       dashboardStatic(req, res, next);
     });
 
+    // Script to inject analytics link into annotator dashboard navigation
+    const analyticsLinkScript = `
+    <script>
+      // Inject Analytics link into sidebar navigation
+      (function() {
+        function addAnalyticsLink() {
+          // Look for the sidebar navigation
+          const nav = document.querySelector('nav, [class*="sidebar"], [class*="nav"]');
+          if (!nav) {
+            setTimeout(addAnalyticsLink, 500);
+            return;
+          }
+          // Check if already added
+          if (document.getElementById('analytics-nav-link')) return;
+          // Find the last link in navigation
+          const links = nav.querySelectorAll('a');
+          if (links.length === 0) {
+            setTimeout(addAnalyticsLink, 500);
+            return;
+          }
+          // Create analytics link
+          const analyticsLink = document.createElement('a');
+          analyticsLink.id = 'analytics-nav-link';
+          analyticsLink.href = '/__prototype-annotator/analytics';
+          analyticsLink.textContent = 'Analytics';
+          analyticsLink.style.cssText = links[0].style.cssText || '';
+          analyticsLink.className = links[0].className || '';
+          // Insert after last link
+          const lastLink = links[links.length - 1];
+          lastLink.parentNode.insertBefore(analyticsLink, lastLink.nextSibling);
+        }
+        // Run when DOM is ready and after SPA renders
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => setTimeout(addAnalyticsLink, 500));
+        } else {
+          setTimeout(addAnalyticsLink, 500);
+        }
+        // Also observe for SPA navigation changes
+        const observer = new MutationObserver(() => addAnalyticsLink());
+        observer.observe(document.body, { childList: true, subtree: true });
+      })();
+    </script>
+    `;
+
+    // Serve dashboard index.html with injected analytics link
+    const serveDashboardWithAnalytics = (req, res) => {
+      const indexPath = path.join(dashboardPath, 'index.html');
+      fs.readFile(indexPath, 'utf8', (err, html) => {
+        if (err) {
+          return res.status(500).send('Error loading dashboard');
+        }
+        // Inject script before closing body tag
+        const modifiedHtml = html.replace('</body>', analyticsLinkScript + '</body>');
+        res.type('html').send(modifiedHtml);
+      });
+    };
+
     // Serve dashboard index.html for SPA routes - only if user has access and files exist
     app.get('/__prototype-annotator/dashboard', (req, res, next) => {
       if (req.session?.accessGranted && dashboardExists) {
-        return res.sendFile(path.join(dashboardPath, 'index.html'));
+        return serveDashboardWithAnalytics(req, res);
       }
       if (!dashboardExists) {
         return res.status(404).send('Dashboard not available');
@@ -252,7 +309,7 @@ async function initializeAnnotator() {
         if (req.path.includes('/assets/')) {
           return next(); // Let static middleware handle it
         }
-        return res.sendFile(path.join(dashboardPath, 'index.html'));
+        return serveDashboardWithAnalytics(req, res);
       }
       if (!dashboardExists) {
         return res.status(404).send('Dashboard not available');

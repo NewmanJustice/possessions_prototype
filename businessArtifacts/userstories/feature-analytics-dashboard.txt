@@ -38,6 +38,11 @@ As a prototype owner, I want to view analytics about how users interact with the
 - When I try to access `/__prototype-annotator/analytics`,
 - Then I am redirected to `/access`.
 
+**AC-3a — Analytics link in annotator dashboard**
+- Given I am on the prototype-annotator dashboard (`/__prototype-annotator/dashboard`),
+- Then I see an "Analytics" link in the sidebar navigation
+- And clicking it navigates to `/__prototype-annotator/analytics`.
+
 ---
 
 ### Overview dashboard
@@ -185,7 +190,54 @@ As a prototype owner, I want to view analytics about how users interact with the
 
 | File | Changes |
 |------|---------|
-| `src/app.js` | Import analytics, initialize service, add routes and middleware |
+| `src/app.js` | Import analytics, initialize service, add routes and middleware, inject analytics link into annotator dashboard |
+
+---
+
+## Annotator Dashboard Integration
+
+The prototype-annotator dashboard is a pre-built SPA from the npm package. To add an Analytics link to its navigation, inject a script when serving the dashboard HTML:
+
+```javascript
+// In app.js - Script to inject analytics link into annotator dashboard navigation
+const analyticsLinkScript = `
+<script>
+  (function() {
+    function addAnalyticsLink() {
+      const nav = document.querySelector('nav, [class*="sidebar"], [class*="nav"]');
+      if (!nav) { setTimeout(addAnalyticsLink, 500); return; }
+      if (document.getElementById('analytics-nav-link')) return;
+      const links = nav.querySelectorAll('a');
+      if (links.length === 0) { setTimeout(addAnalyticsLink, 500); return; }
+      const analyticsLink = document.createElement('a');
+      analyticsLink.id = 'analytics-nav-link';
+      analyticsLink.href = '/__prototype-annotator/analytics';
+      analyticsLink.textContent = 'Analytics';
+      analyticsLink.className = links[0].className || '';
+      const lastLink = links[links.length - 1];
+      lastLink.parentNode.insertBefore(analyticsLink, lastLink.nextSibling);
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(addAnalyticsLink, 500));
+    } else {
+      setTimeout(addAnalyticsLink, 500);
+    }
+    const observer = new MutationObserver(() => addAnalyticsLink());
+    observer.observe(document.body, { childList: true, subtree: true });
+  })();
+</script>
+`;
+
+// Serve dashboard with injected script
+const serveDashboardWithAnalytics = (req, res) => {
+  const indexPath = path.join(dashboardPath, 'index.html');
+  fs.readFile(indexPath, 'utf8', (err, html) => {
+    if (err) return res.status(500).send('Error loading dashboard');
+    const modifiedHtml = html.replace('</body>', analyticsLinkScript + '</body>');
+    res.type('html').send(modifiedHtml);
+  });
+};
+```
 
 ---
 
@@ -322,4 +374,4 @@ router.get('/behaviour', (req, res) => {
 
 ## Summary
 
-Feature — Analytics Dashboard | 24 ACs | Route: /__prototype-annotator/analytics | Auto-tracking via middleware
+Feature — Analytics Dashboard | 25 ACs | Route: /__prototype-annotator/analytics | Auto-tracking via middleware | Integrated with prototype-annotator dashboard
