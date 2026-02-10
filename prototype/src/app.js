@@ -229,6 +229,14 @@ async function initializeAnnotator() {
       console.warn('Prototype Annotator: dashboard not found, dashboard features disabled');
     }
 
+    // Serve landing page at /__prototype-annotator/
+    app.get('/__prototype-annotator', (req, res, next) => {
+      if (!req.session?.accessGranted) {
+        return res.redirect('/access');
+      }
+      res.render('pages/annotator-home');
+    });
+
     app.use('/__prototype-annotator/dashboard', (req, res, next) => {
       if (!req.session?.accessGranted || !dashboardStatic) {
         return next('route');
