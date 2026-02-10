@@ -1,9 +1,9 @@
 ---
-name: implement-screen
+name: implement-feature
 description: Run the full Cass → Nigel → Claude pipeline to implement a screen from rough requirements to passing code. Creates user story, tests, implementation plan, and working code with auto-commit.
 ---
 
-# Implement Screen Skill
+# Implement Feature Skill
 
 Run the full Cass → Nigel → Claude pipeline to implement a screen from rough requirements to passing code.
 
@@ -13,24 +13,24 @@ Run the full Cass → Nigel → Claude pipeline to implement a screen from rough
 
 ```bash
 # Auto-detect next screen, Cass asks for input interactively
-/implement-screen
+/implement-feature
 
 # Explicit screen number, Cass asks for input
-/implement-screen 26
+/implement-feature 26
 
 # Explicit screen with inline rough input
-/implement-screen 26 "Screen for selecting Housing Act with radio options and conditional reveal"
+/implement-feature 26 "Screen for selecting Housing Act with radio options and conditional reveal"
 
 # With pause gate
-/implement-screen 26 --pause-after=cass
-/implement-screen 26 --pause-after=nigel
-/implement-screen 26 --pause-after=claude-plan
+/implement-feature 26 --pause-after=cass
+/implement-feature 26 --pause-after=nigel
+/implement-feature 26 --pause-after=claude-plan
 
 # Skip auto-commit
-/implement-screen 26 --no-commit
+/implement-feature 26 --no-commit
 
 # Batch multiple screens (Cass queues ahead)
-/implement-screen 26,27,28
+/implement-feature 26,27,28
 ```
 
 ---
@@ -342,7 +342,7 @@ After pipeline completes (or on abort), report:
 - None
 
 ### Next Action
-Pipeline complete. Run `npm test` to verify, or `/implement-screen` for next screen.
+Pipeline complete. Run `npm test` to verify, or `/implement-feature` for next screen.
 ```
 
 ---
@@ -483,7 +483,7 @@ Location: `plans/screen{N}-plan.md`
 
 If the pipeline is interrupted (session ends, error occurs):
 
-1. Run `/implement-screen` again
+1. Run `/implement-feature` again
 2. Skill reads queue file and resumes from where it left off
 3. Report: "Resuming pipeline. Nigel queue: 1, Claude queue: 1. Continue?"
 
