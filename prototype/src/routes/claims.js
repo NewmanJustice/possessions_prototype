@@ -1396,15 +1396,8 @@ router.post('/grounds-for-possession-secure-flexible', (req, res) => {
 
   claimService.updateClaim(req.session, 'grounds', claim.grounds);
 
-  // Redirect to next screen
-  res.redirect('/claims/rent-arrears-breach-of-tenency');
-});
-
-// GET /claims/rent-arrears-breach-of-tenency - Placeholder for next screen
-router.get('/rent-arrears-breach-of-tenency', (req, res) => {
-  res.render('pages/claims/rent-arrears-breach-of-tenency', {
-    pageTitle: 'Rent arrears or breach of tenency'
-  });
+  // Redirect to reasons for possession
+  res.redirect('/claims/reasons-for-possession');
 });
 
 // GET /claims/grounds-for-possession-intro-demoted-other - Placeholder for OTHER_UNSUPPORTED path

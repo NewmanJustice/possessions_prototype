@@ -717,52 +717,36 @@ describe('Secure/Flexible Tenancy Grounds Route - /claims/grounds-for-possession
   // AC-7: Continue route
   // ============================================================
   describe('AC-7: Routing', () => {
-    
+
     // T-7.1: Redirect on success (no Ground 1)
-    it('should redirect to rent-arrears-breach-of-tenency for valid submission', async () => {
+    it('should redirect to reasons-for-possession for valid submission', async () => {
       const testSession = session(app);
       await navigateToSecureFlexibleGrounds(testSession);
-      
+
       const response = await testSession
         .post('/claims/grounds-for-possession-secure-flexible')
         .send({ ground2: 'true' });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/rent-arrears-breach-of-tenency');
+      expect(response.headers.location).toBe('/claims/reasons-for-possession');
     });
-    
+
     // T-7.2: Redirect with Ground 1
-    it('should redirect to rent-arrears-breach-of-tenency when Ground 1 selected', async () => {
+    it('should redirect to reasons-for-possession when Ground 1 selected', async () => {
       const testSession = session(app);
       await navigateToSecureFlexibleGrounds(testSession);
-      
+
       const response = await testSession
         .post('/claims/grounds-for-possession-secure-flexible')
-        .send({ 
+        .send({
           ground1: 'true',
           ground1Type: 'rentArrears'
         });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/rent-arrears-breach-of-tenency');
+      expect(response.headers.location).toBe('/claims/reasons-for-possession');
     });
-    
-    // T-7.3: Placeholder route exists
-    it('should have placeholder route for /claims/rent-arrears-breach-of-tenency', async () => {
-      const testSession = session(app);
-      await navigateToSecureFlexibleGrounds(testSession);
-      
-      await testSession
-        .post('/claims/grounds-for-possession-secure-flexible')
-        .send({ ground2: 'true' });
-      
-      const response = await testSession
-        .get('/claims/rent-arrears-breach-of-tenency');
-      
-      expect(response.status).toBe(200);
-      expect(response.text).toMatch(/Rent Arrears|Breach of Tenency|Placeholder/i);
-    });
-    
+
   });
   
   // ============================================================
