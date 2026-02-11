@@ -1778,6 +1778,16 @@ const groundDefinitions = {
   'assured.ground8': { name: 'Persistent delay in paying rent', number: 'Ground 8' },
   'assured.ground10': { name: 'Some rent arrears', number: 'Ground 10' },
   'assured.ground11': { name: 'Persistent delay in paying rent', number: 'Ground 11' },
+  // Secure/flexible tenancy grounds (from screen 13.2)
+  'secureFlexible.ground1': { name: 'Rent arrears or breach of tenancy', number: 'Ground 1' },
+  'secureFlexible.ground2': { name: 'Nuisance or annoyance', number: 'Ground 2' },
+  'secureFlexible.ground2A': { name: 'Domestic violence', number: 'Ground 2A' },
+  'secureFlexible.ground3': { name: 'Deterioration of dwelling', number: 'Ground 3' },
+  'secureFlexible.ground4': { name: 'Deterioration of furniture', number: 'Ground 4' },
+  'secureFlexible.ground5': { name: 'False statement', number: 'Ground 5' },
+  'secureFlexible.ground6': { name: 'Premium paid for assignment', number: 'Ground 6' },
+  'secureFlexible.ground7': { name: 'Misconduct or conviction', number: 'Ground 7' },
+  'secureFlexible.ground8': { name: 'Serious rent arrears', number: 'Ground 8' },
   // Additional mandatory grounds (from screen 14)
   'additional.mandatoryGround1': { name: 'Landlord requires property', number: 'Ground 1' },
   'additional.mandatoryGround3': { name: 'Out of season holiday let', number: 'Ground 3' },
@@ -1806,6 +1816,18 @@ function getSelectedGrounds(claim) {
   if (assured.ground8) selectedGrounds.push('assured.ground8');
   if (assured.ground10) selectedGrounds.push('assured.ground10');
   if (assured.ground11) selectedGrounds.push('assured.ground11');
+
+  // Check secure/flexible tenancy grounds
+  const secureFlexible = grounds.secureFlexible || {};
+  if (secureFlexible.ground1) selectedGrounds.push('secureFlexible.ground1');
+  if (secureFlexible.ground2) selectedGrounds.push('secureFlexible.ground2');
+  if (secureFlexible.ground2A) selectedGrounds.push('secureFlexible.ground2A');
+  if (secureFlexible.ground3) selectedGrounds.push('secureFlexible.ground3');
+  if (secureFlexible.ground4) selectedGrounds.push('secureFlexible.ground4');
+  if (secureFlexible.ground5) selectedGrounds.push('secureFlexible.ground5');
+  if (secureFlexible.ground6) selectedGrounds.push('secureFlexible.ground6');
+  if (secureFlexible.ground7) selectedGrounds.push('secureFlexible.ground7');
+  if (secureFlexible.ground8) selectedGrounds.push('secureFlexible.ground8');
 
   // Check additional grounds
   const additional = grounds.additional || {};

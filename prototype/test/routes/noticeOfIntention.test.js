@@ -276,13 +276,13 @@ describe('Notice of Intention Route - /claims/notice-of-intention', () => {
       expect(response.text).toMatch(/value="false".*checked|checked.*value="false"/);
     });
 
-    it('N-2: should redirect to notice-details when No selected', async () => {
+    it('N-2: should redirect to rent-details when No selected (skip notice-details)', async () => {
       const response = await testSession
         .post('/claims/notice-of-intention')
         .send({ noticeServed: 'false' });
-      
+
       expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/claims/notice-details');
+      expect(response.headers.location).toBe('/claims/rent-details');
     });
 
     it('N-3: should persist noticeServed=false after redirect', async () => {
