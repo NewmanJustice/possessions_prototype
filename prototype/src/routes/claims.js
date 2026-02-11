@@ -2948,10 +2948,11 @@ router.post('/upload-additional-document', (req, res) => {
 
   // Handle Add New action
   if (action === 'addNew') {
+    const docNumber = documents.length + 1;
     documents.push({
       id: `doc-${documents.length}`,
       documentType: null,
-      fileName: null,
+      fileName: `document-${docNumber}.pdf`,
       description: null
     });
     saveDocumentsToSession(documents);
