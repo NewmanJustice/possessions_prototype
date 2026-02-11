@@ -3766,8 +3766,12 @@ router.post('/notice-of-intention', (req, res) => {
 
   claimService.updateClaim(req.session, 'noticeOfIntention', noticeOfIntention);
 
-  // Both paths redirect to notice-details
-  res.redirect('/claims/notice-details');
+  // If notice served, collect details; otherwise skip to rent details
+  if (noticeServed === 'true') {
+    res.redirect('/claims/notice-details');
+  } else {
+    res.redirect('/claims/rent-details');
+  }
 });
 
 // GET /claims/notice-details - Screen 19: Notice details
@@ -4226,6 +4230,38 @@ router.post('/details-of-rent-arrears', (req, res) => {
   const { totalArrears, thirdPartyPayments, paymentSources, otherPaymentSource, action } = req.body;
   const claim = claimService.getClaim(req.session) || {};
 
+  // Get existing documents
+  let documents = claim.rentArrears?.documents || [];
+
+  // Handle document actions (addNew, remove)
+  if (action === 'addNew') {
+    // Add a mock document
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    documents = [...documents, {
+      fileName: `rent-statement-${documents.length + 1}.pdf`,
+      uploadedAt: formattedDate
+    }];
+    // Save and re-render
+    claimService.updateClaim(req.session, 'rentArrears', {
+      ...claim.rentArrears,
+      documents
+    });
+    return res.redirect('/claims/details-of-rent-arrears');
+  }
+
+  if (action && action.startsWith('remove-')) {
+    const indexToRemove = parseInt(action.replace('remove-', ''), 10);
+    if (!isNaN(indexToRemove) && indexToRemove >= 0 && indexToRemove < documents.length) {
+      documents = documents.filter((_, i) => i !== indexToRemove);
+      claimService.updateClaim(req.session, 'rentArrears', {
+        ...claim.rentArrears,
+        documents
+      });
+    }
+    return res.redirect('/claims/details-of-rent-arrears');
+  }
+
   // Convert payment sources array to object
   const sourcesArray = Array.isArray(paymentSources) ? paymentSources : (paymentSources ? [paymentSources] : []);
   const paymentSourcesObj = {
@@ -4239,7 +4275,7 @@ router.post('/details-of-rent-arrears', (req, res) => {
 
   // Build rent arrears object
   const rentArrears = {
-    documents: claim.rentArrears?.documents || [],
+    documents: documents,
     totalArrears: totalArrears ? parseFloat(totalArrears) : null,
     thirdPartyPayments: thirdPartyPayments === 'yes' ? true : (thirdPartyPayments === 'no' ? false : null),
     paymentSources: paymentSourcesObj
@@ -4307,7 +4343,7 @@ router.post('/details-of-rent-arrears', (req, res) => {
       homelessPreventionFund: paymentSourcesObj.homelessPreventionFund,
       other: paymentSourcesObj.other,
       otherPaymentSource: otherPaymentSource || '',
-      documents: claim.rentArrears?.documents || [],
+      documents: documents,
       errors,
       errorList
     });

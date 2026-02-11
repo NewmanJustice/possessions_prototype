@@ -42,17 +42,38 @@
       The rent statement must cover the period from when the arrears started to the current date.
     </p>
 
+    <form method="post" action="/claims/details-of-rent-arrears" novalidate>
+
     {# AC-2: Optional upload section #}
     <div class="govuk-form-group">
       <h3 class="govuk-heading-s">Upload rent statement (optional)</h3>
-      <p class="govuk-body">
-        <button type="button" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-          Add new
-        </button>
-      </p>
-    </div>
 
-    <form method="post" action="/claims/details-of-rent-arrears" novalidate>
+      {% if documents and documents.length > 0 %}
+        {% for doc in documents %}
+          <div class="govuk-!-margin-bottom-4" style="border-left: 4px solid #b1b4b6; padding-left: 15px;">
+            <p class="govuk-body govuk-!-margin-bottom-1">
+              <strong>{{ doc.fileName }}</strong>
+            </p>
+            <p class="govuk-body-s govuk-!-margin-bottom-2" style="color: #505a5f;">
+              Uploaded {{ doc.uploadedAt }}
+            </p>
+            {{ govukButton({
+              text: "Remove",
+              name: "action",
+              value: "remove-" + loop.index0,
+              classes: "govuk-button--secondary govuk-!-margin-bottom-0"
+            }) }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {{ govukButton({
+        text: "Add new",
+        name: "action",
+        value: "addNew",
+        classes: "govuk-button--secondary"
+      }) }}
+    </div>
 
       {# AC-5, AC-6: Total rent arrears input #}
       {{ govukInput({
