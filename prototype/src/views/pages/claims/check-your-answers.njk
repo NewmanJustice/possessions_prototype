@@ -19,10 +19,10 @@
       rows: [
         {
           key: { text: "What is the address of the property you're claiming possession of?" },
-          value: { html: "10 Garden Drive<br>Luton<br>Bedfordshire<br>LU1 1AB" },
+          value: { html: propertyAddress | safe },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/property-location",
               text: "Change",
               visuallyHiddenText: "property address"
             }]
@@ -30,10 +30,10 @@
         },
         {
           key: { text: "Who is the claimant in this case?" },
-          value: { text: "A neighbourhood social housing" },
+          value: { text: claimantName },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/claimant-type",
               text: "Change",
               visuallyHiddenText: "claimant"
             }]
@@ -41,10 +41,10 @@
         },
         {
           key: { text: "Who are you making a possession claim against?" },
-          value: { text: "Tenant" },
+          value: { text: claimType },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/claim-type",
               text: "Change",
               visuallyHiddenText: "who you are claiming against"
             }]
@@ -52,10 +52,10 @@
         },
         {
           key: { text: "Is this the correct claimant name?" },
-          value: { text: "Yes" },
+          value: { text: useRegisteredName },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/claimant-name",
               text: "Change",
               visuallyHiddenText: "correct claimant name"
             }]
@@ -63,10 +63,10 @@
         },
         {
           key: { text: "Do you want to use this email address for notifications?" },
-          value: { text: "Yes" },
+          value: { text: useEmailForNotifications },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/contact-preferences",
               text: "Change",
               visuallyHiddenText: "email address for notifications"
             }]
@@ -74,10 +74,10 @@
         },
         {
           key: { text: "Do you want documents to be sent to this address?" },
-          value: { text: "Yes" },
+          value: { text: useAddressForDocuments },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/contact-preferences",
               text: "Change",
               visuallyHiddenText: "documents address"
             }]
@@ -85,10 +85,10 @@
         },
         {
           key: { text: "Do you want to provide a contact phone number?" },
-          value: { text: "No" },
+          value: { text: providePhone },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/contact-preferences",
               text: "Change",
               visuallyHiddenText: "contact phone number"
             }]
@@ -96,32 +96,32 @@
         },
         {
           key: { text: "Do you know the defendant's name?" },
-          value: { text: "Yes" },
+          value: { text: defendantNameKnown },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/defendant-details",
               text: "Change",
               visuallyHiddenText: "defendant name known"
             }]
           }
         },
         {
-          key: { text: "Defendant's first name" },
-          value: { text: "Billy" },
+          key: { text: "Defendant's name" },
+          value: { text: defendantName },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/defendant-details",
               text: "Change",
-              visuallyHiddenText: "defendant's first name"
+              visuallyHiddenText: "defendant's name"
             }]
           }
         },
         {
           key: { text: "Is the defendant's correspondence address the same as the address of the property you're claiming possession of?" },
-          value: { text: "Yes" },
+          value: { text: defendantAddressSame },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/defendant-details",
               text: "Change",
               visuallyHiddenText: "defendant correspondence address"
             }]
@@ -129,10 +129,10 @@
         },
         {
           key: { text: "What type of tenancy or licence is in place?" },
-          value: { text: "Secure tenancy" },
+          value: { text: tenancyType },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/tenancy",
               text: "Change",
               visuallyHiddenText: "tenancy type"
             }]
@@ -140,10 +140,10 @@
         },
         {
           key: { text: "What date did the tenancy or licence start?" },
-          value: { text: "04/03/2015" },
+          value: { text: tenancyStartDate },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/tenancy",
               text: "Change",
               visuallyHiddenText: "tenancy start date"
             }]
@@ -151,10 +151,10 @@
         },
         {
           key: { text: "Do you want to upload a copy of the tenancy or licence agreement? (Optional)" },
-          value: { text: "No" },
+          value: { text: tenancyDocumentUploaded },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/tenancy",
               text: "Change",
               visuallyHiddenText: "tenancy agreement upload"
             }]
@@ -162,10 +162,10 @@
         },
         {
           key: { text: "What are your grounds for possession?" },
-          value: { text: "Serious rent arrears (ground 10), Rent arrears (ground 11), Persistent delay in paying rent (ground 12)" },
+          value: { text: groundsText },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/grounds",
               text: "Change",
               visuallyHiddenText: "grounds for possession"
             }]
@@ -173,10 +173,10 @@
         },
         {
           key: { text: "Do you have any other grounds for possession?" },
-          value: { text: "No" },
+          value: { text: hasAdditionalGrounds },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/additional-grounds",
               text: "Change",
               visuallyHiddenText: "other grounds for possession"
             }]
@@ -184,10 +184,10 @@
         },
         {
           key: { text: "Have you followed the pre-action protocol?" },
-          value: { text: "Yes" },
+          value: { text: followedPreActionProtocol },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/preaction-protocol",
               text: "Change",
               visuallyHiddenText: "pre-action protocol"
             }]
@@ -195,10 +195,10 @@
         },
         {
           key: { text: "Have you attempted mediation with the defendant?" },
-          value: { text: "No" },
+          value: { text: attemptedMediation },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/mediation-settlement",
               text: "Change",
               visuallyHiddenText: "mediation attempted"
             }]
@@ -206,10 +206,10 @@
         },
         {
           key: { text: "Have you tried to reach a settlement with the defendant/s?" },
-          value: { text: "Yes" },
+          value: { text: attemptedSettlement },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/mediation-settlement",
               text: "Change",
               visuallyHiddenText: "settlement attempted"
             }]
@@ -217,10 +217,10 @@
         },
         {
           key: { text: "Have you served notice to the defendant/s?" },
-          value: { text: "Yes" },
+          value: { text: noticeServed },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/notice-of-intention",
               text: "Change",
               visuallyHiddenText: "notice served"
             }]
@@ -228,10 +228,10 @@
         },
         {
           key: { text: "How did you serve the notice?" },
-          value: { text: "First class post" },
+          value: { text: noticeServiceMethod },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/notice-details",
               text: "Change",
               visuallyHiddenText: "notice service method"
             }]
@@ -239,10 +239,10 @@
         },
         {
           key: { text: "Date the document was posted" },
-          value: { text: "01/01/2024" },
+          value: { text: noticeDateFormatted },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/notice-details",
               text: "Change",
               visuallyHiddenText: "document posted date"
             }]
@@ -250,10 +250,10 @@
         },
         {
           key: { text: "Do you want to upload documents relating to the notice you served or the certificate of service? (Optional)" },
-          value: { text: "No" },
+          value: { text: noticeDocumentUploaded },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/notice-details",
               text: "Change",
               visuallyHiddenText: "notice documents upload"
             }]
@@ -261,10 +261,10 @@
         },
         {
           key: { text: "How much is the rent?" },
-          value: { text: "625" },
+          value: { text: rentAmount },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/rent-details",
               text: "Change",
               visuallyHiddenText: "rent amount"
             }]
@@ -272,10 +272,10 @@
         },
         {
           key: { text: "How frequently should rent be paid?" },
-          value: { text: "Weekly" },
+          value: { text: rentFrequency },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/rent-details",
               text: "Change",
               visuallyHiddenText: "rent frequency"
             }]
@@ -283,10 +283,10 @@
         },
         {
           key: { text: "Is the amount per day that unpaid rent should be charged at correct?" },
-          value: { text: "Yes" },
+          value: { text: dailyRentConfirmed },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/daily-rent-amount",
               text: "Change",
               visuallyHiddenText: "daily rent amount"
             }]
@@ -294,10 +294,10 @@
         },
         {
           key: { text: "Upload the rent statement" },
-          value: { text: "rent-statement.pdf" },
+          value: { text: rentStatementText },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/details-of-rent-arrears",
               text: "Change",
               visuallyHiddenText: "rent statement"
             }]
@@ -305,10 +305,10 @@
         },
         {
           key: { text: "How much are the total rent arrears as shown on the rent statement?" },
-          value: { text: "3,000" },
+          value: { text: totalArrears },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/details-of-rent-arrears",
               text: "Change",
               visuallyHiddenText: "total rent arrears"
             }]
@@ -316,10 +316,10 @@
         },
         {
           key: { text: "For the period shown on the rent statement, have any rent payments been paid by someone other than the defendant/s?" },
-          value: { text: "Yes" },
+          value: { text: thirdPartyPayments },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/details-of-rent-arrears",
               text: "Change",
               visuallyHiddenText: "third party payments"
             }]
@@ -327,10 +327,10 @@
         },
         {
           key: { text: "Where have the payments come from?" },
-          value: { text: "Housing benefit" },
+          value: { text: paymentSourcesText },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/details-of-rent-arrears",
               text: "Change",
               visuallyHiddenText: "payment source"
             }]
@@ -338,10 +338,10 @@
         },
         {
           key: { text: "Do you want the court to make a judgment for the outstanding arrears?" },
-          value: { text: "Yes" },
+          value: { text: moneyJudgementRequested },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/money-judgement",
               text: "Change",
               visuallyHiddenText: "money judgement"
             }]
@@ -349,10 +349,10 @@
         },
         {
           key: { text: "Is there an underlessee or mortgagee entitled to claim relief to a forfeiture against the defendant?" },
-          value: { text: "No" },
+          value: { text: hasUnderlesseeOrMortgagee },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/underlessee-or-mortgagee",
               text: "Change",
               visuallyHiddenText: "underlessee or mortgagee"
             }]
@@ -360,10 +360,10 @@
         },
         {
           key: { text: "Is there any information you'd like to provide about Tenancy Housing's Resilience?" },
-          value: { text: "No" },
+          value: { text: provideClaimantCircumstances },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/claimant-circumstances",
               text: "Change",
               visuallyHiddenText: "tenancy housing resilience"
             }]
@@ -371,10 +371,10 @@
         },
         {
           key: { text: "Is there any information you'd like to provide about your reasons for possession?" },
-          value: { text: "No" },
+          value: { text: provideDefendantCircumstances },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/defendant-circumstances",
               text: "Change",
               visuallyHiddenText: "reasons for possession"
             }]
@@ -382,10 +382,10 @@
         },
         {
           key: { text: "Do you want to ask for your costs back?" },
-          value: { text: "Yes" },
+          value: { text: claimingCostsValue },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/claiming-costs",
               text: "Change",
               visuallyHiddenText: "claiming costs"
             }]
@@ -393,10 +393,10 @@
         },
         {
           key: { text: "Is there any other information you'd like to provide about your reasons for possession?" },
-          value: { text: "No" },
+          value: { text: hasAdditionalReasons },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/additional-reasons",
               text: "Change",
               visuallyHiddenText: "additional reasons for possession"
             }]
@@ -404,21 +404,21 @@
         },
         {
           key: { text: "Do you want to upload any additional documents?" },
-          value: { text: "No" },
+          value: { text: hasUploadedDocuments },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/upload-additional-document",
               text: "Change",
               visuallyHiddenText: "additional documents"
             }]
           }
         },
         {
-          key: { text: "Are you claiming to expedite a warrant and/or seizure of the same time as your claim?" },
-          value: { text: "No" },
+          key: { text: "Are you claiming to expedite a warrant and/or seizure at the same time as your claim?" },
+          value: { text: planningApplication },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/applications",
               text: "Change",
               visuallyHiddenText: "expedite warrant"
             }]
@@ -426,10 +426,10 @@
         },
         {
           key: { text: "Statement of truth completed by" },
-          value: { text: "Claimant" },
+          value: { text: statementCompletedBy },
           actions: {
             items: [{
-              href: "#",
+              href: "/claims/statement-of-truth",
               text: "Change",
               visuallyHiddenText: "statement of truth"
             }]

@@ -3331,9 +3331,171 @@ router.post('/statement-of-truth', (req, res) => {
 router.get('/check-your-answers', (req, res) => {
   const claim = claimService.getClaim(req.session) || {};
 
+  // Build property address string
+  const propertyLocation = claim.propertyLocation || {};
+  const propertyAddressParts = [
+    propertyLocation.addressLine1,
+    propertyLocation.addressLine2,
+    propertyLocation.townOrCity,
+    propertyLocation.county,
+    propertyLocation.postcode
+  ].filter(Boolean);
+  const propertyAddress = propertyAddressParts.join('<br>') || 'Not provided';
+
+  // Get defendant info
+  const defendant = (claim.defendants && claim.defendants[0]) || {};
+  const defendantName = defendant.firstName
+    ? `${defendant.firstName}${defendant.lastName ? ' ' + defendant.lastName : ''}`
+    : 'Not provided';
+
+  // Get tenancy info
+  const tenancy = claim.tenancy || {};
+  const tenancyTypeMap = {
+    'secure': 'Secure tenancy',
+    'assured': 'Assured tenancy',
+    'assured-shorthold': 'Assured shorthold tenancy',
+    'demoted': 'Demoted tenancy',
+    'introductory': 'Introductory tenancy',
+    'flexible': 'Flexible tenancy',
+    'licence': 'Licence'
+  };
+  const tenancyType = tenancyTypeMap[tenancy.tenancyType] || tenancy.tenancyType || 'Not provided';
+
+  // Format tenancy start date
+  let tenancyStartDate = 'Not provided';
+  if (tenancy.startDateDay && tenancy.startDateMonth && tenancy.startDateYear) {
+    tenancyStartDate = `${tenancy.startDateDay.toString().padStart(2, '0')}/${tenancy.startDateMonth.toString().padStart(2, '0')}/${tenancy.startDateYear}`;
+  }
+
+  // Get grounds for possession
+  const grounds = claim.grounds || {};
+  const groundsList = [];
+  if (grounds.ground8) groundsList.push('Serious rent arrears (ground 8)');
+  if (grounds.ground10) groundsList.push('Rent arrears (ground 10)');
+  if (grounds.ground11) groundsList.push('Persistent delay in paying rent (ground 11)');
+  if (grounds.ground12) groundsList.push('Breach of tenancy (ground 12)');
+  const groundsText = groundsList.length > 0 ? groundsList.join(', ') : 'Not provided';
+
+  // Get notice details
+  const noticeOfIntention = claim.noticeOfIntention || {};
+  const noticeDetails = claim.noticeDetails || {};
+  const serviceMethodMap = {
+    'first-class-post': 'First class post',
+    'second-class-post': 'Second class post',
+    'hand-delivery': 'Hand delivery',
+    'email': 'Email'
+  };
+  const noticeServiceMethod = serviceMethodMap[noticeDetails.serviceMethod] || noticeDetails.serviceMethod || 'Not provided';
+
+  // Format notice date
+  let noticeDateFormatted = 'Not provided';
+  if (noticeDetails.serviceDateDay && noticeDetails.serviceDateMonth && noticeDetails.serviceDateYear) {
+    noticeDateFormatted = `${noticeDetails.serviceDateDay.toString().padStart(2, '0')}/${noticeDetails.serviceDateMonth.toString().padStart(2, '0')}/${noticeDetails.serviceDateYear}`;
+  }
+
+  // Get rent details
+  const rentDetails = claim.rentDetails || {};
+  const rentFrequencyMap = {
+    'weekly': 'Weekly',
+    'fortnightly': 'Fortnightly',
+    'monthly': 'Monthly',
+    'quarterly': 'Quarterly',
+    'yearly': 'Yearly'
+  };
+  const rentFrequency = rentFrequencyMap[rentDetails.frequency] || rentDetails.frequency || 'Not provided';
+
+  // Get rent arrears
+  const rentArrears = claim.rentArrears || {};
+  const paymentSources = rentArrears.paymentSources || {};
+  const paymentSourcesList = [];
+  if (paymentSources.universalCredit) paymentSourcesList.push('Universal Credit');
+  if (paymentSources.housingBenefit) paymentSourcesList.push('Housing Benefit');
+  if (paymentSources.discretionaryHousingPayment) paymentSourcesList.push('Discretionary Housing Payment');
+  if (paymentSources.homelessPreventionFund) paymentSourcesList.push('Homeless prevention fund');
+  if (paymentSources.other && paymentSources.otherDetails) paymentSourcesList.push(paymentSources.otherDetails);
+  const paymentSourcesText = paymentSourcesList.length > 0 ? paymentSourcesList.join(', ') : 'Not provided';
+
+  // Get rent statement documents
+  const rentStatementDocs = rentArrears.documents || [];
+  const rentStatementText = rentStatementDocs.length > 0
+    ? rentStatementDocs.map(d => d.fileName).join(', ')
+    : 'None uploaded';
+
+  // Get other claim data
+  const preActionProtocol = claim.preActionProtocol || {};
+  const mediationSettlement = claim.mediationSettlement || {};
+  const moneyJudgement = claim.moneyJudgement || {};
+  const underlesseeOrMortgagee = claim.underlesseeOrMortgagee || {};
+  const claimantCircumstances = claim.claimantCircumstances || {};
+  const defendantCircumstances = claim.defendantCircumstances || {};
+  const claimingCosts = claim.claimingCosts || {};
+  const additionalReasons = claim.additionalReasons || {};
+  const uploadedDocuments = claim.uploadedDocuments || [];
+  const applications = claim.applications || {};
+  const statementOfTruth = claim.statementOfTruth || {};
+  const contactPreferences = claim.contactPreferences || {};
+
+  // Claimant name
+  const claimantName = claim.customClaimantName || claim.claimantName || 'Not provided';
+
   res.render('pages/claims/check-your-answers', {
     pageTitle: 'Check your answers',
-    caseNumber: claim.caseNumber || '1234-5678-9101-1213'
+    caseNumber: claim.caseNumber || '1234-5678-9101-1213',
+    // Property
+    propertyAddress,
+    // Claimant
+    claimantName,
+    claimantType: claim.claimantType || 'Not provided',
+    useRegisteredName: claim.useRegisteredName === 'yes' ? 'Yes' : (claim.useRegisteredName === 'no' ? 'No' : 'Not provided'),
+    useEmailForNotifications: contactPreferences.useEmail === true ? 'Yes' : (contactPreferences.useEmail === false ? 'No' : 'Not provided'),
+    useAddressForDocuments: contactPreferences.useAddress === true ? 'Yes' : (contactPreferences.useAddress === false ? 'No' : 'Not provided'),
+    providePhone: contactPreferences.providePhone === true ? 'Yes' : (contactPreferences.providePhone === false ? 'No' : 'Not provided'),
+    // Defendant
+    claimType: claim.claimType || 'Not provided',
+    defendantNameKnown: defendant.nameKnown === true ? 'Yes' : (defendant.nameKnown === false ? 'No' : 'Not provided'),
+    defendantName,
+    defendantAddressSame: defendant.addressSameAsProperty === true ? 'Yes' : (defendant.addressSameAsProperty === false ? 'No' : 'Not provided'),
+    // Tenancy
+    tenancyType,
+    tenancyStartDate,
+    tenancyDocumentUploaded: (tenancy.documents && tenancy.documents.length > 0) ? 'Yes' : 'No',
+    // Grounds
+    groundsText,
+    hasAdditionalGrounds: grounds.hasAdditionalGrounds === true ? 'Yes' : 'No',
+    // Pre-action protocol
+    followedPreActionProtocol: preActionProtocol.followed === true ? 'Yes' : (preActionProtocol.followed === false ? 'No' : 'Not provided'),
+    attemptedMediation: mediationSettlement.attemptedMediation === true ? 'Yes' : (mediationSettlement.attemptedMediation === false ? 'No' : 'Not provided'),
+    attemptedSettlement: mediationSettlement.attemptedSettlement === true ? 'Yes' : (mediationSettlement.attemptedSettlement === false ? 'No' : 'Not provided'),
+    // Notice
+    noticeServed: noticeOfIntention.noticeServed === true ? 'Yes' : (noticeOfIntention.noticeServed === false ? 'No' : 'Not provided'),
+    noticeServiceMethod,
+    noticeDateFormatted,
+    noticeDocumentUploaded: (noticeDetails.documents && noticeDetails.documents.length > 0) ? 'Yes' : 'No',
+    // Rent
+    rentAmount: rentDetails.amount ? rentDetails.amount.toString() : 'Not provided',
+    rentFrequency,
+    dailyRentConfirmed: rentDetails.dailyAmountConfirmed === true ? 'Yes' : (rentDetails.dailyAmountConfirmed === false ? 'No' : 'Not provided'),
+    rentStatementText,
+    totalArrears: rentArrears.totalArrears ? rentArrears.totalArrears.toLocaleString() : 'Not provided',
+    thirdPartyPayments: rentArrears.thirdPartyPayments === true ? 'Yes' : (rentArrears.thirdPartyPayments === false ? 'No' : 'Not provided'),
+    paymentSourcesText,
+    // Money judgement
+    moneyJudgementRequested: moneyJudgement.requested === true ? 'Yes' : (moneyJudgement.requested === false ? 'No' : 'Not provided'),
+    // Underlessee/mortgagee
+    hasUnderlesseeOrMortgagee: underlesseeOrMortgagee.hasUnderlesseeOrMortgagee === 'yes' ? 'Yes' : (underlesseeOrMortgagee.hasUnderlesseeOrMortgagee === 'no' ? 'No' : 'Not provided'),
+    // Circumstances
+    provideClaimantCircumstances: claimantCircumstances.provide === true ? 'Yes' : (claimantCircumstances.provide === false ? 'No' : 'Not provided'),
+    provideDefendantCircumstances: defendantCircumstances.provide === true ? 'Yes' : (defendantCircumstances.provide === false ? 'No' : 'Not provided'),
+    // Costs
+    claimingCostsValue: claimingCosts.value === 'yes' ? 'Yes' : (claimingCosts.value === 'no' ? 'No' : 'Not provided'),
+    // Additional reasons
+    hasAdditionalReasons: additionalReasons.hasAdditionalReasons === true ? 'Yes' : (additionalReasons.hasAdditionalReasons === false ? 'No' : 'Not provided'),
+    // Documents
+    hasUploadedDocuments: uploadedDocuments.length > 0 ? 'Yes' : 'No',
+    // Applications
+    planningApplication: applications.planningApplication === 'yes' ? 'Yes' : (applications.planningApplication === 'no' ? 'No' : 'Not provided'),
+    // Statement of truth
+    statementCompletedBy: statementOfTruth.completedBy || 'Not provided'
   });
 });
 
