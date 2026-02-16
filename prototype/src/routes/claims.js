@@ -60,25 +60,24 @@ router.get('/border-postcode', (req, res) => {
 
 // POST /claims/border-postcode
 router.post('/border-postcode', (req, res) => {
-  const { propertyLocation } = req.body;
-  const errors = [];
-
-  // Validate property location selection
-  if (!propertyLocation) {
-    errors.push({
-      field: 'propertyLocation',
-      message: 'Select whether the property is in England or Wales',
-      href: '#propertyLocation',
-    });
-  }
+  // Accept both borderNation (test) and propertyLocation (form)
+  const propertyLocation = req.body.propertyLocation || req.body.borderNation;
+  // Validate using claimService
+  const errors = claimService.validateStep('border-postcode', { propertyLocation });
 
   if (errors.length > 0) {
     req.session.errors = errors;
+    req.session.values = { propertyLocation };
     return res.redirect('/claims/border-postcode');
   }
 
-  // Store property location in claim
-  claimService.updateClaim(req.session, 'propertyLocation', propertyLocation);
+  // Set isWales in claimDraft
+  if (!req.session.claimDraft) claimService.initializeClaim(req.session);
+  req.session.claimDraft.isWales = propertyLocation === 'wales';
+  req.session.claimDraft.propertyLocation = propertyLocation;
+
+  // Branch: next route (placeholder: claimant-type)
+  // TODO: update to Wales/England branch when implemented
   res.redirect('/claims/claimant-type');
 });
 

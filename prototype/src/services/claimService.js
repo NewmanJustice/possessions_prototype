@@ -235,6 +235,16 @@ function validateStep(step, data) {
       break;
     }
 
+    case 'border-postcode': {
+      if (!data.propertyLocation) {
+        errors.push({
+          field: 'propertyLocation',
+          message: 'Select whether the property is in England or Wales',
+          href: '#propertyLocation',
+        });
+      }
+      break;
+    }
     default:
       break;
   }

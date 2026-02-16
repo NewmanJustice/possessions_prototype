@@ -59,6 +59,23 @@ async function createPartialAuthSession(agent) {
 }
 
 /**
+ * Navigates to Border Postcode (Welsh Branching)
+ * @param {object} agent - Authenticated supertest agent
+ * @param {object} opts - { isWales: true|false }
+ * @returns {Promise<object>} The agent at border-postcode
+ */
+async function goToBorderPostcode(agent, opts = {}) {
+  await createAuthenticatedSession(agent);
+  await agent.post('/claims/start').send({});
+  await agent.post('/claims/eligibility').send({});
+  await agent.get('/claims/border-postcode');
+  if (opts.isWales !== undefined) {
+    await agent.post('/claims/border-postcode').send({ borderNation: opts.isWales ? 'wales' : 'england' });
+  }
+  return agent;
+}
+
+/**
  * Navigates to a specific point in the claims journey
  * @param {object} agent - Authenticated supertest agent
  * @param {string} destination - The destination route (e.g., 'claimant-type')

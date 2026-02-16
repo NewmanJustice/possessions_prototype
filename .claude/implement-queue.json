@@ -1,6 +1,13 @@
 {
   "lastUpdated": "2026-02-10T16:45:00Z",
   "cassQueue": [],
+  "nigelQueue": [
+    {
+      "screenNumber": 1,
+      "userStoryPath": "businessArtifacts/userstories/screen1.txt",
+      "addedAt": "2026-02-16T13:31:27.433Z"
+    }
+  ],
   "nigelQueue": [],
   "claudeQueue": [],
   "completed": [
