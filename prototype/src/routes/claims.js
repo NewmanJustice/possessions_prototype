@@ -123,9 +123,12 @@ router.post('/claimant-type', (req, res) => {
   // Store claimant type in claim
   claimService.updateClaim(req.session, 'claimantType', claimantType);
 
-  // Route based on claimant type
+  // Route based on claimant type and property location
+  const isWales = req.session.claimDraft && req.session.claimDraft.isWales;
   if (claimantType === 'registered-provider') {
     res.redirect('/claims/claim-type');
+  } else if (isWales) {
+    res.redirect('/claims/claimant-ineligible-welsh');
   } else {
     res.redirect('/claims/claimant-ineligible');
   }
