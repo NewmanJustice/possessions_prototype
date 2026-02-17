@@ -818,8 +818,29 @@ async function navigateToPayClaimFee(agent) {
   return agent;
 }
 
+/**
+ * Navigates to Claimant Ineligible (Welsh) (Screen 40)
+ * Entry: After property is set to Wales and ineligible claimant type is selected
+ * @param {object} agent - Supertest-session agent
+ * @param {object} opts - { claimantType: string }
+ * @returns {Promise<object>} Agent at /claims/claimant-ineligible-welsh
+ */
+async function navigateToClaimantIneligibleWelsh(agent, opts = {}) {
+  await createAuthenticatedSession(agent);
+  // Set property to Wales
+  await agent.post('/claims/start').send({});
+  await agent.post('/claims/eligibility').send({});
+  await agent.get('/claims/border-postcode');
+  await agent.post('/claims/border-postcode').send({ borderNation: 'wales' });
+  // Set ineligible claimant type (default: 'company')
+  await agent.post('/claims/claimant-type').send({ claimantType: opts.claimantType || 'company' });
+  // Should now be redirected to /claims/claimant-ineligible-welsh
+  return agent;
+}
+
 module.exports = {
   createAuthenticatedSession,
+  navigateToClaimantIneligibleWelsh,
   createPartialAuthSession,
   navigateToClaimsStep,
   navigateToClaimantName,

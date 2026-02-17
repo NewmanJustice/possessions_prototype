@@ -4644,4 +4644,13 @@ router.get('/confirmation', (req, res) => {
   });
 });
 
+// GET /claims/claimant-ineligible-welsh
+router.get('/claimant-ineligible-welsh', (req, res) => {
+  // No session writes, just render the template
+  res.render('pages/claims/claimant-ineligible-welsh', {
+    pageTitle: 'You are not eligible to use the England possession claim service',
+    showBackLink: false
+  });
+});
+
 module.exports = router;

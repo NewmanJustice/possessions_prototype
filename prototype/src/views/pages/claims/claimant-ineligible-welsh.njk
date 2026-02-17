@@ -1,0 +1,21 @@
+{% extends "layouts/main.njk" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">You are not eligible to use the England possession claim service</h1>
+    <p class="govuk-body">This service is only for properties in England and for eligible claimant types. Our records show that the property is in Wales and the claimant type you selected is not eligible for this service.</p>
+    <p class="govuk-body"><strong>What to do next</strong></p>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>If you wish to make a possession claim for a property in Wales, you must use the Welsh court process.</li>
+      <li>For guidance on possession claims in Wales, see the <a href="https://www.gov.uk/evicting-tenants/accelerated-possession-claims" class="govuk-link" rel="noopener noreferrer" target="_blank">Welsh Government guidance (opens in new tab)</a>.</li>
+      <li>For other types of claims, use the appropriate forms available from <a href="https://www.gov.uk/government/collections/housing-possession-forms" class="govuk-link" rel="noopener noreferrer" target="_blank">the full list of property possession forms (opens in new tab)</a>.</li>
+    </ul>
+    <p class="govuk-body">If you need further help, contact the court or seek legal advice.</p>
+    <a href="/case-list" class="govuk-button govuk-!-margin-top-4" role="button">Return to case list</a>
+  </div>
+</div>
+{% endblock %}
