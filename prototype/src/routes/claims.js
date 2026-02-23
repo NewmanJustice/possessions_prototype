@@ -4649,11 +4649,15 @@ router.get('/confirmation', (req, res) => {
 
 // GET /claims/claimant-ineligible-welsh
 router.get('/claimant-ineligible-welsh', (req, res) => {
-  // No session writes, just render the template
   res.render('pages/claims/claimant-ineligible-welsh', {
-    pageTitle: 'You are not eligible to use the England possession claim service',
+    pageTitle: 'You\'re not eligible for this online service',
     showBackLink: false
   });
+});
+
+// POST /claims/claimant-ineligible-welsh
+router.post('/claimant-ineligible-welsh', (req, res) => {
+  res.redirect('/claims/start');
 });
 
 module.exports = router;

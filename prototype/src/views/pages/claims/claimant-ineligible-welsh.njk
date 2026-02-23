@@ -1,21 +1,51 @@
 {% extends "layouts/main.njk" %}
-
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
 
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <h1 class="govuk-heading-l">You are not eligible to use the England possession claim service</h1>
-    <p class="govuk-body">This service is only for properties in England and for eligible claimant types. Our records show that the property is in Wales and the claimant type you selected is not eligible for this service.</p>
+
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">You're not eligible for this online service</h1>
+
+    <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+
+    <p class="govuk-body">
+      This service is currently only available for registered community landlords.
+    </p>
+
     <p class="govuk-body"><strong>What to do next</strong></p>
-    <ul class="govuk-list govuk-list--bullet">
-      <li>If you wish to make a possession claim for a property in Wales, you must use the Welsh court process.</li>
-      <li>For guidance on possession claims in Wales, see the <a href="https://www.gov.uk/evicting-tenants/accelerated-possession-claims" class="govuk-link" rel="noopener noreferrer" target="_blank">Welsh Government guidance (opens in new tab)</a>.</li>
-      <li>For other types of claims, use the appropriate forms available from <a href="https://www.gov.uk/government/collections/housing-possession-forms" class="govuk-link" rel="noopener noreferrer" target="_blank">the full list of property possession forms (opens in new tab)</a>.</li>
-    </ul>
-    <p class="govuk-body">If you need further help, contact the court or seek legal advice.</p>
-    <a href="/case-list" class="govuk-button govuk-!-margin-top-4" role="button">Return to case list</a>
+
+    <p class="govuk-body">
+      Use form N5 Wales and the correct particulars of claim form.
+    </p>
+
+    <p class="govuk-body">
+      <a href="https://www.gov.uk/government/collections/housing-possession-forms" class="govuk-link" target="_blank" rel="noopener noreferrer">View the full list of property possessions forms (opens in new tab)</a>.
+    </p>
+
+    {{ govukWarningText({
+      html: "To exit back to the case list, select 'Cancel'",
+      iconFallbackText: "Warning"
+    }) }}
+
+    <form method="post" action="/claims/claimant-ineligible-welsh">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="govuk-button-group">
+        <a href="/claims/claimant-type" role="button" draggable="false" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+          Previous
+        </a>
+        {{ govukButton({
+          text: "Continue"
+        }) }}
+      </div>
+    </form>
+
+    <p class="govuk-body">
+      <a href="/case-list" class="govuk-link">Cancel</a>
+    </p>
+
   </div>
 </div>
 {% endblock %}
