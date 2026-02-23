@@ -32,6 +32,9 @@ npm run test:watch
 # Run tests with coverage
 npm run test:coverage
 
+# Run a single test file
+npm test -- --testPathPattern=claimantType
+
 # Lint code
 npm run lint
 ```
@@ -53,7 +56,7 @@ prototype/
 │   │   └── auth.js               # Route guards (requireAuth, requireAccess)
 │   └── views/
 │       ├── layouts/main.njk      # Base layout with GOV.UK header/footer
-│       └── pages/claims/*.njk    # 47 claim journey templates
+│       └── pages/claims/*.njk    # claim journey templates (47+)
 ├── test/
 │   ├── setup.js                  # Jest configuration
 │   ├── helpers/sessionHelper.js  # Auth/navigation test helpers
@@ -112,6 +115,11 @@ Agent instructions are in `agentinstructions/`:
 - `AGENT_Developer.md` - Developer role, workflow, and principles
 - `AGENT_TESTER.md` - Tester role and test patterns
 - `AGENT_Cass.md` - Story writer role
+
+Workflow artifacts:
+- `businessArtifacts/userstories/screen{N}.txt` - User stories from Cass
+- `plans/screen{N}-plan.md` - Implementation plans from Claude
+- Each screen gets a `feature/screen-{N}` branch
 
 ## Adding a New Screen
 
