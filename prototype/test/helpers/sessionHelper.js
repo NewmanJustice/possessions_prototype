@@ -139,10 +139,16 @@ async function navigateToDefendantDetails(agent) {
       providePhone: 'no'
     });
 
-  // Manually inject property address into session for "same as property" tests
-  // Since property address page doesn't exist in current journey, we inject it here
-  const res = await agent.get('/claims/defendant-details');
-  // Property address will be set via middleware or we'll rely on tests to set it up
+  // Submit property address (used by Check Your Answers and other downstream screens)
+  await agent
+    .post('/claims/property-address')
+    .send({
+      addressLine1: '12 Garden Drive',
+      addressLine2: '',
+      town: 'Luton',
+      county: '',
+      postcode: 'LU1 1AA'
+    });
 
   return agent;
 }

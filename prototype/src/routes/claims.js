@@ -3349,13 +3349,13 @@ router.get('/check-your-answers', (req, res) => {
   const claim = claimService.getClaim(req.session) || {};
 
   // Build property address string
-  const propertyLocation = claim.propertyLocation || {};
+  const property = claim.property || {};
   const propertyAddressParts = [
-    propertyLocation.addressLine1,
-    propertyLocation.addressLine2,
-    propertyLocation.townOrCity,
-    propertyLocation.county,
-    propertyLocation.postcode
+    property.addressLine1,
+    property.addressLine2,
+    property.town,
+    property.county,
+    property.postcode
   ].filter(Boolean);
   const propertyAddress = propertyAddressParts.join('<br>') || 'Not provided';
 
@@ -3654,7 +3654,7 @@ router.post('/statement-of-express-terms', (req, res) => {
   const demotionOrder = claim.demotionOrder || {};
 
   demotionOrder.statementOfExpressTerms = statementOfExpressTerms;
-  demotionOrder.statementOfExpressTerms = statementOfExpressTerms === 'yes' ? (statementOfExpressTermsDetails || null) : null;
+  demotionOrder.statementOfExpressTermsDetails = statementOfExpressTerms === 'yes' ? (statementOfExpressTermsDetails || null) : null;
 
   claimService.updateClaim(req.session, 'demotionOrder', demotionOrder);
 
