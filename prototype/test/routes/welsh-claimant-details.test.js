@@ -17,16 +17,16 @@ describe('Welsh Claimant Details Screen', () => {
   it('should display all three Welsh questions', async () => {
     const res = await testSession.get('/claims/welsh-claimant-details');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('A ydych wedi’ch cofrestru o dan Ran 1 o Ddeddf Tai (Cymru) 2014?');
-    expect(res.text).toContain('A ydych wedi’ch trwyddedu o dan Ran 1 o Ddeddf Tai (Cymru) 2014?');
-    expect(res.text).toContain('A ydych wedi penodi asiant trwyddedig ar gyfer rheoli’r eiddo?');
+    expect(res.text).toContain('Are you registered under Part 1 of the Housing (Wales) Act 2014?');
+    expect(res.text).toContain('Are you licensed under Part 1 of the Housing (Wales) Act 2014?');
+    expect(res.text).toContain('Have you appointed a licensed agent to manage the property?');
   });
 
   it('should require all questions to be answered', async () => {
     const res = await testSession.post('/claims/welsh-claimant-details').send({});
     expect(res.status).toBe(302);
     const followUp = await testSession.get('/claims/welsh-claimant-details');
-    expect(followUp.text).toContain('Rhowch ateb i’r cwestiwn hwn');
+    expect(followUp.text).toContain('Please answer this question');
   });
 
   it('should save answers and proceed to next step', async () => {
@@ -43,18 +43,18 @@ describe('Welsh Claimant Details Screen', () => {
     const res = await testSession.post('/claims/welsh-claimant-details').send({ registered: '', licensed: '', agent: '' });
     expect(res.status).toBe(302);
     const followUp = await testSession.get('/claims/welsh-claimant-details');
-    expect(followUp.text).toContain('Rhowch ateb i’r cwestiwn hwn');
+    expect(followUp.text).toContain('Please answer this question');
   });
 
   it('should allow navigation: Previous, Continue, Cancel', async () => {
     const res = await testSession.get('/claims/welsh-claimant-details');
-    expect(res.text).toContain('Bwrw ymlaen'); // Continue
-    expect(res.text).toContain('Yn ôl'); // Previous
-    expect(res.text).toContain('Canslo'); // Cancel
+    expect(res.text).toContain('Continue'); // Continue
+    expect(res.text).toContain('Back'); // Previous
+    expect(res.text).toContain('Cancel'); // Cancel
   });
 
   it('should trigger save and return flow', async () => {
     const res = await testSession.get('/claims/welsh-claimant-details');
-    expect(res.text).toContain('Rwyf eisiau cadw’r cais hwn a dychwelyd ato yn nes ymlaen');
+    expect(res.text).toContain('I want to save this claim and return to it later');
   });
 });

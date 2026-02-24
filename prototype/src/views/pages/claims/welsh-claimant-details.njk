@@ -10,13 +10,13 @@
 
     {% if errors and errors.length > 0 %}
       {{ govukErrorSummary({
-        titleText: "Mae problem wedi codi",
+        titleText: "There is a problem",
         errorList: errors
       }) }}
     {% endif %}
 
-    <span class="govuk-caption-l">Gwneud hawliad</span>
-    <h1 class="govuk-heading-l">Manylion hawlydd (Cymru)</h1>
+    <span class="govuk-caption-l">Make a claim</span>
+    <h1 class="govuk-heading-l">Claimant details (Wales)</h1>
 
     {% set registeredError = null %}
     {% for error in errors %}
@@ -47,14 +47,14 @@
         name: "registered",
         fieldset: {
           legend: {
-            text: "A ydych wedi’ch cofrestru o dan Ran 1 o Ddeddf Tai (Cymru) 2014?",
+            text: "Are you registered under Part 1 of the Housing (Wales) Act 2014?",
             classes: "govuk-fieldset__legend--m"
           }
         },
         items: [
-          { value: "yes", text: "Ie", checked: checkedYes },
-          { value: "no", text: "Na", checked: checkedNo },
-          { value: "not-applicable", text: "Ddim yn berthnasol", checked: checkedNA }
+          { value: "yes", text: "Yes", checked: checkedYes },
+          { value: "no", text: "No", checked: checkedNo },
+          { value: "not-applicable", text: "Not applicable", checked: checkedNA }
         ],
         errorMessage: { text: registeredError.message } if registeredError
       }) }}
@@ -66,14 +66,14 @@
         name: "licensed",
         fieldset: {
           legend: {
-            text: "A ydych wedi’ch trwyddedu o dan Ran 1 o Ddeddf Tai (Cymru) 2014?",
+            text: "Are you licensed under Part 1 of the Housing (Wales) Act 2014?",
             classes: "govuk-fieldset__legend--m"
           }
         },
         items: [
-          { value: "yes", text: "Ie", checked: checkedYesLic },
-          { value: "no", text: "Na", checked: checkedNoLic },
-          { value: "not-applicable", text: "Ddim yn berthnasol", checked: checkedNALic }
+          { value: "yes", text: "Yes", checked: checkedYesLic },
+          { value: "no", text: "No", checked: checkedNoLic },
+          { value: "not-applicable", text: "Not applicable", checked: checkedNALic }
         ],
         errorMessage: { text: licensedError.message } if licensedError
       }) }}
@@ -85,36 +85,36 @@
         name: "agent",
         fieldset: {
           legend: {
-            text: "A ydych wedi penodi asiant trwyddedig ar gyfer rheoli’r eiddo?",
+            text: "Have you appointed a licensed agent to manage the property?",
             classes: "govuk-fieldset__legend--m"
           }
         },
         items: [
-          { value: "yes", text: "Ie", checked: checkedYesAgent },
-          { value: "no", text: "Na", checked: checkedNoAgent },
-          { value: "not-applicable", text: "Ddim yn berthnasol", checked: checkedNAAgent }
+          { value: "yes", text: "Yes", checked: checkedYesAgent },
+          { value: "no", text: "No", checked: checkedNoAgent },
+          { value: "not-applicable", text: "Not applicable", checked: checkedNAAgent }
         ],
         errorMessage: { text: agentError.message } if agentError
       }) }}
 
       <div class="govuk-button-group">
         {{ govukButton({
-          text: "Yn ôl",
+          text: "Back",
           classes: "govuk-button--secondary",
           href: "/claims/claim-type"
         }) }}
 
         {{ govukButton({
-          text: "Bwrw ymlaen"
+          text: "Continue"
         }) }}
       </div>
     </form>
 
     <p class="govuk-body">
-      <a href="/case-list" class="govuk-link">Canslo</a>
+      <a href="/case-list" class="govuk-link">Cancel</a>
     </p>
     <p class="govuk-body">
-      <a href="#" class="govuk-link">Rwyf eisiau cadw’r cais hwn a dychwelyd ato yn nes ymlaen</a>
+      <a href="#" class="govuk-link">I want to save this claim and return to it later</a>
     </p>
   </div>
 </div>

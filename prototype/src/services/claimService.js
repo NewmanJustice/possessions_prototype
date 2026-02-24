@@ -245,6 +245,30 @@ function validateStep(step, data) {
       }
       break;
     }
+    case 'welsh-claimant-details': {
+      if (!data.registered) {
+        errors.push({
+          field: 'registered',
+          message: 'Please answer this question',
+          href: '#registered',
+        });
+      }
+      if (!data.licensed) {
+        errors.push({
+          field: 'licensed',
+          message: 'Please answer this question',
+          href: '#licensed',
+        });
+      }
+      if (!data.agent) {
+        errors.push({
+          field: 'agent',
+          message: 'Please answer this question',
+          href: '#agent',
+        });
+      }
+      break;
+    }
     default:
       break;
   }
