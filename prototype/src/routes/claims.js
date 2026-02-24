@@ -190,10 +190,14 @@ router.post('/claim-type', (req, res) => {
   // Store claim type in claim
   claimService.updateClaim(req.session, 'claimType', claimType);
 
-  // Route based on claim type
+  // Route based on claim type and property location
+  const isWales = req.session.claimDraft && req.session.claimDraft.isWales;
   if (claimType === 'no') {
-    // Happy path: not against trespassers
-    res.redirect('/claims/name-of-claimant');
+    if (isWales) {
+      res.redirect('/claims/welsh-claimant-details');
+    } else {
+      res.redirect('/claims/name-of-claimant');
+    }
   } else {
     // Bad path: claim against trespassers
     res.redirect('/claims/claim-type-ineligible');
@@ -212,6 +216,45 @@ router.get('/claim-type-ineligible', (req, res) => {
 router.post('/claim-type-ineligible', (req, res) => {
   // Return to start of claim journey
   res.redirect('/claims/start');
+});
+
+// GET /claims/welsh-claimant-details
+router.get('/welsh-claimant-details', requireAuth, (req, res) => {
+  const claim = claimService.getClaim(req.session);
+  // Only allow access if propertyLocation is 'wales'
+  if (claim.propertyLocation !== 'wales') {
+    return res.redirect('/claims/name-of-claimant');
+  }
+  const rawErrors = req.session.errors || [];
+  const errors = rawErrors.map(e => ({ ...e, text: e.message }));
+  const values = req.session.values || claim.claimant || {};
+  req.session.errors = null;
+  req.session.values = null;
+  res.render('pages/claims/welsh-claimant-details', {
+    claim,
+    errors,
+    values,
+    backLink: '/claims/claim-type',
+    nextLink: '/claims/next-step',
+    saveReturnLink: '/claims/save-return',
+    isWelsh: true
+  });
+});
+
+// POST /claims/welsh-claimant-details
+router.post('/welsh-claimant-details', requireAuth, (req, res) => {
+  const claim = claimService.getClaim(req.session);
+  if (claim.propertyLocation !== 'wales') {
+    return res.redirect('/claims/name-of-claimant');
+  }
+  const errors = claimService.validateStep('welsh-claimant-details', req.body);
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    req.session.values = req.body;
+    return res.redirect('/claims/welsh-claimant-details');
+  }
+  claimService.updateClaim(req.session, 'claimant', req.body);
+  res.redirect('/claims/next-step');
 });
 
 // GET /claims/name-of-claimant
@@ -4658,6 +4701,54 @@ router.get('/claimant-ineligible-welsh', (req, res) => {
 // POST /claims/claimant-ineligible-welsh
 router.post('/claimant-ineligible-welsh', (req, res) => {
   res.redirect('/claims/start');
+});
+
+// GET /claims/welsh-claimant-details
+router.get('/welsh-claimant-details', (req, res) => {
+  const claim = claimService.getClaim(req.session) || {};
+  const errors = req.session.errors || [];
+
+  // Build error list for error summary
+  const errorList = errors.map(error => ({
+    text: error.message,
+    href: error.href
+  }));
+
+  // Build field-specific error messages
+  const fieldErrors = {};
+  errors.forEach(error => {
+    fieldErrors[error.field] = error.message;
+  });
+
+  res.render('pages/claims/welsh-claimant-details', {
+    pageTitle: 'Manylion hawlydd (Cymru)',
+    errorList: errorList,
+    fieldErrors: fieldErrors,
+    values: {
+      registered: claim.registered || '',
+      licensed: claim.licensed || '',
+      agent: claim.agent || ''
+    }
+  });
+
+  delete req.session.errors;
+});
+
+// POST /claims/welsh-claimant-details
+router.post('/welsh-claimant-details', (req, res) => {
+  const { registered, licensed, agent } = req.body;
+  const errors = claimService.validateStep('welsh-claimant-details', { registered, licensed, agent });
+
+  if (errors.length > 0) {
+    req.session.errors = errors;
+    return res.redirect('/claims/welsh-claimant-details');
+  }
+
+  claimService.updateClaim(req.session, 'registered', registered);
+  claimService.updateClaim(req.session, 'licensed', licensed);
+  claimService.updateClaim(req.session, 'agent', agent);
+
+  res.redirect('/claims/next-step'); // TODO: update to actual next step
 });
 
 module.exports = router;

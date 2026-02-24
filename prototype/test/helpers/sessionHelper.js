@@ -81,14 +81,22 @@ async function goToBorderPostcode(agent, opts = {}) {
  * @param {string} destination - The destination route (e.g., 'claimant-type')
  * @returns {Promise<void>}
  */
-async function navigateToClaimsStep(agent, destination) {
+async function navigateToClaimsStep(agent, destination, opts = {}) {
   await agent.post('/claims/start').send({});
   await agent.post('/claims/eligibility').send({});
-  await agent.post('/claims/border-postcode').send({ propertyLocation: 'england' });
+  // Set propertyLocation to 'wales' if opts.isWales is true
+  if (opts.isWales) {
+    await agent.post('/claims/border-postcode').send({ propertyLocation: 'wales' });
+  } else {
+    await agent.post('/claims/border-postcode').send({ propertyLocation: 'england' });
+  }
 
   if (destination === 'claim-type') {
     await agent.post('/claims/claimant-type').send({ claimantType: 'registered-provider' });
   } else if (destination === 'name-of-claimant') {
+    await agent.post('/claims/claimant-type').send({ claimantType: 'registered-provider' });
+    await agent.post('/claims/claim-type').send({ claimType: 'no' });
+  } else if (destination === 'welsh-claimant-details') {
     await agent.post('/claims/claimant-type').send({ claimantType: 'registered-provider' });
     await agent.post('/claims/claim-type').send({ claimType: 'no' });
   }
